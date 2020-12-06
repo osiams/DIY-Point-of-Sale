@@ -1,0 +1,22 @@
+/*--apt DIY_POS;--ext css;--version 0.0;*/
+td{vertical-align: middle;}
+/*-word-break: break-all*/
+.content > div{display:inline-block;margin:0px auto;padding:0px;}
+.billmove {}
+.billmove  tr > td:nth-child(4) > div:nth-child(2){display:none;}
+.billmove  tr > td:nth-child(4) > div:nth-child(3){display:none;}
+.billmovelist  tr > td:nth-child(3) > div:nth-child(2){display:none;}
+.billmovelist  tr > td:nth-child(4) > div:nth-child(2){display:none;}
+@media screen and (max-width: 640px) {
+.billmove  tr > th:nth-child(3){display:none;}
+.billmove  tr > th:nth-child(6){display:none;}
+.billmove  tr > td:nth-child(3){display:none;}
+.billmove  tr > td:nth-child(6){display:none;}
+.billmove  tr > td:nth-child(4) > div:nth-child(2){display:block;font-size:12px;color:#555555;text-align:right;padding-right:5px;}
+.billmove  tr > td:nth-child(4) > div:nth-child(3){display:block;font-size:12px;color:#555555;text-align:right;padding-right:5px;}
+}
+@media screen and (max-width:512px) {
+.billmovelist  tr > th:nth-child(2){display:none;}
+.billmovelist  tr > td:nth-child(2){display:none;}
+.billmovelist  tr > td:nth-child(3) > div:nth-child(2){display:block;}
+}

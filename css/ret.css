@@ -1,0 +1,27 @@
+/*--apt DIY_POS;--ext css;--version 0.0;*/
+td{vertical-align: middle;}
+.ret{}
+.ret  tr >td >input[type="number"]{width:50px;}
+.ret  tr >td >input[type="text"]{width:100px;}
+
+.ret  tr >td > div{width:300px ;margin:0 auto;}
+.ret  tr >td >  div > p{position:relative;top:12px;left:-20px;color:blue;width:calc(100% - 0px);text-align:right;font-size:14px;}
+.ret  tr >td >  div > select{width:calc(100% - 0px);}
+.ret  tr >td >  div > p >span{background-color:#ffffff;}
+.ret  tr >td  > div > input,textarea{width:calc(100% - 6px);margin:0px;}
+
+.content > div{display:inline-block;margin:0px auto;padding:0px;}
+
+
+.billretlist {}
+.billretlist  tr > td:nth-child(3) > div:nth-child(2){display:none;}
+.billretlist  tr > td:nth-child(4) > div:nth-child(2){display:none;}
+
+@media screen and (max-width: 640px) {
+.billretlist  tr > th:nth-child(2){display:none;}
+.billretlist  tr > th:nth-child(5){display:none;}
+.billretlist  tr > td:nth-child(2){display:none;}
+.billretlist  tr > td:nth-child(5){display:none;}
+.billretlist  tr > td:nth-child(3) > div:nth-child(2){display:block;font-size:12px;color:#555555;text-align:right;padding-right:5px;}
+.billretlist  tr > td:nth-child(4) > div:nth-child(2){display:block;font-size:12px;color:#555555;text-align:right;padding-right:5px;}
+}

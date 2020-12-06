@@ -1,0 +1,15 @@
+/*--apt DIY_POS;--ext css;--version 0.0;*/
+.billret{}
+.billret  tr > td:nth-child(3) > div:nth-child(2){display:none;text-align:right;font-size:12px;color:#555555;}
+.billret  tr > td:nth-child(3) > div:nth-child(3){display:none;text-align:right;font-size:12px;color:darkgreen;}
+@media screen and (max-width: 640px) {
+.billret  tr > th{font-size:12px;}
+.billret  tr > th:nth-child(2){display:none;}
+.billret  tr > td:nth-child(2){display:none;}
+.billret  tr > th:nth-child(4){display:none;}
+.billret  tr > td:nth-child(4){display:none;}
+.billret  tr > th:nth-child(7){display:none;}
+.billret  tr > td:nth-child(7){display:none;}
+.billret  tr > td:nth-child(3) > div:nth-child(2){display:block;}
+.billret  tr > td:nth-child(3) > div:nth-child(3){display:block;}
+}
