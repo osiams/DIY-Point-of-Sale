@@ -1,4 +1,3 @@
- /*--apt DIY_POS;--ext js;--version 0.0;*/
 "use strict"
 function tran(ob,mt,dt){
 	let js=JSON.parse(dt)

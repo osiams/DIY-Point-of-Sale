@@ -1,4 +1,4 @@
-<?php  /*--apt DIY_POS;--ext js;--version 0.0;*/
+<?php
 define("CF", [
 	"a"=>["product","unit","fetch","me","user","setting","bills","sell","barcode","bill58","ret","it","day","qrc"],
 //==========คำเตือน!! โปรดแก้ไขด้วยความระมัดระวัง

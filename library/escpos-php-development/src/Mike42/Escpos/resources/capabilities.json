@@ -232,11 +232,6 @@
             "name": "CP874",
             "python_encode": "cp874"
         },
-        "PC874": {
-            "iconv": "PC874",
-            "name": "PC874",
-            "python_encode": "pc874"
-        },
         "CP928": {
             "name": "CP928"
         },
@@ -1994,7 +1989,7 @@
         },
         "default": {
             "codePages": {
-                "0": "PC874",
+                "0": "CP437",
                 "1": "CP932",
                 "2": "CP850",
                 "3": "CP860",
@@ -2047,7 +2042,7 @@
                 "67": "Unknown",
                 "68": "Unknown",
                 "69": "Unknown",
-                "70": "PC874",
+                "70": "Unknown",
                 "71": "Unknown",
                 "72": "Unknown",
                 "73": "Unknown",
@@ -2055,7 +2050,7 @@
                 "75": "Unknown",
                 "82": "Unknown",
                 "254": "Unknown",
-                "255": "PC874"
+                "255": "Unknown"
             },
             "colors": {
                 "0": "black"

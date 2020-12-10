@@ -1,4 +1,3 @@
- /*--apt DIY_POS;--ext js;--version 0.0;*/
 "use strict"
 class product extends main{
 	constructor(){

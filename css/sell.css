@@ -1,4 +1,3 @@
-/*--apt DIY_POS;--ext css;--version 0.0;*/
 th{vertical-align: middle;}
 body{overflow:hidden;}
 #sell{display:grid;grid-template-rows:32px auto  32px;width:100%;height:100%;overflow:hidden;}

@@ -1,4 +1,4 @@
-<?php  /*--apt DIY_POS;--ext php;--version 0.0;*/
+<?php
 class main{
 	private $re;
 	public function __construct(){
@@ -358,12 +358,11 @@ class main{
 					<meta name="description" content="'.$title.'">
 					<link rel="manifest" href="set/manifest.json">
 <link rel="apple-touch-icon" href="img/pwa/diypos_128.png">   
-<meta name="theme-color" content="white"/>  
+<meta name="theme-color" content="black"/>  
 <meta name="apple-mobile-web-app-capable" content="yes">  
 <meta name="apple-mobile-web-app-status-bar-style" content="black"> 
-<meta name="apple-mobile-web-app-title" content="Hello World"> 
+<meta name="apple-mobile-web-app-title" content="D I Y P O S"> 
 <meta name="msapplication-TileImage" content="img/pwa/diypos_128.png">  
-<meta name="msapplication-TileColor" content="#FFFFFF">
 					<link rel="icon"   type="image/png" href="img/favicon.png" />
 					<link rel="stylesheet" type="text/css" href="css/css.css">'.$this->pageHeadCss($data).'
 					<script src="js/main.js" type="text/javascript"></script>'.$this->pageHeadJs($data).'

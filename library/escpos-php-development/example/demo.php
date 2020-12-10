@@ -8,30 +8,14 @@
  *
  * @author Michael Billington <michael.billington@gmail.com>
  */
-//require ('../src/Mike42/Escpos/Printer.php');
-//require ('../src/Mike42/Escpos/PrintConnectors/PrintConnector.php');
-//require ('../src/Mike42/Escpos/PrintConnectors/FilePrintConnector.php');
-//require ('../src/Mike42/Escpos/CapabilityProfile.php');
-
-//echo __DIR__. '/../vendor/autoload.php';
-//shell_exec("echo '555' >> /dev/ttyUSB0");
-
-spl_autoload_register ( function ($class) {
-	$file = "../src/".str_replace("\\","/",$class).".php";
-	echo $file."<br>";
-	if (file_exists ( $file )) {
-		require $file;
-	}
-} );
-
-
+require __DIR__ . '/../vendor/autoload.php';
 use Mike42\Escpos\Printer;
 use Mike42\Escpos\PrintConnectors\FilePrintConnector;
 use Mike42\Escpos\EscposImage;
 
-$connector = new FilePrintConnector("/dev/ttyUSB0");
+$connector = new FilePrintConnector("php://stdout");
 $printer = new Printer($connector);
-exit;
+
 /* Initialize */
 $printer -> initialize();
 

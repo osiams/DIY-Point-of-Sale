@@ -1,4 +1,4 @@
-<?php  /*--apt DIY_POS;--ext js;--version 0.0;*/
+<?php
 declare(strict_types=1);
 try{
 	require_once("config.php");			

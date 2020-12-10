@@ -1,4 +1,4 @@
-<?php  /*--apt DIY_POS;--ext php;--version 0.0;*/
+<?php
 class barcode{
 	public function __construct(string $font){
 		$this->font=$font;
@@ -135,12 +135,12 @@ imagealphablending($im,true);
 		
 		if(isset($textarr[1])){
 			imagefilledrectangle($im,0, $h,384,$h+$margintop+$h+$h-($h/2), $white);
-			imagettftext($im,$fontsize,0,0,$h+$margintop+$h-0, $black,$this->font,$textarr[1]);
+			imagettftext($im,$fontsize,0,0,$h+$margintop+$h-5, $black,$this->font,$textarr[1]);
 		}	
 		imagefilledrectangle($im,0, 0,384,$h+$margintop, $white);
 		$values=$this->drawArrow($arrowtop);
 		imagefilledpolygon($im, $values, 7, $black);	
-		imagettftext($im,$fontsize,0,$arrowwidth,$h+ 0, $black,$this->font,$textarr[0]);
+		imagettftext($im,$fontsize,0,$arrowwidth,$h-10, $black,$this->font,$textarr[0]);
 
 		//----ราคา
 		$textprice=(string)$price;

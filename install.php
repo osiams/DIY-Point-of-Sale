@@ -1,4 +1,4 @@
-<?php  /*--apt DIY_POS;--ext js;--version 0.0;*/
+<?php 
 require_once("config.php");
 require_once("php/main.php");
 class install extends main{

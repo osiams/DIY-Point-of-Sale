@@ -1,4 +1,3 @@
- /*--apt DIY_POS;--ext js;--version 0.0;*/
 "use strict"
 class ret extends main{
 	constructor(){

@@ -1,4 +1,4 @@
-<?php  /*--apt DIY_POS;--ext php;--version 0.0;*/
+<?php
 class product extends main{
 	public function __construct(){
 		parent::__construct();
