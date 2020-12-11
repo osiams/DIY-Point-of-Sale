@@ -184,19 +184,27 @@ class bill58 extends main{
 		try {
 			if($this->checkNP("exists")){
 				if($this->checkNP("writable")){
-					$printer = new Printer($this->fnConect());	
-					$foo0 = new GdEscposImage();
-					$imr0=$this->createImgTest(0);
-					$foo0 -> readImageFromGdResource($imr0);
-					$printer->bitImageColumnFormat($foo0);
-					$foo1 = new GdEscposImage();
-					$imr1=$this->createImgTest(1);
-					$foo1 -> readImageFromGdResource($imr1);
-					$printer->bitImageColumnFormat($foo1);
-					$this->pulse($printer);		
-					$this->printCut($printer);
-					$printer -> close();
-					$re["result"]=true;
+					if(file_exists($this->font_file)){
+						if(file_exists($this->font_file2)){
+							$printer = new Printer($this->fnConect());	
+							$foo0 = new GdEscposImage();
+							$imr0=$this->createImgTest(0);
+							$foo0 -> readImageFromGdResource($imr0);
+							$printer->bitImageColumnFormat($foo0);
+							$foo1 = new GdEscposImage();
+							$imr1=$this->createImgTest(1);
+							$foo1 -> readImageFromGdResource($imr1);
+							$printer->bitImageColumnFormat($foo1);
+							$this->pulse($printer);		
+							$this->printCut($printer);
+							$printer -> close();
+							$re["result"]=true;
+						}else{
+							throw new Exception("ไม่พบที่อยู่ฟ้อนค์ \n".$this->font_file2." \nโปรดตรวจสอบ\nการตั้งค่าเครื่องพิมพ์ \${PATH}/set/printer.json ค่า font_1 \n*** \${PATH} = ".dirname(__DIR__)."");
+						}	
+					}else{
+						throw new Exception("ไม่พบที่อยู่ฟ้อนค์ \n".$this->font_file." \nโปรดตรวจสอบ\nการตั้งค่าเครื่องพิมพ์  ที่ \${PATH}/set/printer.json ค่า font_0 \n*** \${PATH} = ".dirname(__DIR__)."");
+					}	
 				}else{
 					throw new Exception("ไมสามารถเขียนไฟล์ได้ \n".$this->usb." \nโปรดตรวจสอบ\nการตั้งค่าผู้ใช้ในกลุ่มเครื่องพิมพ์");
 				}
@@ -225,7 +233,7 @@ class bill58 extends main{
 			$tm["font_".$i]=[["t"=>$hn[$i],"lcr"=>"l"]];
 		}
 		$tm["font_s"]=[["t"=>"ฟ้อนต์_".$font_n."_size = ".$fontsize,"lcr"=>"l"]];
-		$tm["texts0"]=[["t"=>"ยินดีต้อนรับสู่  D.I.Y. Point of sale","lcr"=>"c"]];
+		$tm["texts0"]=[["t"=>"ยินดีต้อนรับสู่  DIY Point of sale","lcr"=>"c"]];
 		$tm["list_0"]=[
 					["t"=>202,"lcr"=>"l"],
 					["t"=>"ถุงผ้า 200x240 ซม.","lcr"=>"l"],
@@ -371,7 +379,7 @@ class bill58 extends main{
 						$left=10.69*3*(3/2);
 					}else if($j==3){
 						$left=$left-(10.69*9*(3/2));
-						imagefilledrectangle($im, $left, $top-$ht+10,$this->bill_width, $top+10, $this->white);
+						imagefilledrectangle($im, $left, $top-$ht+5,$this->bill_width, $top+10, $this->white);
 					}					
 				}
 				imagettftext($im,$this->font_size,0,$left, $top, $this->black, $this->font_file,$vu);
