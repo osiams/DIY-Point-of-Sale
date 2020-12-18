@@ -5,8 +5,8 @@ define("CF", [
 //==========ป้อมูลการเชื่อมต่อกับ ฐานข้อมูล MariaDB
 	"server"=>"127.0.0.1",					//--ค่านี้เท่านั้น
 	"database"=>"diypos_0.0",		//--ชื่อฐานข้อมูลตามรุ่น หรือ ชื่ออื่น
-	"user"=>"ชื่อผู้ใช้",									//--ชื่อผู้ใช
-	"password"=>"รหัสผ่าน",			//--รหัสผ่านที่ได้ตั้งไว้ใน User accounts ของ   phpmyadmin
+	"user"=>"user",									//--ชื่อผู้ใช
+	"password"=>"password",			//--รหัสผ่านที่ได้ตั้งไว้ใน User accounts ของ   phpmyadmin
 //==http port ต้องตรงกับในไฟล์ httpd.conf
 		"http_port"=>80,
 		"https_port"=>443,

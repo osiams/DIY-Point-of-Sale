@@ -286,14 +286,13 @@ class main{
 		$conn=$this->dbConnect();
 		
 		if(get_class($conn)=="PDO"){
-				$conn->beginTransaction();
+			$conn->beginTransaction();
 			try{
-				
 				foreach($sql as $k=>$v){
 					$stmt[$k] = $conn->query($v);
 					$re["data"][$k]=[];
 				}
-				$conn->commit();
+				
 				foreach($se as $k=>$v){
 					$i=1;
 					while ($row = $stmt[$v]->fetch(PDO::FETCH_ASSOC)) {
@@ -303,8 +302,11 @@ class main{
 					}
 				}
 				$re["result"]=true;
+				$conn->commit();
 			}catch(PDOException $e){
-				$conn->rollBack();
+				//$conn->rollBack();
+				//print_r($e->getMessage());
+				//print_r($sql);
 				$re["message_error"]=$e->getMessage();
 				//$conn->beginTransaction();
 				
@@ -315,6 +317,7 @@ class main{
 			$re["connect_error"]="ไม่สามารถติดต่อฐานข้อมูลได้";		
 			$re["message_error"]="ไม่สามารถติดต่อฐานข้อมูลได้";
 		}
+		//var_dump($re);
 		return $re;	
 	}
 	protected  function ref(string $table,string $sku_key,string $value):string{
@@ -322,7 +325,7 @@ class main{
 			SELECT * FROM `".$table."` WHERE  `".$table."`.`".$sku_key."` ='".$value."' ;";
 		return $tx;
 	}
-	protected  function coppyTo(string $table_,string $_table,string $sku_key,string $value_type="string",string $value):string{
+	protected  function coppyTo(string $table_,string $_table,string $sku_key,?string $value_type,string $value):string{
 		//--ระวัง $ ' " \
 		$v="'".$value."'";
 		if($value_type=="int"){
@@ -547,9 +550,9 @@ class main{
 			return false;
 		}
 	}
-	protected function page(int $count=0 ,int $per=0 ,int $page,string $qury):void{
-		$count=($count==0)?1:$count;
-		$per=($per==0)?20:$per;
+	protected function page(?int $count,?int $per,int $page,string $qury):void{
+		$count=($count===0)?1:$count;
+		$per=($per===0)?20:$per;
 		$pages=ceil($count/$per);
 		$size=strlen("".$page);
 		echo '<div class="page c">

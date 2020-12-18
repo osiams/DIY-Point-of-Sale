@@ -79,12 +79,13 @@ class login extends main{
 		return $re;
 	}
 	private function pageLogin(array $ck=NULL,array $re=NULL):void{
+		if(!isset($_COOKIE['printer_'])){
+			setcookie("printer_",0,  ["expires"=>time()+(3600*24*30*12*10),"samesite" =>"Lax"]);
+		}		
 		$u=(isset($_POST["u"]))?$_POST["u"]:"admin@diy.pos";
 		$this->home=1;
 		$this->pageHead(["title"=>"เข้าสู่ระบบ DIYPOS","css"=>["login"]]);
-		if(!isset($_COOKIE['printer_'])){
-			setcookie("printer_",0,  ["expires"=>time()+(3600*24*30*12*10),"samesite" =>"Lax"]);
-		}
+
 		$nm=htmlspecialchars($this->shop->name);
 		$nm=str_replace("\\","\\\\",$nm);
 		$nm=str_replace('&quot;','\"',$nm);

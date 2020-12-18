@@ -95,6 +95,7 @@ class install extends main{
 	protected function insertDefault():array{
 		$re=["result"=>true,"message_error"=>""];
 		$rn=$this->creatRoutines();
+		//print_r($rn);
 		if(!$rn["result"]){
 			$re["result"]=false;
 			$re["message_error"]=$rn["message_error"];
@@ -163,7 +164,6 @@ class install extends main{
 			exit;
 		}
 		$re= $this->runCreateTable();
-		//print_r($re);
 		$ok=true;
 		$has=1;
 		echo '<div class="block c"><table><tr><th colspan="2">ผลการสร้าางตาราง</th></tr>

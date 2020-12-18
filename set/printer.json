@@ -1,6 +1,6 @@
 {
-	"font_0":"/usr/share/fonts/truetype/tlwg/Laksaman-Bold.ttf",
-	"font_1":"/usr/share/fonts/truetype/tlwg/Laksaman-Bold.ttf",
+	"font_0":"/usr/share/fonts/tlwg/Laksaman-Bold.ttf",
+	"font_1":"/usr/share/fonts/tlwg/Laksaman-Bold.ttf",
 	"font_0_size":18,
 	"font_1_size":18,
 	"printer_0":{
@@ -27,11 +27,11 @@
 	},
 	"printer_2":{
 		"status":1,
-		"name":"เครื่องพิมพ์ USBLP0",
+		"name":"เครื่องพิมพ์ usb_2",
 		"width":58,
-		"address":"/dev/usb_3",
-		"cut":1,
-		"pulse":1,
+		"address":"/dev/usb_2",
+		"cut":0,
+		"pulse":0,
 		"feed":0,	
 		"_ucda":"",
 		"_ucdp":0

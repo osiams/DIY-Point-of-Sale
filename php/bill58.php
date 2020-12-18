@@ -92,7 +92,8 @@ class bill58 extends main{
 			}
 		}
 	}
-	protected function setCNT(string $uri=""):void{
+	protected function setCNT(string $uri):void{
+		if($uri===null){$uri="";}
 		if(preg_match("/^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}:[0-9]{1,5}$/",$uri)){
 			$this->cnt="network";
 			$ui=explode(":",$uri);
@@ -126,7 +127,7 @@ class bill58 extends main{
 			$logo=EscposImage::load("img/logo.png");
 			$printer ->initialize();
 			$printer ->setPrintLeftMargin(0);
-			//$printer ->bitImage($logo);
+						//printer ->bitImage($logo);
 			$printer ->bitImageColumnFormat($logo);
 			$printer ->initialize();
 		}
@@ -151,7 +152,7 @@ class bill58 extends main{
 			&&(isset($_POST["sku"])&&preg_match("/^[0-9]{1,25}$/",$_POST["sku"]))){
 			$this->print($_POST["sku"]);
 			$re=["result"=>true,"message_error"=>""];	
-			header('Content-type: application/json');
+			//header('Content-type: application/json');
 		}else if(isset($_POST["b"])&&$_POST["b"]=="print_ret"
 			&&(isset($_POST["sku"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["sku"]))){
 			$this->retPrint($_POST["sku"]);
@@ -217,7 +218,7 @@ class bill58 extends main{
 		header('Content-type: application/json');
 		echo json_encode($re);
 	}
-	protected function createImgTest(int $font_n=0){
+	protected function createImgTest(int $font_n){
 		$fontfile=$this->font_file;
 		$fontsize=$this->font_size;
 		$zx=($font_n==0)?1.5:1;
@@ -308,8 +309,8 @@ class bill58 extends main{
 		try {
 			if($this->checkNP("exists")){
 				if($this->checkNP("writable")){
-			$logo=EscposImage::load("img/logo.png");			
-					$printer =	new Printer($this->fnConect()) ;//;new Printer(new FilePrintConnector($this->usb));
+					$logo=EscposImage::load("img/logo.png");			
+					$printer =	new Printer($this->fnConect()) ;
 					$this->printLogo($printer);
 					$foo = new GdEscposImage();
 					$tm0=$this->setTm0($billid);
@@ -332,16 +333,14 @@ class bill58 extends main{
 		header('Content-type: application/json');
 		echo json_encode($re);
 	}
-	protected function viewBill(string $billid=""){
+	protected function viewBill(string $billid){
 		$tm0=$this->setTm0($billid);
 		$im=$this->createImg($tm0,"view");
 		header('Content-Type: image/png');
 		imagepng($im);
 		imagedestroy($im);
 	}
-	protected function createImg(array $tm,string $type=null,int $font_size=null,string $font_family=null){
-		if(!is_null($font_size)){$this->font_size=$font_size;}
-		if(!is_null($font_family)){$this->font_size=$font_family;}
+	protected function createImg(array $tm){
 		$xy=imagettfbbox($this->font_size, 0, $this->font_file,"กูกี่"); //$v."กูกี่"
 		$ht=$xy[1]-$xy[7];
 		$this->bill_height=$ht*count($tm)+$ht/3;
@@ -456,7 +455,7 @@ class bill58 extends main{
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	private function viewRet(string $sku){
 		$tm0=$this->retSetTm0($sku);
-		$im=$this->createImg($tm0,"view");
+		$im=$this->createImg($tm0);
 		header('Content-Type: image/png');
 		imagepng($im);
 		imagedestroy($im);
@@ -532,12 +531,12 @@ class bill58 extends main{
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	private function viewmmm(string $sku){
 		$tm0=$this->mmmSetTm0($sku);
-		$im=$this->createImg($tm0,"view");
+		$im=$this->createImg($tm0);
 		header('Content-Type: image/png');
 		imagepng($im);
 		imagedestroy($im);
 	}
-	private function mmmCreateImg(array $tm,string $type=null){
+	private function mmmCreateImg(array $tm){
 		$xy=imagettfbbox($this->font_size, 0, $this->font_file,"กูกี่"); //$v."กูกี่"
 		$ht=$xy[1]-$xy[7];
 		$this->bill_height=$ht*count($tm);

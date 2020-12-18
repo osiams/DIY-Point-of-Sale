@@ -83,10 +83,10 @@ imagealphablending($im,true);
 		imagesavealpha($im,true);
 		return $im;
 	}
-	public function createImgLabel($name=NULL,$barcode=NULL,$price=NULL,$unit,int $font_size2=17){
+	public function createImgLabel(string $name,string $barcode,string $price,string $unit,int $font_size2){
 		$name=" ".$name;
 		$unit="/ ".$unit;
-		$arrowtop=3;
+		$arrowtop=0;
 		$arrowwidth=24;
 		$arrowheight=24;
 		$width=384;
@@ -127,20 +127,22 @@ imagealphablending($im,true);
 			}
 		}
 		imagettftext($im,$fontsize,0,0,145+$texbchi,$black,$this->font,$barcode);
-		$xy=imagettfbbox($fontsize, 0, $this->font,"กี้รู");
+		$xy=imagettfbbox($fontsize, 0, $this->font,"กีรู");
 		$w=$xy[2]-$xy[0]+$arrowwidth;
 		$h=$xy[1]-$xy[7];
 
+
 		$margintop=0;
+		$dif_h_ar=($arrowheight>$h)?$arrowheight-$h:0;
 		
 		if(isset($textarr[1])){
 			imagefilledrectangle($im,0, $h,384,$h+$margintop+$h+$h-($h/2), $white);
-			imagettftext($im,$fontsize,0,0,$h+$margintop+$h-5, $black,$this->font,$textarr[1]);
+			imagettftext($im,$fontsize,0,0,$h+$margintop+$h+$dif_h_ar, $black,$this->font,$textarr[1]);
 		}	
 		imagefilledrectangle($im,0, 0,384,$h+$margintop, $white);
 		$values=$this->drawArrow($arrowtop);
 		imagefilledpolygon($im, $values, 7, $black);	
-		imagettftext($im,$fontsize,0,$arrowwidth,$h-10, $black,$this->font,$textarr[0]);
+		imagettftext($im,$fontsize,0,$arrowwidth,$h+$dif_h_ar, $black,$this->font,$textarr[0]);
 
 		//----ราคา
 		$textprice=(string)$price;
