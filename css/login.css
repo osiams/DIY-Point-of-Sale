@@ -1,0 +1,23 @@
+.rtyu{;padding:10px;color:#f9a148;font-size:50px;text-align:center;font-weight:bold;text-shadow: -1px 0 #888888, 0 1px #888888, 1px 0 #888888, 0 -1px #888888;}
+.lcr0{color:Red}
+.lcr1{color:CornflowerBlue}
+.lcr2{color:Chocolate}
+.lcr3{color:Chartreuse}
+.lcr4{color:DodgerBlue}
+.lcr5{color:LawnGreen}
+.lcr6{color:Yellow}
+.lcr7{color:HotPink}
+.lcr8{color:RebeccaPurple}
+.lcr9{color:Orange}
+.pgso{font-size:25px;color:black}
+.login > .div_head{background-color:#666666;color:#ffffff;}
+@media screen and (max-width: 640px) {
+.rtyu{font-size:35px;}
+.pgso{font-size:20px;color:black}
+}
+.ranbg{background-color:white;animation-name:ranbg;animation-duration:10s;animation-iteration-count:infinite;}
+@keyframes ranbg {
+	0%   {background-color:#eeeeee}
+	50%   {background-color:#bbbbbb}
+	100%   {background-color:#eeeeee}
+}

@@ -1,0 +1,53 @@
+<?php
+declare(strict_types=1);
+try{
+	require_once("config.php");			
+}catch(Error $e){
+	define("ERROR",["file"=>$e->getFile (),"message"=>$e->getMessage(),"line"=>$e->getLine()]);
+	require_once("config.bak.php");
+}
+require_once("php/main.php");
+session_start();
+function home():void{
+	require_once("php/home.php");
+	(new home)->run();
+}
+if(isset($_SESSION["login"])){
+	if(!$_SESSION["cookie"]){
+		$_SESSION["cookie"]=true;
+		$d=["sku_root"=>$_SESSION["sku_root"],
+			"name"=>$_SESSION["name"]." ".$_SESSION["lastname"],
+			"logintime"=>time(),
+		];
+		$value=json_encode($d);
+		setcookie("ud", $value,  ["samesite" =>"Lax"]);
+	}
+	if(isset($_GET["a"])){
+		$c=$_GET["a"];
+		if(in_array($c, CF["a"])){
+			if(main::oa($c)){
+				require_once("php/".$c.".php");
+				(new $c)->run();
+			}else{
+				home();
+			}
+		}else{
+			if($_GET["a"]=="login"){
+				if(isset($_POST["logout"])){
+					if($_POST["logout"]=="logout"){
+						require_once("php/login.php");
+						(new login)->logout();
+						exit();
+					}
+				}
+			}
+			home();
+		}
+	}else{
+		home();
+	}
+}else{
+	require_once("php/login.php");
+	(new login)->run();
+}
+?>

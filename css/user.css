@@ -1,0 +1,12 @@
+td{vertical-align: middle;}
+#user  tr > td:nth-child(3) > div:nth-child(2){display:none;font-size:12px;color:blue;text-align:right;padding-right:5px;}
+#user  tr > td:nth-child(5) > div:nth-child(2){display:none;font-size:12px;color:gray555;text-align:right;padding-right:5px;}
+
+@media screen and (max-width: 640px) {
+#user  tr > th:nth-child(2){display:none;}
+#user  tr > td:nth-child(2){display:none;}
+#user  tr > th:nth-child(4){display:none;}
+#user  tr > td:nth-child(4){display:none;}
+#user  tr > td:nth-child(3) > div:nth-child(2){display:block;}
+#user  tr > td:nth-child(5) > div:nth-child(2){display:block;}
+}

@@ -1,0 +1,39 @@
+{
+	"font_0":"/usr/share/fonts/truetype/tlwg/Laksaman-Bold.ttf",
+	"font_1":"/usr/share/fonts/truetype/tlwg/Laksaman-Bold.ttf",
+	"font_0_size":18,
+	"font_1_size":18,
+	"printer_0":{
+		"status":1,
+		"name":"เครื่องพิมพ์ปริยาย 58มม. USB",
+		"width":58,
+		"address":"/dev/usb_1",
+		"cut":0,
+		"pulse":0,
+		"feed":2,
+		"_ucda":"",
+		"_ucdp":0
+	},
+	"printer_1":{
+		"status":1,
+		"name":"เครื่องพิมพ์ WIFI",
+		"width":58,
+		"address":"192.168.1.99:9100",
+		"cut":1,
+		"pulse":1,
+		"feed":0,	
+		"_ucda":"",
+		"_ucdp":0
+	},
+	"printer_2":{
+		"status":1,
+		"name":"เครื่องพิมพ์ USBLP0",
+		"width":58,
+		"address":"/dev/usb_3",
+		"cut":1,
+		"pulse":1,
+		"feed":0,	
+		"_ucda":"",
+		"_ucdp":0
+	}
+}
