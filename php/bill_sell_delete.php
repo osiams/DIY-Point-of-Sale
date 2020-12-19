@@ -134,7 +134,7 @@ class bill_sell_delete extends bills{
 			$se["result"]=0;
 			$se["message_error"]=$se["data"]["result"][0]["message_error"];
 		}
-		print_r($se);
+		//print_r($se);
 		return $se;
 	}
 	
