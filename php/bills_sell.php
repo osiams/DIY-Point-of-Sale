@@ -48,7 +48,7 @@ class bills_sell extends bills{
 		}
 	}
 	private function writeContentpageView(array $head,array $list):void{
-		print_r($head);
+		//print_r($head);
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
 		echo '<div class="content">
 			<h2 class="c">ใบเสร็จเลขที่ '.$head["sku"].'</h2>
