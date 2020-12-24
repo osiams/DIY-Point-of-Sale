@@ -9,7 +9,7 @@ class sell extends main{
 		if(isset($_GET["b"])&&in_array($_GET["b"],$q)){
 			$this->sendSt();
 		}else{
-			$this->pageHead(["title"=>"ขายสินค้า DIYPOS","js"=>["sell","S"],"run"=>["S"],"css"=>["sell"]]);
+			$this->pageHead(["title"=>"ขายสินค้า DIYPOS","js"=>["sell","S","sellcd","SCD"],"run"=>["S","SCD"],"css"=>["sell"]]);
 			$this->pageFoot();
 		}
 	}

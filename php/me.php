@@ -18,7 +18,7 @@ class me extends main{
 	private function editMe():void{
 		$error="";
 		$_POST["sku_root"]=$_SESSION["sku_root"];
-		if(isset($_POST["submith"])&&$_POST["submith"]=="clicksubmit"&&isset($_POST["ps"])){
+		if(isset($_POST["submith"])&&$_POST["submith"]=="clicksubmit"&&isset($_POST["ps"])&&$_SESSION["sku_root"]!="systemroot"){
 			$_POST["password"]=(isset($_POST["ps1"])&&strlen(trim($_POST["ps1"]))>0)?$_POST["ps1"]:"00000000";
 			$se=$this->checkSet("user",["post"=>["name","lastname","email","sku_root","password"]],"post");
 			if(!$se["result"]){
@@ -108,32 +108,39 @@ class me extends main{
 		$userceo=$_SESSION["userceo"];
 		$this->addDir("","แก้ไข ฉัน");
 		$this->pageHead(["title"=>"ฉัน DIYPOS","js"=>["me","Me"]]);
+		$pem=true;
+		$dis="";
 		echo '<div class="content">
 			<div class="form">
 				<h2 class="c">แก้ไข ฉัน</h2>';
 		if($error!=""){
 			echo '<div class="error">'.$error.'</div>';
-		}		
+		}	
+		if($_SESSION["sku_root"]=="systemroot"){
+			$pem=false;
+			$dis=' disabled="disabled"';
+			echo '<div class="warning">[[SYSTEM]] คือผู้ใช้ที่ระบบสร้างขึ้นมาเฉพาะ ไม่สามารถแก้ไขได้</div>';
+		}	
 		echo '		<form name="me" method="post" action="">
 					<input type="hidden" name="submith" value="clicksubmit" />
 					<input type="hidden" name="ps" value="" />
 					<input type="hidden" name="logout" value="" />
 					<p><label for="me_name">ชื่อ</label></p>
-					<div><input id="me_name" name="name" class="want" type="text" value="'.$name.'" autocomplete="off" /></div>
+					<div><input id="me_name" name="name" class="want" type="text" value="'.$name.'"'.$dis.' autocomplete="off" /></div>
 					<p><label for="me_lastname">นามสกุล</label></p>
-					<div><input  id="me_lastname" type="text" name="lastname" value="'.$lastname.'" autocomplete="off" /></div>
+					<div><input  id="me_lastname" type="text" name="lastname" value="'.$lastname.'"'.$dis.' autocomplete="off" /></div>
 					<p><label for="me_sku" >รหัสภายใน</label></p>
 					<div><input id="me_sku" name="sku"  type="text"  value="'.$sku.'" autocomplete="off"  disabled="disabled" /></div>
 					<p><label for="me_email">อีเมล</label></p>
-					<div><input id="me_email" name="email" class="want" type="text"  value="'.$email.'" autocomplete="off" /></div>
+					<div><input id="me_email" name="email" class="want" type="text"  value="'.$email.'"'.$dis.' autocomplete="off" /></div>
 					<p><label for="me_userceo">ระดับ</label></p>
-					<div><input  id="me_userceo" type="text" name="userceo" value="'.CF["userceo"][$userceo]["name"].'" readonly="readonly"   disabled="disabled" /></div>
+					<div><input  id="me_userceo" type="text" name="userceo" value="'.$this->cf["userceo"][$userceo]["name"].'" readonly="readonly"   disabled="disabled" /></div>
 					<p><label for="me_ps1">รหัสผ่านใหม่</label></p>
-					<div><input id="me_ps1" type="password" value=""  name="ps1"  autocomplete="off" /></div>
+					<div><input id="me_ps1" type="password" value=""  name="ps1"  autocomplete="off"'.$dis.' /></div>
 					<p><label for="me_ps2">รหัสผ่านใหม่อีกครั้ง</label></p>
-					<div><input id="me_ps2" type="password" value=""  name="ps2"  autocomplete="off" /></div>
+					<div><input id="me_ps2" type="password" value=""  name="ps2"  autocomplete="off"'.$dis.' /></div>
 					<br />
-					<input type="button" name="ok" onclick="G.meSubmit()" value="แก้ไข" /> <input type="button" name="logoubt" onclick="G.logout()" value="ออกจากระบบ" />
+					<input type="button" name="ok" onclick="G.meSubmit()" value="แก้ไข"'.$dis.' /> <input type="button" name="logoubt" onclick="G.logout()" value="ออกจากระบบ" />
 				</form>
 			
 			</div>
