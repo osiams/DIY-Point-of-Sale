@@ -86,7 +86,6 @@ class setting extends main{
 		}
 	}
 	printTestError(re,form,bt){
-		alert(re)
-		alert("❌ เกิดข้อผิดพลาดww "+re["message_error"])
+		alert("❌ เกิดข้อผิดพลาด  "+re["message_error"])
 	}
 }

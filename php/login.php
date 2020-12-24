@@ -89,10 +89,10 @@ class login extends main{
 		$nm=htmlspecialchars($this->shop->name);
 		$nm=str_replace("\\","\\\\",$nm);
 		$nm=str_replace('&quot;','\"',$nm);
-		echo '<div class="rtyu">
+		echo '<table class="login_vh"><tr class="trh"><td class="ranbg"><div><div class="rtyu">
 				<div id="trb"></div>
 				<script type="text/javascript">
-					M.b.classList.add("ranbg")
+					//M.b.classList.add("ranbg")
 					let shop="'.$nm.'"
 					let t=""
 					for(let i=0;i<shop.length;i++){
@@ -130,7 +130,7 @@ class login extends main{
 				</div><br />
 				</form>
 				</div>
-				</div>';
+				</div></div></td></tr></table>';
 		$this->pageFoot();
 	}
 }

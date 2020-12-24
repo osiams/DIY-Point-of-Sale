@@ -108,12 +108,16 @@ class install extends main{
 				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`name`='ไม่ระบุ';
 			";
 			$pw=password_hash("12345678", PASSWORD_DEFAULT);
-			$sql["default_user"]="
+			$sql["default_user"]="BEGIN NOT ATOMIC
 				INSERT INTO `user` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`lastname`,`email`,`password`,`userceo`) 
 				VALUES (1,'0000001','administratorroot','administratorroot','ดู อิท','ยัวร์เซล์ฟ','admin@diy.pos','".$pw."','9') 
 				ON DUPLICATE KEY UPDATE `sku`='0000001',`sku_key`='administratorroot',`sku_root`='administratorroot',`name`='ดู อิท',
 					`lastname`='ยัวร์เซล์ฟ',`email`='admin@diy.pos',`password`='".$pw."',`userceo`='9';
-			";
+				INSERT INTO `user` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`lastname`,`email`,`password`,`userceo`) 
+				VALUES (2,'0000002','systemroot','systemroot','[[SYSTEM]]','','system@diy.pos','".$pw."','0') 
+				ON DUPLICATE KEY UPDATE `sku`='0000002',`sku_key`='systemroot',`sku_root`='systemroot',`name`='[[SYSTEM]]',
+					`lastname`='',`email`='system@diy.pos',`password`='".$pw."',`userceo`='0';
+			END;";
 			$sql["default_it"]="BEGIN NOT ATOMIC 
 				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (1,'default','defaultroot','defaultroot','_ไม่ระบุ','ไม่ระบุ') 
 				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`name`='_ไม่ระบุ',`note`='ไม่ระบุ';
@@ -132,13 +136,14 @@ class install extends main{
 			";
 			$sql["ref_unit"]=$this->ref("unit","sku_key","defaultroot");
 			$sql["ref_user"]=$this->ref("user","sku_key","administratorroot");
+			$sql["ref_user"]=$this->ref("user","sku_key","systemroot");
 			$sql["ref_it1"]=$this->ref("it","sku_key","defaultroot");
 			$sql["ref_it2"]=$this->ref("it","sku_key","proot");
 			$sql["ref_it3"]=$this->ref("it","sku_key","xroot");
 			$sql["ref_it4"]=$this->ref("it","sku_key","droot");
 			$sql["ref_it5"]=$this->ref("it","sku_key","eroot");
 			$se=$this->metMnSql($sql,[]);
-			//print_r($se);
+			print_r($se);
 			if(!$se["result"]){
 				$re["result"]=false;
 				$re["message_error"]=$se["message_error"];

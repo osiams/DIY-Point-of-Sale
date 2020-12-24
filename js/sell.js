@@ -30,6 +30,7 @@ class sell extends main{
 		this.scs=0
 		this.sce=1000
 		this.st=null
+		this.sellcon={"n_list":0,"sum":0,"skurootlast":null,"n_before":0,"n_now":0,"n_last":0,}
 	}
 	run(){
 		this.writeContent()
@@ -113,12 +114,15 @@ class sell extends main{
 			if(!this.dt.hasOwnProperty(sku_root)){
 				let re=this.insertList2Dt(sku_root,n)
 				if(re){
+					this.sellcon.n_last=n
 					this.insertNewList(sku_root)
 					this.sums()
 					this.setLast(sku_root)
 					this.id(this.dpro).scrollTo({ top: this.id(this.dpro).scrollHeight,left:0,behavior: "smooth"})
 				}
 			}else{
+				this.sellcon.n_before=this.dt[sku_root]["n"]
+				this.sellcon.n_last=n
 				let re=this.updateList2Dt(sku_root,n)
 				if(re){
 					this.updateNewList(sku_root)
@@ -384,11 +388,18 @@ class sell extends main{
 		}else{
 			this.dlast.innerHTML=`ล่าสุด:#${at}  ${name} ลด ${last} กลายเป็น ${n}`
 		}
+		this.sellcon.skurootlast=sku_root
+		this.sellcon.sum=parseFloat(this.dsums.innerHTML)
+		this.sellcon.n_now=n
+		SCD.con(this.sellcon)
 	}
 	setLastDelete(ob){
 		let at=ob.at
 		let name=this.pd[ob.sku_root]["name"]
 		this.dlast.innerHTML=`ล่าสุด:ลบ #${at}  ${name}`
+		this.sellcon.skurootlast=ob.sku_root
+		this.sellcon.n_now=0
+		SCD.con(this.sellcon)
 	}
 	sums(type="set"){
 		let sums=0;
@@ -397,6 +408,7 @@ class sell extends main{
 			n_list+=1
 			sums+=this.pd[k]["price"]*this.dt[k]["n"]
 		}
+		this.sellcon.n_list=n_list
 		if(type=="set"){
 			this.dsums.innerHTML=this.nb(sums)
 			this.spnlist.innerHTML="["+n_list+"]"

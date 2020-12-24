@@ -1,9 +1,12 @@
 <?php
 class main{
 	private $re;
+	protected int $user_ceo;
 	public function __construct(){
 		date_default_timezone_set ("Asia/Bangkok" );
-		$this->cf=["server"=>CF["server"],"database"=>CF["database"],"user"=>CF["user"],"password"=>CF["password"]];
+		$this->cf=["server"=>CF["server"],"database"=>CF["database"],"user"=>CF["user"],"password"=>CF["password"],"userceo"=>CF["userceo"]];
+		$this->pem=PEM;
+		$this->user_ceo=isset($_SESSION["userceo"])?$_SESSION["userceo"]:-1;
 		$this->re=[
 			"connect"=>false,
 			"connect_error"=>"",
