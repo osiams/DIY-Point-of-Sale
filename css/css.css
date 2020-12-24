@@ -15,6 +15,7 @@ textarea{font-size:14px;padding:3px;border:1px solid #bbbbbb;border-radius: 3px 
 input:focus,textarea:focus{border:1px solid blue;box-shadow: 0px 3px 15px blue;}
 input[type="button"]:active{animation-name:bttive;animation-duration:0.5s;animation-iteration-count:1; }
 input[type="button"]:hover{background-color:#aaaaaa;}
+button{font-family:var(--font-family-input);font-size:var(--font-size-input);height:32px;padding:3px 20px;border:1px solid #bbbbbb;border-radius: 3px 3px 3px 3px;background-color:#d5d5d5;color:black;margin:1px;}
 select{height:32px}
 iframe{border:0px;}
 table{background-color:#dddddd;border-spacing:1px;margin:0 auto;}
@@ -89,6 +90,10 @@ div.setting > textarea{height:300px;}
 .want{background-color:Gold;}
 .error{background-color:FireBrick;border:2px solid DarkKhaki ;color:#eeeeee;padding:5px;}
 .warning{background-color:Khaki;border:2px solid DarkKhaki ;color:#333333;padding:5px;}
+.success{background-color:LightGreen;border:2px solid DarkKhaki ;color:#333333;padding:5px;}
+.error:before {content: "❌️ ";}
+.warning:before {content: "⚠️️ ";}
+.success:before {content: "✔️ ";}
 
 td > div > a > span.pin{display:block;text-indent: 20px;color:darkgoldenrod}
 

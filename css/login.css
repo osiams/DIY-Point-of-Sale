@@ -1,4 +1,6 @@
-.rtyu{;padding:10px;color:#f9a148;font-size:50px;text-align:center;font-weight:bold;text-shadow: -1px 0 #888888, 0 1px #888888, 1px 0 #888888, 0 -1px #888888;}
+.login_vh{width:100%;height:100%; background-color:transparent}
+.login_vh  tr{background-color: transparent}
+.rtyu{padding:10px;color:#f9a148;font-size:50px;text-align:center;font-weight:bold;text-shadow: -1px 0 #888888, 0 1px #888888, 1px 0 #888888, 0 -1px #888888;}
 .lcr0{color:Red}
 .lcr1{color:CornflowerBlue}
 .lcr2{color:Chocolate}
