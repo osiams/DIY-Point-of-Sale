@@ -5,12 +5,16 @@ define("CF", [
 	"a"=>["product","unit","fetch","me","user","setting","bills","sell","barcode","bill58","ret","it","day","qrc","cd"],
 #้ข้อมูลการเชื่อมต่อกับ ฐานข้อมูล MariaDB
 	"server"=>"127.0.0.1",
-	"database"=>"diypos_0.0",
-	"user"=>"diypos",		
-	"password"=>"mr12345678",	
+	"database"=>"diypos_0.1",
+	"user"=>"",		
+	"password"=>"",	
 #http port ต้องตรงกับในไฟล์ httpd.conf
 	"http_port"=>80,
 	"https_port"=>443,
+#websocket host ,port 
+	"ws_host" => "0.0.0.0",
+	"ws_port" => 9000,	
+#List of Supported Timezones @https://www.php.net/manual/en/timezones.php	
 #เวลาที่เครื่องเซิฟเวอร์	
 	"timezone"=>"Asia/Bangkok",
 #ตำแหน่งผู้ใช้ ลำดับตามบรรทัดมี 10 ระดับเท่านั้น
