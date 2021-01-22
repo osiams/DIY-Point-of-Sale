@@ -30,7 +30,9 @@ class sell extends main{
 		this.scs=0
 		this.sce=1000
 		this.st=null
-		this.sellcon={"n_list":0,"sum":0,"skurootlast":null,"n_before":0,"n_now":0,"n_last":0,}
+		this.sellcon={"n_unit":0,"n_list":0,"sum":0,"skurootlast":null,"n_before":0,"n_now":0,"n_last":0,}
+		this.ip=""
+		this.mykey=""
 	}
 	run(){
 		this.writeContent()
@@ -45,6 +47,61 @@ class sell extends main{
 		window.addEventListener("keydown",S.kb)
 		window.addEventListener("keyup",S.kb)
 		window.addEventListener('fullscreenchange',S.fullScreenChange)
+		
+	}
+	wsRegis(){
+		if(Ws.ws.readyState == 1){
+			if(Ws.mykey == ""){
+				Ws.mykey =this.ip
+				Ws.myoto = "S"
+				let data = {"command":"","name":this.ip,"type":"regis","_oto":"S"}
+				Ws.send([],data)
+			}
+		}else{
+			setTimeout("S.wsRegis()",50)
+		}
+	}
+	onMessage(data){
+		if(data.command == "now"){
+			let dt = {}
+			dt["_oto"] = "Cd"
+			dt["command"] = "now"
+			dt["type"] = "message"
+			this.sellcon.n_unit = this.getNUnit()
+			dt["message"] = this.sellcon
+			Ws.send([],dt)
+		}
+		//alert(JSON.stringify(data)+"555+")
+	}
+	send2cd(data_jsn){
+		let data = {}
+		data["type"] = "message"		
+		data["_oto"] = "Cd"		
+		if(data_jsn["command"] != undefined){
+			if(data_jsn["command"] == "success"){
+				for(let prop in data_jsn){
+					data[prop] = data_jsn[prop]
+					
+				}
+			}
+		}else{
+			data_jsn["n_unit"] = this.getNUnit()
+			let k = data_jsn["skurootlast"]
+			data["command"] = "sell"
+			data_jsn["name"] = (this.pd[k] != undefined)?this.pd[k]["name"]:""
+			data_jsn["barcode"] = (this.pd[k] != undefined)?this.pd[k]["barcode"]:""
+			data_jsn["price"] = (this.pd[k] != undefined)?this.pd[k]["price"]:""
+			data_jsn["unit"] = (this.pd[k] != undefined)?this.pd[k]["unit_name"]:""
+			data["message"] = data_jsn
+		}
+		Ws.send([],data)		
+	}
+	getNUnit(){
+		let n_unit = 0
+		for (let prop in this.dt){
+			n_unit += this.dt[prop].n
+		}
+		return 	n_unit
 	}
 	writeContent(){
 		let ct=this.ce("div",{"id":"sell"})
@@ -101,16 +158,12 @@ class sell extends main{
 		this.thmSet("load")
 	}
 	insertList(bc,n=null){
-		//M.l(bc+"="+n)
-		//M.l(this.fl)
-		if(!this.fl.hasOwnProperty(bc)){M.l(bc+"==="+n)
+		if(!this.fl.hasOwnProperty(bc)){
 			this.getPdFromServer("barcode",bc)
 		}else if(this.idn.value*1!=0){
-			//M.l(bc+"="+n)
 			n=(n!==null)?n:this.idn.value*1
 			this.setdateNow()
 			let sku_root=this.fl[bc]
-			
 			if(!this.dt.hasOwnProperty(sku_root)){
 				let re=this.insertList2Dt(sku_root,n)
 				if(re){
@@ -137,6 +190,7 @@ class sell extends main{
 			}
 			this.setSt("open")
 			this.setItemSt(sku_root)
+			//alert(this.pd[sku_root].name+"="+n+" sum "+JSON.stringify(this.sums("get")))
 		}else{
 			this.idn.value="+1"
 		}
@@ -377,7 +431,7 @@ class sell extends main{
 		let d=this.id(sku_root)
 		d.parentNode.removeChild(d);
 	}
-	setLast(sku_root){
+	setLast(sku_root){	//--สินค้าล่าสุด การเปลี่ยนแปลง สินค้ายังอยู่ในรายการขาย
 		let d=this.id(sku_root)
 		let at=d.childNodes[0].innerHTML
 		let name=this.pd[sku_root]["name"]
@@ -389,17 +443,18 @@ class sell extends main{
 			this.dlast.innerHTML=`ล่าสุด:#${at}  ${name} ลด ${last} กลายเป็น ${n}`
 		}
 		this.sellcon.skurootlast=sku_root
-		this.sellcon.sum=parseFloat(this.dsums.innerHTML)
+		this.sellcon.sum=this.dsums.innerHTML
 		this.sellcon.n_now=n
-		SCD.con(this.sellcon)
+		this.send2cd(this.sellcon)
 	}
-	setLastDelete(ob){
+	setLastDelete(ob){	//--สินค้าล่าสุด การเปลี่ยนแปลง สินค้าไม่อยู่ในรายการแล้ว
 		let at=ob.at
 		let name=this.pd[ob.sku_root]["name"]
 		this.dlast.innerHTML=`ล่าสุด:ลบ #${at}  ${name}`
 		this.sellcon.skurootlast=ob.sku_root
 		this.sellcon.n_now=0
-		SCD.con(this.sellcon)
+		this.sellcon.sum=this.dsums.innerHTML
+		this.send2cd(this.sellcon)
 	}
 	sums(type="set"){
 		let sums=0;
@@ -589,6 +644,17 @@ class sell extends main{
 		this.clearItemStList()
 		this.setiplus()
 		this.datenow=null
+		this.clearSellCon()
+		this.send2cd(this.sellcon)
+	}
+	clearSellCon(){
+		this.sellcon["sn_unit"] = 0
+		this.sellcon["n_list"] = 0
+		this.sellcon["skurootlast"] = ""
+		this.sellcon["sum"] = 0
+		this.sellcon["n_before"] = 0
+		this.sellcon["n_now"] = 0
+		this.sellcon["n_last"] = 0		
 	}
 	clearSellList(did,confem=null,at,tm){
 		if(confem==null){
@@ -650,7 +716,6 @@ class sell extends main{
 	}
 	successResult(re,form,bt){
 		if(re["result"]){
-			S.clearSellOk()
 			let id=re.billid
 			let s=form.get("sum")*1
 			let g=form.get("get")*1
@@ -660,7 +725,11 @@ class sell extends main{
 			formData.append("b","print")	
 			formData.append("sku",id)	
 			M.fec("POST","",S.printResult,S.printError,null,formData)
+			let data = {"command":"success","get":M.nb(g),"change":M.nb(g-s)}
+			S.send2cd(data)
+			
 			alert("✅ สำเร็จ บันทึกรายการเรียบร้อย\nรับมา  \t "+M.nb(g)+"\tบาท\nเงินทอน\t "+M.nb(g-s)+"\tบาท")
+			S.clearSellOk()
 		}else{
 			S.successError(re,form,bt)
 		}

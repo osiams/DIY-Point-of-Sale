@@ -479,6 +479,8 @@ class gpu extends main {
 		let ct=this.ce("div",{})
 			let p=this.ce("p",{"class":"s14"})
 			this.end(p,[this.cn("สวัสดีคุณ "+M.gck("ud","name"))])
+			let pip=this.ce("p",{"class":"s14"})
+			this.end(pip,[this.cn("IP เตรื่องขายนี้  "+S.ip)])
 			let tem=this.ce("select",{"onchange":"S.thm(this)"})
 				let op1=this.ce("option",{"value":"black"})
 				let op2=this.ce("option",{"value":"gray"})
@@ -497,7 +499,7 @@ class gpu extends main {
 				let bthome=this.ce("input",{"type":"button","value":"ออกจากหน้านี้","onclick":"location.href='index.php'"})
 				let btout=this.ce("input",{"type":"button","value":"ออกจากระบบ","onclick":"location.href='index.php?a=me'"})
 			this.end(db,[bthome,btout])
-		this.end(ct,[p,tem,help,db])
+		this.end(ct,[p,pip,tem,help,db])
 		for(let i=0;i<tem.length;i++){
 			if(tem[i].value==thm){
 				tem[i].setAttribute("selected","selected")
