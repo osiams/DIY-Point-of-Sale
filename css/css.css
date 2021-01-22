@@ -1,7 +1,7 @@
 @charset "utf-8";
 :root{--font-family-body:tahoma,sans;--font-size-body:15px;--font-family-input:tahoma,sans;--font-size-input:15px;}
 html{height:100%;}
-body{font-family:var(--font-family-body);font-size:var(--font-size-body);margin:0px;height:100%;background-color:#fafafa;height:100%;}
+body{font-family:var(--font-family-body);font-size:var(--font-size-body);margin:0px;height:100%;background-color:#fafafa;}
 p,h1,h2{margin:0px auto;}
 a{text-decoration: none;color:rgb(45, 89, 134);cursor:pointer;font-size:var(--font-size-body)}
 a:hover{text-decoration: underline;}
@@ -75,7 +75,7 @@ form >  fieldset  >  div{direction:ltr;text-align:left;}
 .q{background-color:DeepSkyBlue;display:inline-block;width:16px;height:16px;text-align:center;line-height:16px;border-radius: 8px 8px 8px 8px;font-size:11px;cursor:pointer;color:black}
 .qbox{font-size:12px;text-align:left;white-space: pre-wrap;}
 .none{display:none;color:red}
-.bghome{background-image: url("../img/pos/bg.jpg");background-position: right bottom;background-repeat: no-repeat;}
+.bghome{}
 div.setting{padding:2px 5px 2px 2px;white-space: nowrap;}
 div.setting > textarea{height:300px;}
 .avatar{float:right;display:inline-block;white-space: nowrap;padding:1px 5px;}
