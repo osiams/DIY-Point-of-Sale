@@ -143,7 +143,7 @@ class install extends main{
 			$sql["ref_it4"]=$this->ref("it","sku_key","droot");
 			$sql["ref_it5"]=$this->ref("it","sku_key","eroot");
 			$se=$this->metMnSql($sql,[]);
-			print_r($se);
+			//print_r($se);
 			if(!$se["result"]){
 				$re["result"]=false;
 				$re["message_error"]=$se["message_error"];
