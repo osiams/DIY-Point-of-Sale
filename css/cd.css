@@ -1,0 +1,89 @@
+#cd_display{display:grid;grid-template-rows:30px auto 30px;background-color:Silver;padding:0px;
+	overflow:hidden;position:absolute;bottom:0px;right:0px;z-index:2;width:0%;height:0%;user-select: none;
+	transition-duration:0.3s;}
+	#cdlogousercd{display: grid;grid-template-columns:auto 360px;background-color:#333333;color:white}
+		#cdlogo{display: grid;align-content: center;padding: 0px 5px;font-size:18px;text-shadow: 1px 1px 0px white;font-weight:bold;}
+		#cdlogo > span{display:inline-block;}
+		#cdusercd{display: grid;grid-template-columns:auto auto;background-color:transparent;align-content: center;padding: 0px 5px;color:white;font-size:18px;}
+			#cduser:before {content: "ผู้ขาย:";}
+			#cdcd:before {content: "ลูกค้า:";}
+	#divvdo_out{display:grid;grid-template-columns:auto 360px;grid-template-rows:100%;/*justify-content: center;align-content: center;*/background-color:red;overflow:hidden;height:100%;}
+		#divvdo{display:block}
+			video{height:100%;width:100%;background-color:black;}
+		#cdlistsell{display:grid;grid-template-rows:auto 90px;background-color:white;height:100%;overflow:hidden;grid-gap:10px;}
+			#cdlistitem{display:grid;padding:5px;overflow-y:auto;overflow-x:hidden;font-size:30px;background-color:GhostWhite;height:100%;align-content: start;}
+				#cdlistitem >div{border-top:1px dashed DimGrey;margin-top:0px;padding-top:3px;animation-duration:2s;box-shadow:0px -150px 150px 30px white;}
+				#cdlistitem >div.add{animation-name:add;animation-duration:5s;animation-iteration-count:1;}
+				#cdlistitem >div.minus{animation-name:minus;animation-duration:5s;animation-iteration-count:1;}
+				#cdlistitem span.add{color:white;background-color:green;border-radius: 25px 25px 25px 25px;padding:0px 8px;border:1px solid gray;font-weight:bold;margin-right:3px;}
+				#cdlistitem span.add:before {content: "+";}
+				#cdlistitem span.minus{color:white;background-color:red;border-radius: 25px 25px 25px 25px;padding:0px 8px;border:1px solid gray;font-weight:bold;margin-right:3px;}
+				#cdlistitem span.minus:before {content: "-"}
+				#cdlistitem span.pdbarcode{font-size:20px;color:DimGrey}
+				#cdlistitem span.pdbarcode:before {content: "🏷️"}
+				#cdlistitem span.pdprice{font-size:20px;background-color:blue;color:white;border-radius: 8px 8px 8px 8px;padding:3px 5px;margin:0px 5px;}
+				#cdlistitem span.pdprice:before {content: "฿"}
+				#cdlistitem span.pdunit{font-size:20px;color:DimGrey}
+				#cdlistitem span.pdunit:before {content: "/"}
+			#cdpricetotal{display:grid;grid-template-rows:40px 50px;background-color:Silver;height:90px;position: sticky;bottom:0px}
+				#cdprice{display:grid;font-size:20px;justify-content: center;align-content: center;background-color:Gainsboro;height:100%;}
+					#cd_nlist{font-size:25px;font-weight:bold;}
+					#cd_nunit{font-size:25px;font-weight:bold}
+				#cdtotal{display:grid;font-size:20px;justify-content: center;align-content: center;height:100%}
+					#cd_sum{font-size:40px;font-weight:bold;text-shadow: 2px 2px 2px white;}
+					.idotf{font-size:20px;font-weight:bold}
+					#cd_sum_float{font-size:20px;font-weight:bold}
+	#cdstat{background-color:#333333;display: grid;grid-template-columns:auto auto;align-content: center;padding: 0px 5px;color:white;font-size:18px;}		
+
+#cd_empty{display:grid;height:100%;width:100%;visibility:hidden;position:absolute;top:0px;left:0px;z-index:3;background-color:black;}
+
+#thankyou{display:grid;align-content: center;justify-content: center;height:100%;width:100%;visibility:hidden;position:absolute;top:0px;left:0px;z-index:4;background-color:rgba(255,255,255,0.5);}
+#thankyou > div{	display:inline-block;background-color:white;padding:20px;text-align:center;border-radius: 20px 20px 20px 20px;border:1px solid Gray;box-shadow:0px 0px 100px 10px Gray;}
+#thankyou > div > div:nth-child(1) {font-size:8vw;background-color:green;padding:0.2em;color:white;text-shadow: 2px 2px 4px #000000;}
+#thankyou > div > div:nth-child(2) {font-size:6vw;}
+#thankyou > div > div:nth-child(3) {font-size:4vw;}
+#thankyou > div > div:nth-child(4) {font-size:5vw;}
+#thankyou > div > div:nth-child(5) {text-align:left;font-size:3vw;}
+#countdownclose{float:right;color:Gray}
+#div_soundthank{display:none;}
+
+#cd_change{color:gold;font-weight:bold;font-size:8vw;text-shadow: 2px 2px 4px #000000;}
+
+#bt_cd_stat_ws{border-radius: 10px 10px 10px 10px;padding:3px 10px;border:1px solid gray;background-color:Silver}
+.div_ws_stat{border:1px dashed gray ;padding:10px 3px;background-color:Gainsboro}
+
+@keyframes add {
+	0%   {background-color:rgba(144, 238, 144,1);transform:scale(1.0)}
+	20%   {background-color:rgba(144, 238, 144,0.4);transform:scale(1.1)}
+	40%  {background-color:rgba(144, 238, 144,1);transform:scale(1.0)}
+	100%  {background-color:rgba(144, 238, 144,0);transform:scale(1.0)}
+}
+@keyframes minus {
+	0%   {background-color:rgba(254, 46, 46, 1);transform:scale(1.0)}
+	20%   {background-color:rgba(254, 46, 46, 1,0.4);transform:scale(1.1)}
+	40%  {background-color:rgba(254, 46, 46, 1,1);transform:scale(1.0)}
+	100%  {background-color:rgba(254, 46, 46, 1,0);transform:scale(1.0)}
+}
+
+
+@media screen and (max-width: 639px) {
+#cd_display{grid-template-rows:60px auto 30px;}
+	#cdlogousercd{grid-template-columns:auto;}
+		#cdlogo{justify-content: center;}
+	#divvdo_out{grid-template-columns:100%;grid-template-rows:360px auto;}
+}
+@media screen and (max-height: 700px) and (max-width: 410px) {
+	#divvdo_out{grid-template-columns:100%;grid-template-rows:300px auto;}
+}
+@media screen and (max-height: 700px) and (max-width: 639px) {
+	#divvdo_out{grid-template-columns:100%;grid-template-rows:300px auto;}
+}
+@media screen and (orientation:portrait) and (max-width: 811px)  and (min-height: 810px){
+#cd_display{grid-template-rows:60px auto 30px;}
+	#cdlogousercd{grid-template-columns:auto;}
+		#cdlogo{justify-content: center;}
+	#divvdo_out{grid-template-columns:100%;grid-template-rows:530px auto;}
+}
+@media screen  and (max-width:639px)  and (max-height: 639px){
+	#divvdo_out{grid-template-columns:100%;grid-template-rows:0px auto;}
+}
