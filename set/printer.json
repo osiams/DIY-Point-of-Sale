@@ -1,18 +1,18 @@
 {
-	"font_0":"/usr/share/fonts/tlwg/Laksaman-Bold.ttf",
-	"font_1":"/usr/share/fonts/tlwg/Laksaman-Bold.ttf",
+	"font_0":"/usr/share/fonts/truetype/litefonts/tahomabd.ttf",
+	"font_1":"/usr/share/fonts/truetype/litefonts/tahomabd.ttf",
 	"font_0_size":18,
 	"font_1_size":18,
 	"printer_0":{
 		"status":1,
 		"name":"เครื่องพิมพ์ปริยาย 58มม. USB",
 		"width":58,
-		"address":"/dev/usb_1",
+		"address":"/dev/usb_5",
 		"cut":0,
 		"pulse":0,
 		"feed":2,
-		"_ucda":"",
-		"_ucdp":0
+		"_ucda":"/dev/usb_6",
+		"_ucdp":1
 	},
 	"printer_1":{
 		"status":1,
