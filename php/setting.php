@@ -6,6 +6,7 @@ class setting extends main{
 		$this->receipt=json_decode(file_get_contents("set/receipt.json"));
 		$this->printer=json_decode(file_get_contents("set/printer.json"));
 		$this->shop=json_decode(file_get_contents("set/shop.json"));
+		$this->about=json_decode(file_get_contents("set/about.json"));
 	}
 	public function run(){
 		$q=["edit"];
@@ -69,7 +70,7 @@ class setting extends main{
 	}
 	private function editSettingPage(string $file,string $error):void{
 		$this->addDir("","ตั้งค่า");
-		$this->pageHead(["title"=>"ตั้งค่า DIYPOS","css"=>["setting"],"js"=>["setting","Stt"]]);
+		$this->pageHead(["title"=>"ตั้งค่า DIYPOS","css"=>["setting"],"js"=>["setting","Stt","ws","Ws"],"run" => ["Ws"]]);
 		if(defined("ERROR")){
 			 echo '<div class="error">เกิดข้อผิดพลาด 
 				ไฟล์:'.ERROR["file"].'
@@ -136,6 +137,22 @@ class setting extends main{
 			</table>
 			<br />
 			<table>
+				<caption>WebSockets</caption>
+				<tr><th>รายละเอียด</th><th>ค่า</th></tr>
+				<tr><td class="l">คำสั่ง ทำงาน</td>
+					<td class="l">
+					<p class="terminal">'.$this->getCmdSock().'</p>
+					</td>
+				</tr>	
+				<tr><td class="l">สถานะ</td>
+					<td class="l">
+						<button id="ws_status" class="readystate">ไม่ทำงาน</button>
+						<script type="text/javascript">Ws.statSet("ws_status")</script>
+					</td>
+				</tr>
+			</table>
+			<br />
+			<table>
 				<caption>เครื่องผู้ใช้</caption>
 				<tr><th>รายละเอียด</th><th>ค่า</th></tr>
 				<tr><td class="l">ซอฟต์แวร์</td><td class="l">'.$_SERVER['HTTP_USER_AGENT'].'</td></tr>
@@ -160,6 +177,17 @@ class setting extends main{
 				<tr><td class="l">ชื่อใบเสร็จ</td><td class="l">'.htmlspecialchars($this->receipt->receipt58->sale->name).'</td></tr>
 				<tr><td class="l">ข้อความท้ายใบเสร็จ</td><td class="l">'.htmlspecialchars($this->receipt->receipt58->sale->foot).'</td></tr>
 			</table>
+			<br />
+			<table>
+				<caption>เกี่ยวกับ</caption>
+				<tr><th>รายละเอียด</th><th>ค่า</th></tr>
+				<tr><td class="l">ชื่อ</td><td class="l">'.htmlspecialchars($this->about->name).'</td></tr>
+				<tr><td class="l">รุ่น</td><td class="l">'.htmlspecialchars($this->about->version).'</td></tr>
+				<tr><td class="l">วันที่</td><td class="l">'.htmlspecialchars($this->about->date).'</td></tr>
+				<tr><td class="l">คำอธิบาย</td><td class="l">'.htmlspecialchars($this->about->description).'</td></tr>
+				<tr><td class="l">ภาษาที่ใช้</td><td class="l">'.htmlspecialchars($this->about->develop).'</td></tr>
+				<tr><td class="l">เซรฟ์เวอร์ที่ใช้ทดสอบ</td><td class="l">'.htmlspecialchars($this->about->server).'</td></tr>
+			</table>
 			</div>
 			<script type="text/javascript">let printerdata='.json_encode($this->printer).'
 			Stt.setPt( printerdata,\'userprinter\')
@@ -168,13 +196,23 @@ class setting extends main{
 			
 		$this->pageFoot();
 	}
-	private function findIPv4():string{
+	private function getCmdSock():string{
+		$socket_file = "/library/websocket/php/socket.php";
+		$tx = "";
+		if(is_dir("C:\\")){
+			$tx = dirname($_SERVER['CONTEXT_DOCUMENT_ROOT'],1).'/php/php '.dirname($_SERVER['SCRIPT_FILENAME'],1).''.$socket_file;
+		}else if(is_dir("/opt")){
+			$tx = dirname($_SERVER['CONTEXT_DOCUMENT_ROOT'],1).'/bin/php -q '.dirname($_SERVER['SCRIPT_FILENAME'],1).''.$socket_file;
+		}
+		return $tx;
+	}
+	private function xxxxxxxxxxxxfindIPv4():string{
 		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
 		socket_connect($sock, "8.8.8.8", 53);
 		socket_getsockname($sock, $name);
 		return $name;
 	}
-	private function userIPv4():string{
+	private function xxxxxxxxxxxxxxuserIPv4():string{
 		$re=$_SERVER['REMOTE_ADDR'];
 		if($re==$_SERVER["SERVER_ADDR"]){
 			$re=$this->findIPv4();

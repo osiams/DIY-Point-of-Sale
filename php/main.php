@@ -362,14 +362,14 @@ class main{
 					<meta charset="utf-8">
 					<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=yes">
 					<meta name="description" content="'.$title.'">
-					<link rel="manifest" href="set/manifest.json">
+					<link rel="manifest" href="'.(isset($data["manifest"])?$data["manifest"]:"set/manifest.json").'">
 <link rel="apple-touch-icon" href="img/pwa/diypos_128.png">   
 <meta name="theme-color" content="black"/>  
 <meta name="apple-mobile-web-app-capable" content="yes">  
 <meta name="apple-mobile-web-app-status-bar-style" content="black"> 
 <meta name="apple-mobile-web-app-title" content="D I Y P O S"> 
-<meta name="msapplication-TileImage" content="img/pwa/diypos_128.png">  
-					<link rel="icon"   type="image/png" href="img/favicon.png" />
+					<meta name="msapplication-TileImage" content="'.(isset($data["titleimg"])?$data["titleimg"]:"img/pwa/diypos_128.png").'">  
+					<link rel="icon"   type="image/png" href="'.(isset($data["icon"])?$data["icon"]:"img/favicon.png").'" />
 					<link rel="stylesheet" type="text/css" href="css/css.css">'.$this->pageHeadCss($data).'
 					<script src="js/main.js" type="text/javascript"></script>'.$this->pageHeadJs($data).'
 			</head><body>
@@ -627,6 +627,19 @@ class main{
 			return $doc;
 		}
 		return "";
+	}
+	protected function findIPv4():string{
+		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
+		socket_connect($sock, "8.8.8.8", 80);
+		socket_getsockname($sock, $name);
+		return $name;
+	}
+	protected function userIPv4():string{
+		$re=$_SERVER['REMOTE_ADDR'];
+		if($re==$_SERVER["SERVER_ADDR"]){
+			$re=$this->findIPv4();
+		}
+		return $re;
 	}
 }
 ?>

@@ -23,6 +23,7 @@ class home extends main{
 		echo ''.$this->os("day",'<div  class="icon icon_day" onclick="location.href=\'?a=day\'">สรุป ประจำวัน</div>').'';
 		echo ''.$this->os("barcode",'<div  class="icon icon_barcode" onclick="location.href=\'?a=barcode\'">รหัสแท่ง</div>').'';
 		echo ''.$this->os("setting",'<div  class="icon icon_setting" onclick="location.href=\'?a=setting\'">ตั้งค่า</div>').'';
+		echo ''.$this->os("cd",'<div  class="icon icon_cd" onclick="location.href=\'?a=cd\'">จอแสดงผล สำหรับลูกค้า</div>').'';
 		echo '<script type="text/javascript">M.b.classList.add(\'bghome\');M.b.classList.add(\'sd\');</script>';
 		echo '</main>';
 	}
