@@ -135,8 +135,8 @@ class install extends main{
 				ON DUPLICATE KEY UPDATE `bi_c`=0,`bil_c`=0,`bs_c`=0,`bsl_c`=0;
 			";
 			$sql["ref_unit"]=$this->ref("unit","sku_key","defaultroot");
-			$sql["ref_user"]=$this->ref("user","sku_key","administratorroot");
-			$sql["ref_user"]=$this->ref("user","sku_key","systemroot");
+			$sql["ref_user1"]=$this->ref("user","sku_key","administratorroot");
+			$sql["ref_user2"]=$this->ref("user","sku_key","systemroot");
 			$sql["ref_it1"]=$this->ref("it","sku_key","defaultroot");
 			$sql["ref_it2"]=$this->ref("it","sku_key","proot");
 			$sql["ref_it3"]=$this->ref("it","sku_key","xroot");

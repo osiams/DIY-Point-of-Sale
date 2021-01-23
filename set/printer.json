@@ -11,8 +11,8 @@
 		"cut":0,
 		"pulse":0,
 		"feed":2,
-		"_ucda":"/dev/usb_6",
-		"_ucdp":1
+		"_ucda":"",
+		"_ucdp":0
 	},
 	"printer_1":{
 		"status":1,

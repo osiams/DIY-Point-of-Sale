@@ -34,18 +34,31 @@
 ====     Window 10    ===========================================
 
 ในไฟล์ php.ini ให้แก้ 
-;extension=php_sockets.dll เป็น extension=php_sockets.dll
+;extension=gd เป็น extension=gdd
 ;extension=intl เป็น extension=intl
+;extension=sockets เป็น extension=sockets
+
 
 ในไฟล์ httpd.conf
 #LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so
 เป็น 
 LoadModule proxy_wstunnel_module modules/mod_proxy_wstunnel.so
 และ เพิ่มข้อความ
-ProxyPass "/websocket/" "ws://127.0.0.1:9000/"
+ProxyPass "/websocket/" "ws://localhost:9000/"
 ไว้ที่บรรทัดสุดท้าย
 
-
+ไฟล์ ibrary/escpos-php-development/src/Mike42/Escpos/GdEscposImage.php บรรทัดที่ 64
+จาก  
+	if (!is_resource($im)) { 
+แก้เป็น  
+	if (!is_resource($im) && !is_object($im)) {
+	
+ไฟล์ set/printter.json font_0 กับ font_1
+ให้ใส่ \ เพิ่มเข้าไปหน้า \ อีก
+ตัวอย่าง
+	C:\Windows\Fonts\tahomabd.ttf
+ก็จะเป็น
+	C:\\Windows\\Fonts\\tahomabd.ttf
 
 
 =========================================================
@@ -55,6 +68,9 @@ ProxyPass "/websocket/" "ws://127.0.0.1:9000/"
     ไปที่ (เปิด ด้วย ฐานะ root)/opt/lampp/phpmyadmin/config.inc.php
     $cfg['Servers'][$i]['auth_type'] = 'cookie';
     แล้ว restart MariaDb Server ใหม่
+    
+ในไฟล์ php.ini ให้แก้ 
+display_errors=Off เป็น display_errors=On
     
 ในไฟล์ httpd.conf
 ให้เพิ่ม ต่อจาก LoadModule proxy............
