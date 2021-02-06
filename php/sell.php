@@ -81,6 +81,7 @@ class sell extends main{
 				DECLARE n_list INT DEFAULT 0;
 				DECLARE n_over INT DEFAULT 0;
 				DECLARE pd_buy INT DEFAULT 0;
+				DECLARE n_price_null INT DEFAULT 0;
 				SET @sku=(SELECT CONCAT('00',LPAD(CAST(@id AS CHAR(25)),7,'0')));
 				FOR i IN 0..(@pd_length-1) DO
 					SET pd_buy=0;
@@ -101,6 +102,7 @@ class sell extends main{
 							)	
 							FROM `product` WHERE `sku_root`=JSON_VALUE(@key		,		CONCAT('$['	,		i		,']')		) LIMIT 1 
 					);
+
 					SET @sums=@sums+@flag;	
 					SET @pd_n=(SELECT SUM(bill_in_list.balance) FROM bill_in_list 
 						WHERE bill_in_list.balance>0 
@@ -109,9 +111,12 @@ class sell extends main{
 					);
 					IF @pd_n IS NULL THEN
 						SET  @pd_n=0;
-					END IF;
+					END IF;			
 					SET @stock=JSON_INSERT(@stock,CONCAT('$.' , @pdroot), @pd_n);
-					IF @pd_n<1 THEN
+					IF @flag IS NULL  OR @flag <= 0 THEN
+						SET @over=1;
+						SET n_price_null=n_price_null+1;
+					ELSEIF @pd_n<1 THEN
 						SET @over=1;
 						SET n_list=n_list+1;
 					ELSEIF pd_buy > @pd_n THEN 
@@ -124,6 +129,9 @@ class sell extends main{
 				END IF;
 				IF n_over>0 THEN
 					SET @message_error=CONCAT(@message_error,'มีสินค้า ',n_over,' รายการ ่มีจำนวนในระบบน้อยกว่า จำนวนที่จะขาย\n');
+				END IF;
+				IF n_price_null>0 THEN
+					SET @message_error=CONCAT(@message_error,'มีสินค้า ',n_price_null,' รายการ  ที่ยังไม่ได้ตั้งราคาขาย หรือ ราคาขาย <= 0.00\n');
 				END IF;
 			END ;
 		";

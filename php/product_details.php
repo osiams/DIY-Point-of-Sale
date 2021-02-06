@@ -7,11 +7,13 @@ class product_details extends product{
 	public function run(){
 		
 		if(isset($_GET["sku_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku_root"])){
+			$this->loadGroupAndProp();
 			$this->sku_root=$_GET["sku_root"];
 			$dt=$this->getData($_GET["sku_root"]);
 			$this->addDir("?a=product&amp;b=details&amp;sku_root=".$_GET["sku_root"],"รายละเอียดสินค้า ".htmlspecialchars($dt["product"][0]["name"]));
 			$this->pageHead(["title"=>"รายละเอียดสินค้า DIYPOS","css"=>["product_details"]]);
 			$this->details($dt["product"][0]);
+			$this->detailsProp($dt["product"][0]["group_root"],json_decode($dt["product"][0]["props"],true));
 			$this->stock($dt["stock"]);
 			$this->bill($dt["bill"]);
 		}
@@ -96,6 +98,17 @@ class product_details extends product{
 		}
 		echo '</table>';
 	}
+	private function detailsProp(string $group_root,array $props):void{
+		echo '<main><table class="productdetails"><caption>คุณสมบัติ</caption>
+			<tr><th>รายละเอียด</th><th>ค่า</th></tr>';
+		$group_props = $this->group_list[$group_root]["prop"];
+		foreach($props as $k=>$v){
+			if(in_array($k,$group_props)){
+				echo '<tr><td>'.$this->prop_list[$k]["name"].'</td><td>'.$v.'</td></tr>';
+			}
+		}	
+		echo '</table>';
+	}
 	private function details(array $dt):void{
 		echo '<main><table class="productdetails"><caption>สินค้า</caption>
 			<tr><th>ค่า</th><th>รายละเอียด</th></tr>
@@ -119,6 +132,7 @@ class product_details extends product{
 			echo '<tr><td>สถานะสินค้า </td><td>สินค้าปกติ</td></tr>';
 		}
 		echo '	<tr class="i2"><td>วันที่ลงทะเบียน</td><td>'.$dt["date_reg"].'</td></tr>
+			<tr class="i1"><td>กลุ่ม</td><td>'.$this->writeDirGroup($dt["group_root"],[$dt["d1"],$dt["d2"],$dt["d3"],$dt["d4"]]).'</td></tr>
 			</table></main>';
 	}
 	private function getData(string $sku_root):array{
@@ -131,10 +145,14 @@ class product_details extends product{
 		$sql["product"]="SELECT product.id AS id,product.sku AS sku,product.sku_key AS sku_key,product.sku_root AS sku_root,
 				product.barcode AS barcode,product.name AS name,
 				product.cost AS cost,product.price AS price,product.unit AS unit,product.pdstat,product.statnote,product.date_reg AS date_reg,
-				unit.name AS unit_name
+				IFNULL(`product`.`group_root`,\"defaultroot\") AS `group_root`,IFNULL(`product`.`props`,\"[]\") AS props,
+				unit.name AS unit_name,
+				`group`.`d1` AS `d1`,`group`.`d2` AS `d2`,`group`.`d3` AS `d3`,`group`.`d4` AS `d4`
 			FROM `product` 
 			LEFT JOIN(unit)
 			ON(product.unit=unit.sku_root)
+			LEFT JOIN (`group`) 
+			ON (`product`.`group_root` = `group`.`sku_root`) 
 			WHERE product.sku_root=".$sku_root." ORDER BY id DESC ";
 		$sql["stock"]="SELECT bill_in_list.stroot,IFNULL(bill_in_list.n,0) AS `n` ,IFNULL(bill_in_list.balance,0) AS `balance`,bill_in_list.sum,bill_in_list.product_sku_root,
 				bill_in.in_type,bill_in.bill,IFNULL(bill_in.note,'') AS `note`,

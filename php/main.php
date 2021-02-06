@@ -18,18 +18,18 @@ class main{
 		$this->tb=[
 			"product"=>[
 				"name"=>"product",
-				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price",
+				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props",
 					"unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pdstat"=>"c"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
 				"not_null"=>["name","sku_root"],
 				"primary"=>"sku_root",
 				"unique"=>["sku","name","barcode"],
-				"index"=>["pdstat","skuroot1","skuroot2"]
+				"index"=>["pdstat","skuroot1","skuroot2","group_root"]
 			],
 			"product_ref"=>[
 				"name"=>"product_ref",
-				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price",
+				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props",
 					"unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
 				"not_null"=>["name","sku_root"],
@@ -49,6 +49,41 @@ class main{
 				"name"=>"unit_ref",
 				"column"=>["id","sku","sku_key","sku_root","name","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"primary"=>"sku_key",
+				"index"=>["sku_root"]
+			],
+			"group"=>[
+				"name"=>"group",
+				"column"=>["id","sku","sku_key","sku_root","d1","d2","d3","d4","name","prop","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_root",
+				"not_null"=>["name"],
+				"unique"=>["sku"],
+				"check"=>" prop IS NULL OR JSON_VALID(prop)"
+			],
+			"group_ref"=>[
+				"name"=>"group_ref",
+				"column"=>["id","sku","sku_key","sku_root","d1","d2","d3","d4","name","prop","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_key",
+				"index"=>["sku_root"],
+				"check"=>" prop IS NULL OR JSON_VALID(prop)"
+			],
+			"prop"=>[
+				"name"=>"prop",
+				"column"=>["id","sku","sku_key","sku_root","name","data_type","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","data_type"=>"u"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_root",
+				"not_null"=>["name"],
+				"unique"=>["name","sku"]
+			],
+			"prop_ref"=>[
+				"name"=>"prop_ref",
+				"column"=>["id","sku","sku_key","sku_root","name","data_type","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","data_type"=>"u"],
 				"primary"=>"sku_key",
 				"index"=>["sku_root"]
 			],
@@ -161,9 +196,16 @@ class main{
 			"cost"=>["name"=>"ต้นทุน","type"=>"FLOAT","length_value"=>[15,4]],
 			"costr"=>["name"=>"ต้นทุนคืน","type"=>"FLOAT","length_value"=>[15,4]],
 			"costa"=>["name"=>"ต้นทุนเฉลี่ย","type"=>"FLOAT","length_value"=>[15,4]],
+			"d1"=>["name"=>"ระดับ1","type"=>"CHAR","length_value"=>25],
+			"d2"=>["name"=>"ระดับ2","type"=>"CHAR","length_value"=>25],
+			"d3"=>["name"=>"ระดับ3","type"=>"CHAR","length_value"=>25],
+			"d4"=>["name"=>"ระดับ4","type"=>"CHAR","length_value"=>25],
+			"data_type"=>["name"=>"ชนิดข้อมูล","type"=>"ENUM","length_value"=>["s","n","b","u"]],
 			"disc"=>["name"=>"รายละเอียด","type"=>"VARCHAR","length_value"=>1000,"charset"=>"thai"],
 			"date_reg"=>["name"=>"วันที่สร้าง","type"=>"TIMESTAMP"],
 			"email"=>["name"=>"อีเมล","type"=>"CHAR","length_value"=>30],
+			"group_key"=>["name"=>"กลุ่มอ้างอิง","type"=>"CHAR","length_value"=>25],
+			"group_root"=>["name"=>"กลุ่มราก","type"=>"CHAR","length_value"=>25],
 			"h"=>["name"=>"เปลี่ยน","type"=>"INT","length_value"=>10],
 			"id"=>["name"=>"ที่","type"=>"INT","length_value"=>10],
 			"idkey"=>["name"=>"ที่อ้างอิง","type"=>"INT","length_value"=>10],
@@ -191,6 +233,8 @@ class main{
 			"pricer"=>["name"=>"ราคาคืน","type"=>"FLOAT","length_value"=>[15,2]],
 			"product_sku_key"=>["name"=>"รหัสอ้างอิงสินค้า","type"=>"CHAR","length_value"=>25],
 			"product_sku_root"=>["name"=>"รหัสรากสินค้า","type"=>"CHAR","length_value"=>25],
+			"prop"=>["name"=>"คุณสมบัติ","type"=>"VARCHAR","length_value"=>1024],
+			"props"=>["name"=>"คุณสมบัติ.","type"=>"TEXT","length_value"=>65535],
 			"r"=>["name"=>"คืน","type"=>"INT","length_value"=>10],
 			"r_"=>["name"=>"เริ่ม","type"=>"INT","length_value"=>10],
 			"_r"=>["name"=>"สิ้นสุด","type"=>"INT","length_value"=>10],
@@ -474,6 +518,8 @@ class main{
 						$barcode=["barcode"];
 						$password=["password"];
 						$money=["price","cost"];
+						$enum = ["data_type"];
+						$json_arr = ["prop"];
 						if(in_array($v,$sku)){
 							$pt="/^[0-9a-zA-Z-+\.&\/]{1,25}$/";
 							if(!preg_match($pt,$ry)) {
@@ -515,6 +561,22 @@ class main{
 								$re["message_error"]=$this->fills[$v]["name"]." ยาวเกิน ".$max." แต่ข้อความคุณยาว ".strlen($ry);
 								break;
 							}
+						}else if(in_array($v,$json_arr)){
+							if(strlen(trim($ry))>2){
+								$prop =trim($ry);
+								$d = explode(",,",substr($prop,1,-1));
+								$len = 25;
+								$check = true;
+								$pt="/^[0-9a-zA-Z-+\.&\/]{1,25}$/";
+								for($i = 0;$i<count($d);$i++){
+									if(!preg_match($pt,$d[$i])){
+										$check = false;
+										echo "---".$d[$i]."--";
+										$re["message_error"]="ค่า key_root ของ ".$this->fills[$v]["name"]." บางตัว ไม่อยู่ในรูปแบบ 0-9a-zA-Z-+.&/ 1-25 ตัว";
+										break;
+									}									
+								}
+							}
 						}else if($v=="email"&&!filter_var($ry, FILTER_VALIDATE_EMAIL)){
 							$re["result"]=false;
 							$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ";
@@ -523,6 +585,11 @@ class main{
 							$re["result"]=false;
 							$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ";
 							break;
+						}else if(in_array($v,$enum)){
+							if(!in_array($ry,$this->fills[$v]["length_value"])){
+								$re["result"]=false;
+								$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ";
+							}
 						}
 					}
 				}

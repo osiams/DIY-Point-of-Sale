@@ -2,6 +2,11 @@
 class product extends main{
 	public function __construct(){
 		parent::__construct();
+		$this->prop_ = NULL;
+		$this->prop_list = NULL;
+		$this->group_ = NULL;
+		$this->group_list =[];
+		#############
 		$this->setDir();
 		$this->select=[];
 		$this->per=10;
@@ -17,6 +22,9 @@ class product extends main{
 		if(isset($_GET["b"])&&in_array($_GET["b"],$q)){
 			$this->getSelect();
 			$t=$_GET["b"];
+			if($t == "regis" ||$t == "edit"){
+				$this->loadGroupAndProp();				
+			}
 			if($t=="regis"){
 				$this->regisProduct();
 			}else if($t=="edit"){
@@ -35,8 +43,15 @@ class product extends main{
 				$this->deleteProduct();
 			}
 		}else{
+			$this->loadGroupAndProp();	
 			$this->pageProduct();
 		}
+	}
+	protected function loadGroupAndProp():void{
+		$this->prop_ = new prop();
+		$this->prop_list = $this->prop_->get("all_list_key_value");
+		$this->group_ = new group();
+		$this->group_list = $this->group_->get("all_list_key_value");
 	}
 	private function setDir():void{
 		$this->addDir("?a=product","สินค้า");
@@ -229,9 +244,12 @@ class product extends main{
 	private function editProduct():void{
 		$error="";
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
-			$se=$this->checkSet("product",["post"=>["name","sku","barcode","price","cost","unit"]],"post");
+			$se=$this->checkSet("product",["post"=>["name","sku","barcode","price","cost","unit","group_root"]],"post");
+			$ckp = $this->checkValidateProp();
 			if(!$se["result"]){
 				$error=$se["message_error"];
+			}else if($ckp != ""){
+				$error=$ckp;
 			}else{
 				 $qe=$this->editProductUpdate();
 				if(!$qe["result"]){
@@ -259,16 +277,21 @@ class product extends main{
 		$price=(strlen(trim($_POST["price"]))>0)?$_POST["price"]:"NULL";
 		$cost=(strlen(trim($_POST["cost"]))>0)?$_POST["cost"]:"NULL";
 		$unit=$this->getStringSqlSet($_POST["unit"]);
+		$group_root=$this->getStringSqlSet($_POST["group_root"]);
 		$skuk=$this->key("key",7);
 		$sku_key=$this->getStringSqlSet($skuk);
 		$sku_root=$this->getStringSqlSet($_POST["sku_root"]);
+		$props = $this->getStringSqlSet($this->setPropR());
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
 			@message_error:='',
+			@group_root:=".$group_root.",
+			@props:=".$props.",
 			@count_name:=(SELECT COUNT(`id`)  FROM `unit` WHERE `name`=".$name." AND `sku_root` !=".$sku_root."),
 			@count_sku:=(SELECT COUNT(`id`)   FROM `unit` WHERE `sku`=".$sku." AND `sku_root` !=".$sku_root."),
 			@count_barcode:=(SELECT COUNT(`id`)   FROM `product` WHERE `barcode`=".$barcode." AND `sku_root` !=".$sku_root."),
-			@count_unit:=(SELECT COUNT(`id`)   FROM `unit` WHERE `sku_root`=".$unit.");
+			@count_unit:=(SELECT COUNT(`id`)   FROM `unit` WHERE `sku_root`=".$unit."),
+			@group_key:=(SELECT IFNULL((SELECT IFNULL(`sku_key`,\"defaultroot\") AS `sku_key`   FROM `group` WHERE `sku_root`=".$group_root."),\"defaultroot\") AS `sku_key`);
 		";
 		$sql["check"]="
 			IF @count_name > 0 THEN 
@@ -284,7 +307,7 @@ class product extends main{
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
 				UPDATE `product` SET  `sku`=".$sku.",`sku_key`=".$sku_key.",  `name`= ".$name." ,  `barcode`=".$barcode.", `price`=".$price.",
-					 `cost`=".$cost.", `unit`=".$unit." 
+					 `cost`=".$cost.", `unit`=".$unit." ,`group_key` = @group_key,`group_root` = @group_root,`props` = JSON_MERGE_PATCH(`props`,@props)
 				WHERE `sku_root`=".$sku_root.";
 				SET @result=1;
 			END IF;
@@ -302,9 +325,14 @@ class product extends main{
 		$price=(isset($_POST["price"]))?htmlspecialchars($_POST["price"]):"";
 		$cost=(isset($_POST["cost"]))?htmlspecialchars($_POST["cost"]):"";
 		$unit=(isset($_POST["unit"]))?htmlspecialchars($_POST["unit"]):"";
+		$group = "defaultroot";
+		//echo $_POST["group_root"];
+		if(isset($_POST["group_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["group_root"])){
+			$group = $_POST["group_root"];
+		}
 		$sku_root=(isset($_POST["sku_root"]))?htmlspecialchars($_POST["sku_root"]):"";
 		$this->addDir("","แก้ไข สินค้า ".$name);
-		$this->pageHead(["title"=>"แก้ไขสินค้า DIYPOS"]);
+		$this->pageHead(["title"=>"แก้ไขสินค้า DIYPOS","js"=>["product","Pd"]]);
 			echo '<div class="content">
 				<div class="form">
 					<h1 class="c">แก้ไขสินค้า</h1>';
@@ -316,7 +344,7 @@ class product extends main{
 						<input type="hidden" name="sku_root" value="'.$sku_root.'" />
 						<p><label for="product_regis_name">ชื่อสินค้า</label></p>
 						<div><input id="product_regis_name" type="text" name="name" value="'.$name.'" class="want" /></div>
-						<p><label for="product_regis_barcode"">รหัสแท่ง</label></p>
+						<p><label for="product_regis_barcode">รหัสแท่ง</label></p>
 						<div><input id="product_regis_barcode" type="text" name="barcode" value="'.$barcode.'"  /></div>
 						<p><label for="product_regis_sku">รหัสภายใน</label></p>
 						<div><input id="product_regis_sku" type="text" value="'.$sku.'"  name="sku"  /></div>
@@ -327,7 +355,11 @@ class product extends main{
 			echo '<p><label for="product_regis_unit">หน่วย</label></p>
 							<div><select id="product_regis_unit" name="unit">';
 							$this->writeSelectOption("unit",$unit);
-			echo '</select></div>';				
+			echo '</select></div>';		
+			echo '<p><label for="product_regis_unit">กลุ่ม</label></p>
+							<div>';
+							$this->group_->writeSelectGroup($group);
+			echo '</div>';
 			echo '			<br />
 						<input type="submit" value="แก้ไขสินค้า" />
 					</form>
@@ -338,10 +370,13 @@ class product extends main{
 	private function regisProduct():void{
 		$error="";
 		if(isset($_POST["submitt"])&&$_POST["submitt"]=="clicksubmit"){
-			$se=$this->checkSet("product",["post"=>["barcode","sku","name","price","cost","unit"]],"post");
+			$se=$this->checkSet("product",["post"=>["barcode","sku","name","price","cost","unit","group_root"]],"post");
 			//print_r($se);
+			$ckp = $this->checkValidateProp();
 			if(!$se["result"]){
 				$error=$se["message_error"];
+			}else if($ckp != ""){
+				$error=$ckp;
 			}else{
 				 $qe=$this->regisProductInsert();
 				if(!$qe["result"]){
@@ -360,6 +395,20 @@ class product extends main{
 			$this->regisProductPage($error);
 		}
 	}
+	private function checkValidateProp():string{
+		$re = "";
+		foreach($_POST as $k=>$v){
+			if(substr($k,0,5) == "prop_"){
+				$kr = substr($k,5);
+				$se = $this->prop_->validate($kr,$v);
+				if($se != ""){
+					$re = $se;
+					break;
+				}
+			}
+		}
+		return $re;
+	}
 	private function regisProductInsert():array{
 		$name=$this->getStringSqlSet($_POST["name"]);
 		$sku=$this->getStringSqlSet($_POST["sku"]);
@@ -367,16 +416,21 @@ class product extends main{
 		$price=(strlen(trim($_POST["price"]))>0)?$_POST["price"]:"NULL";
 		$cost=(strlen(trim($_POST["cost"]))>0)?$_POST["cost"]:"NULL";
 		$unit=$this->getStringSqlSet($_POST["unit"]);
+		$group_root=$this->getStringSqlSet($_POST["group_root"]);
 		$skuk=$this->key("key",7);
 		$sku_root=$this->getStringSqlSet($skuk);
+		$props = $this->getStringSqlSet($this->setPropR());
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
 			@message_error:='',
 			@sku_root:=".$sku_root.",
+			@group_root:=".$group_root.",
+			@props:=".$props.",
 			@count_name:=(SELECT COUNT(`id`)  FROM `product` WHERE `name`=".$name."),
 			@count_sku:=(SELECT COUNT(`id`)   FROM `product` WHERE `sku`=".$sku."),
 			@count_barcode:=(SELECT COUNT(`id`)   FROM `product` WHERE `barcode`=".$barcode."),
-			@count_unit:=(SELECT COUNT(`id`)   FROM `unit` WHERE `sku_root`=".$unit.");
+			@count_unit:=(SELECT COUNT(`id`)   FROM `unit` WHERE `sku_root`=".$unit."),
+			@group_key:=(SELECT IFNULL((SELECT IFNULL(`sku_key`,\"defaultroot\") AS `sku_key`   FROM `group` WHERE `sku_root`=".$group_root."),\"defaultroot\") AS `sku_key`);
 		";
 		$sql["check"]="
 			IF @count_name > 0 THEN 
@@ -391,8 +445,8 @@ class product extends main{
 		";
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
-				INSERT INTO `product`  (`sku`,`sku_key`,`sku_root`,`barcode`,`name`,`price`,`cost`,`unit`) 
-				VALUES (".$sku.",".$sku_root.",".$sku_root.",".$barcode.",".$name.",".$price.",".$cost.",".$unit.");
+				INSERT INTO `product`  (`sku`,`sku_key`,`sku_root`,`barcode`,`name`,`price`,`cost`,`unit`,`group_key`,`group_root`,`props`) 
+				VALUES (".$sku.",".$sku_root.",".$sku_root.",".$barcode.",".$name.",".$price.",".$cost.",".$unit.",@group_key,@group_root,@props); 
 				SET @result=1;
 			END IF;
 		";
@@ -404,23 +458,32 @@ class product extends main{
 	}
 	private function editProductSetCurent(string $sku_root):void{
 		$od=$this->editProductOldData($sku_root);
-		$fl=["sku","barcode","name","price","cost","unit"];
+		$fl=["sku","barcode","name","price","cost","unit","group_root"];
 		foreach($fl as $v){
 			if(isset($od[$v])){
 				$_POST[$v]=$od[$v];
 			}
 		}
+		$props = json_decode($od["props"],true);
+		$this->props2PostProp_($props);
+	}
+	private function props2PostProp_(array $props):void{
+		foreach($props as $k=>$v){
+			$_POST["prop_".$k]=$v;
+		}		
 	}
 	private function editProductOldData(string $sku_root):array{
 		$sku_root=$this->getStringSqlSet($sku_root);
 		$sql=[];
-		$sql["result"]="SELECT `name`,`sku`,`barcode` ,`price`,`cost`,`unit`
+		$sql["result"]="SELECT `name`,`sku`,`barcode` ,`price`,`cost`,`unit`,IFNULL(`group_root`,\"defaultroot\") AS `group_root`,IFNULL(`props`,\"[]\") AS `props` 
 			FROM `product` 
 			WHERE `sku_root`=".$sku_root."";
 		$re=$this->metMnSql($sql,["result"]);
+		
 		if(isset($re["data"]["result"][0])){
 			return $re["data"]["result"][0];
 		}
+		
 		return [];
 	}
 	private function regisProductPage($error){
@@ -430,8 +493,17 @@ class product extends main{
 		$price=(isset($_POST["price"]))?htmlspecialchars($_POST["price"]):"";
 		$cost=(isset($_POST["cost"]))?htmlspecialchars($_POST["cost"]):"";
 		$unit=(isset($_POST["unit"]))?htmlspecialchars($_POST["unit"]):"";
+		$group = "defaultroot";
+		if(isset($_POST["group_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["group_root"])){
+			$group = $_POST["group_root"];
+		}
 		if(isset($_POST["sku_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["sku_root"])){
 			$dt=$this->regisSetDataAs($_POST["sku_root"]);
+			$group=$dt["group_root"];
+			$this->prop_ ->editPropSetCurent($_POST["sku_root"]);
+			$props = json_decode($dt["props"],true);
+			$this->props2PostProp_($props);
+			//print_r($_POST);
 			if(count($dt)>0){
 				$name=htmlspecialchars($dt["name"]);
 				$sku=htmlspecialchars($dt["sku"]);
@@ -464,7 +536,11 @@ class product extends main{
 			echo '<p><label for="product_regis_unit">หน่วย</label></p>
 							<div><select id="product_regis_unit" name="unit">';
 							$this->writeSelectOption("unit",$unit);
-			echo '</select></div>';				
+			echo '</select></div>';	
+			echo '<p><label for="product_regis_unit">กลุ่ม</label></p>
+							<div>';
+							$this->group_->writeSelectGroup($group);
+			echo '</div>';
 			echo '			<br />
 						<input type="button" value="ลงทะเบียนสินค้า" onclick="document.getElementById(\'product_regis_barcode\').blur();Pd.regisSubmit()"  />
 					</form>
@@ -475,7 +551,7 @@ class product extends main{
 	private function regisSetDataAs(string $sku_root):array{
 		$re=[];
 		$sql=[];
-		$sql["get"]="SELECT name,sku,barcode,cost,price,unit FROM product WHERE sku_root='".$sku_root."' LIMIT 1";
+		$sql["get"]="SELECT name,sku,barcode,cost,price,unit,IFNULL(group_root,\"defaultroot\") AS group_root,IFNULL(props,\"[]\") AS props FROM product WHERE sku_root='".$sku_root."' LIMIT 1";
 		$se=$this->metMnSql($sql,["get"]);
 		//print_r($se);
 		if($se["result"]){
@@ -576,6 +652,7 @@ class product extends main{
 				<td class="l">
 					<div><a href="?a=product&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a>'.$stat.'</div>
 					<div>'.$sku.','.$barcode.'</div>
+					<div>'.$this->writeDirGroup($se[$i]["group_root"],[$se[$i]["d1"],$se[$i]["d2"],$se[$i]["d3"],$se[$i]["d4"]]).'</div>
 				</td>
 				<td class="r">
 					<div>'.number_format($se[$i]["price"],2,'.',',').'</div>
@@ -608,6 +685,22 @@ class product extends main{
 		}else{
 			$this->pageSearch(count($se));
 		}
+	}
+	protected function writeDirGroup(string $sku_root,array $d):string{
+		$t = '📁 /';
+		for($i=0;$i<count($d) ;$i++){
+			if($d[$i]!=""){
+				$t.=$this->group_list[$d[$i]]["name"]."/";
+			}else{
+				if($i==0){
+					$t.=$this->group_list[$sku_root]["name"]."/";
+				}else{
+					break;
+				}
+			}
+		}
+		$t.='';
+		return $t;
 	}
 	private function getAllProduct(string $for=null):array{
 		$sh=$this->defaultSearch();
@@ -651,11 +744,14 @@ class product extends main{
 			$sql["get"]="SELECT 
 				`product`.`id`, `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
 				`product`.`name`, `product`.`price`, `product`.`cost`, 
-				`product`.`unit` AS `unit_sku_root`,product.pdstat, `unit`.`name` AS `unit_name`,
+				`product`.`unit` AS `unit_sku_root`,product.pdstat, IFNULL(`product`.`group_root`,\"defaultroot\") AS `group_root`,`unit`.`name` AS `unit_name`,
+				`group`.`d1` AS `d1`,`group`.`d2` AS `d2`,`group`.`d3` AS `d3`,`group`.`d4` AS `d4`,
 				SUM(IF(bill_in_list.stroot='proot',`bill_in_list`.`balance`,0)) AS balance
 			FROM `product` 
 			LEFT JOIN (`unit`) 
 			ON (`product`.`unit` = `unit`.`sku_root`) 
+			LEFT JOIN (`group`) 
+			ON (`product`.`group_root` = `group`.`sku_root`) 
 			LEFT JOIN (`bill_in_list`) 
 			ON (bill_in_list.stroot='proot' AND `bill_in_list`.`balance`> 0 AND `product`.`sku_root` = `bill_in_list`.`product_sku_root`  ) 
 			".$this->sh." 
@@ -734,6 +830,21 @@ class product extends main{
 		if($row>$this->per){
 			echo '<a href="'.$href.''.($this->page+1).'&amp;lid='.$this->lid.'">ถัดไป➡️</a>';
 		}
+	}
+	protected function setPropR():string{
+		$re=[];
+		foreach($_POST as $k=>$v){
+			if(substr($k,0,5) == "prop_"){
+				$kr = substr($k,5);
+				$val = trim($_POST["prop_".$kr]);
+				if(isset($this->prop_list[$kr]["data_type"]) && $this->prop_list[$kr]["data_type"] == "n"){
+					$val = (float) $val;
+				}
+				$re[$kr] = $val;
+			}
+		}
+		
+		return json_encode($re,JSON_FORCE_OBJECT);
 	}
 }
 ?>

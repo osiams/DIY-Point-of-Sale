@@ -4,13 +4,15 @@ class fetch extends main{
 		parent::__construct();
 	}
 	public function run():void{
-		$a=["bills","sell","bill58","ret","it","product"];
+		$a=["bills","sell","bill58","ret","it","product","prop"];
 		if(isset($_POST["a"])&&in_array($_POST["a"],$a)){
 			require_once("php/".$_POST["a"].".php");
 			if($_POST["a"]=="sell"||$_POST["a"]=="ret"||$_POST["a"]=="product"){
 				eval("(new ".$_POST["a"]."())->fetch();");
 			}else if($_POST["a"]=="bill58"){
 				eval("(new ".$_POST["a"]."())->fetch();");
+			}else if($_POST["a"]=="prop"){
+				eval("(new ".$_POST["a"]."())->fetch('".$_POST["b"]."');");
 			}else if($_POST["a"]=="bills"){
 				$c=["bills_in","bill_sell_delete"];
 				if(isset($_POST["c"])&&in_array($_POST["c"],$c)){

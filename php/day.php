@@ -117,6 +117,7 @@ class day extends main{
 			ORDER BY n DESC ,profit DESC
 		";
 		$se=$this->metMnSql($sql,["count","sum_price_profit","count_r_c","sum_price_profit_real","pdo"]);
+		//print_r($se);
 		return $se["data"];
 	}
 }
