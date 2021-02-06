@@ -107,6 +107,10 @@ class install extends main{
 				INSERT INTO `unit` (`id`,`sku`,`sku_key`,`sku_root`,`name`) VALUES (1,'default','defaultroot','defaultroot','_ไม่ระบุ') 
 				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`name`='ไม่ระบุ';
 			";
+			$sql["default_group"]="
+				INSERT INTO `group` (`id`,`sku`,`sku_key`,`sku_root`,`d1`,`name`) VALUES (1,'default','defaultroot','defaultroot','defaultroot','_ไม่ระบุ') 
+				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`d1`='defaultroot',`name`='_ไม่ระบุ';
+			";
 			$pw=password_hash("12345678", PASSWORD_DEFAULT);
 			$sql["default_user"]="BEGIN NOT ATOMIC
 				INSERT INTO `user` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`lastname`,`email`,`password`,`userceo`) 
@@ -130,11 +134,24 @@ class install extends main{
 				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (5,'e','eroot','eroot','หมดอายุ','หมดอายุ') 
 				ON DUPLICATE KEY UPDATE `sku`='e',`sku_key`='eroot',`sku_root`='eroot',`name`='หมดอายุ',`note`='หมดอายุ ตกรุ่น เก่า';
 			END;";
+			$sql["default_prop"]="BEGIN NOT ATOMIC 
+				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (1,'width-mm','width-mmroot','width-mmroot','กว้าง มม.','n') 
+				ON DUPLICATE KEY UPDATE `sku`='width-mm',`sku_key`='width-mmroot',`sku_root`='width-mmroot',`name`='กว้าง มม.',`data_type`='n';
+				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (2,'height-mm','height-mmroot','height-mmroot','สูง มม.','n') 
+				ON DUPLICATE KEY UPDATE `sku`='height-mm',`sku_key`='height-mmroot',`sku_root`='height-mmroot',`name`='สูง มม.',`data_type`='n';
+				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (3,'color','colorroot','colorroot','สี','s') 
+				ON DUPLICATE KEY UPDATE `sku`='color',`sku_key`='colorroot',`sku_root`='colorroot',`name`='สี',`data_type`='s';
+				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (4,'flavor','flavorroot','flavorroot','รส','s') 
+				ON DUPLICATE KEY UPDATE `sku`='flavor',`sku_key`='flavorroot',`sku_root`='flavorroot',`name`='รส',`data_type`='s';
+				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (5,'smell','smellroot','smellroot','กลิ่น','s') 
+				ON DUPLICATE KEY UPDATE `sku`='smell',`sku_key`='smellroot',`sku_root`='smellroot',`name`='กลิ่น',`data_type`='s';
+			END;";
 			$sql["default_s"]="
 				INSERT INTO `s` (`tr`,`bi_c`,`bil_c`,`bs_c`,`bsl_c`) VALUES(1,0,0,0,0)
 				ON DUPLICATE KEY UPDATE `bi_c`=0,`bil_c`=0,`bs_c`=0,`bsl_c`=0;
 			";
 			$sql["ref_unit"]=$this->ref("unit","sku_key","defaultroot");
+			$sql["ref_group"]=$this->ref("group","sku_key","defaultroot");
 			$sql["ref_user1"]=$this->ref("user","sku_key","administratorroot");
 			$sql["ref_user2"]=$this->ref("user","sku_key","systemroot");
 			$sql["ref_it1"]=$this->ref("it","sku_key","defaultroot");
@@ -142,6 +159,12 @@ class install extends main{
 			$sql["ref_it3"]=$this->ref("it","sku_key","xroot");
 			$sql["ref_it4"]=$this->ref("it","sku_key","droot");
 			$sql["ref_it5"]=$this->ref("it","sku_key","eroot");
+			$sql["ref_prop1"]=$this->ref("prop","sku_key","width-mmroot");
+			$sql["ref_prop2"]=$this->ref("prop","sku_key","height-mmroot");
+			$sql["ref_prop3"]=$this->ref("prop","sku_key","colorroot");
+			$sql["ref_prop4"]=$this->ref("prop","sku_key","flavorroot");
+			$sql["ref_prop5"]=$this->ref("prop","sku_key","smellroot");
+			
 			$se=$this->metMnSql($sql,[]);
 			//print_r($se);
 			if(!$se["result"]){
@@ -254,11 +277,11 @@ private function createTable(string $table,string $sql):array{
 					}else{
 						$fi.="(".$vv.")".$aut;
 					}
-				if(isset($f[$w]["charset"])){
-					$fi.=" CHARACTER SET 'utf8' COLLATE 'utf8_thai_520_w2' ";
-				}else if($f["w"]["type"]=="CHAR"||$f["w"]["type"]=="VARCHAR"){
-					$fi.=" CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' ";
-				}	
+					if(isset($f[$w]["charset"])){
+						$fi.=" CHARACTER SET 'utf8' COLLATE 'utf8_thai_520_w2' ";
+					}else if($f["w"]["type"]=="CHAR"||$f["w"]["type"]=="VARCHAR"){
+						$fi.=" CHARACTER SET 'ascii' COLLATE 'ascii_general_ci' ";
+					}	
 					
 					if(isset($tbs[$k]["unsigned"])){
 						if(in_array($w , $tbs[$k]["unsigned"])){
@@ -307,7 +330,10 @@ private function createTable(string $table,string $sql):array{
 			if(isset($tbs[$k]["primary"])){
 				$fi.=", PRIMARY KEY(`".$tbs[$k]["primary"]."`)
 					,KEY(`id`)";
-			}	
+			}
+			if(isset($tbs[$k]["check"])){
+				$fi.=", CHECK(".$tbs[$k]["check"].")";
+			}		
 			//PRIMARY KEY	
 			$sql.=$fi;
 			$sql.=") CHARACTER SET ascii COLLATE ascii_general_ci";

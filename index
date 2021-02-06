@@ -27,6 +27,11 @@ if(isset($_SESSION["login"])){
 		if(in_array($c, CF["a"])){
 			if(main::oa($c)){
 				require_once("php/".$c.".php");
+				if(isset(CF["require"][$c])){
+					foreach(CF["require"][$c] as $k){
+						require_once("php/".$k.".php");
+					}
+				}
 				(new $c)->run();
 			}else{
 				home();

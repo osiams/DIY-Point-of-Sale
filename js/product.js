@@ -2,6 +2,10 @@
 class product extends main{
 	constructor(){
 		super()
+		this.group_list = []
+		this.prop_list = []
+		this.prop_b4edit= []
+		this.group_b4edit = null
 	}
 	label(sku_root){
 		let dt={"data":{"a":"bill58","b":"labelPrint","sku_root":sku_root},"result":Pd.labelResult,"error":Pd.labelError}
@@ -80,25 +84,47 @@ class product extends main{
 	unqError(re,form,bt){
 		alert("❌ เกิดข้อผิดพลาด "+re["message_error"])
 	}
-	xxproductAction(did){
-		M.popup(did,'Pd.productActionMenu(did)')
-	}
-	xxproductActionMenu(did){
-		let ct=this.ce("div",{"class":"l"})
-		let w=[]
-		let o=did.parentNode
-		let c=0;
-		for(let i=0;i<o.childNodes.length;i++){
-			let u=o.childNodes[i]
-			if(u.tagName=="A"){
-				c=c+1
-				if(c>1){
-					w[c]=this.ce("a",{"onclick":u.getAttribute("onclick")})
-					this.end(w[c],[this.cn(u.innerHTML+" "+u.title)])
-					this.end(ct,[w[c]])
+	setProp(did,table_id,prop_list){
+		let prop = this.group_list[did.value]["prop"]
+		let tb = this.id(table_id)
+		let tb_length = tb.rows.length
+		let index = 0	//--มี th อยู่
+		for(let i=tb_length-1;i>0;i--){
+			tb.deleteRow(i);
+		}
+		for(let i=0;i<prop.length;i++){
+			let name = this.prop_list[prop[i]]["name"]
+			let sku_root =  this.prop_list[prop[i]]["sku_root"]
+			let data_type = this.prop_list[prop[i]]["data_type"]
+			index+=1
+			tb.insertRow(index)
+			tb.rows[index].className = "i"+(((index-1)%2)+1)
+			tb.rows[index].insertCell(0)
+			tb.rows[index].insertCell(1)
+				tb.rows[index].cells[0].style = "text-align:left;"
+			tb.rows[index].cells[0].innerHTML = name
+			let lr = "left"
+			if(data_type == "n"){
+				lr = "right"
+			}
+			let vae = ""
+			if(did.value==this.group_b4edit || 1 == 1){
+				if(this.prop_b4edit[sku_root] != undefined){
+					vae = this.prop_b4edit[sku_root]
 				}
 			}
+			let ip =this.ce("input",{"name":"prop_"+sku_root,"type":"text","style":"width:calc(100% - 8px);text-align:"+lr+"","value":vae})
+			if(data_type =="b"){
+				ip = this.ce("select",{"name":"prop_"+sku_root,"style":"width:100%;appearance: none;"})
+					let op1 =this.ce("option",{"value":"0"})
+					this.end(op1,[this.cn("❔")])
+					let op2 =this.ce("option",{"value":"1"})
+					this.end(op2,[this.cn("✔")])
+					let op3 =this.ce("option",{"value":"-1"})
+					this.end(op3,[this.cn("❌")])
+				this.end(ip,[op1,op2,op3])	
+			}
+			tb.rows[index].cells[1].appendChild(ip)
 		}
-		return ct
 	}
 }

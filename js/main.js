@@ -256,6 +256,81 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 	printAgainError(re,form,bt){
 		alert("❌ เกิดข้อผิดพลาด "+re["message_error"])
 	}
+	dialog(data){
+		let w_x = window.innerWidth
+		let w_y = window.innerHeight
+		
+		M.zdl+=1
+		this.z=M.zdl
+		let zindex = this.z
+		if(data.display ==1){
+			let title= data.hasOwnProperty("title") ?data.title:"..."
+			let width= data.hasOwnProperty("width") ?"width:"+data.width+"px;":""
+			let rid = data.hasOwnProperty("rid") ?data.rid:this.rid()
+			let dialog = this.ce("div",{"class":"dialog dialog_active1","id":rid+"_dialog","onmousedown":"this.style.transitionDuration='0s'","onmouseup":"M.setDialogSize(this)","style":width})
+				let bar = this.ce("div",{})
+				this.end(bar,[this.cn(title)])
+				let con = this.ce("div",{})
+				this.end(con,[data.ct])
+				let sta = this.ce("div",{})
+					let sta_in = this.ce("div",{})
+						for(let i=0;i<data.bts.length;i++){
+							let bt = this.ce("input",{"type":"button","value":data.bts[i].value,"onclick":data.bts[i].onclick})
+							this.end(sta_in,[bt])	
+						}	
+				this.end(sta,[sta_in])	
+			this.end(dialog,[bar,con,sta])	
+			this.b.style.overflow = "hidden"
+			let film =  this.ce("div",{"class":"film","id":rid,"onclick":"M.filmActive(this,'"+rid+"')"})
+				film.style.zIndex = zindex
+			this.end(this.b,[film,dialog])	
+			M.l("window.scrollY = "+window.scrollY)
+			let tp = (data.ct.offsetHeight + 76 + 8)/2 - window.scrollY 
+			let lt = (data.ct.offsetWidth+8)/2 - window.scrollX 
+			/*if(width != ""){
+				lt = (width+8)/2
+			}*/
+			dialog.setAttribute("style","z-index:"+(zindex+1)+";top:calc(50% - "+(tp)+"px);left:calc(50% - "+(lt)+"px);"+width)
+			this.setDialogSize(this.id(rid+"_dialog"))
+			//alert(data.ct.offsetHeight)
+		}
+	}
+	setDialogSize(did){M.l(did.offsetHeight)
+		let width = (did.offsetWidth > window.innerWidth)?window.innerWidth:did.offsetWidth
+		width = (width < did.childNodes[2].childNodes[0].offsetWidth+8)?did.childNodes[2].childNodes[0].offsetWidth+8:width
+		let height = (did.offsetHeight > window.innerHeight)?window.innerHeight:did.offsetHeight	
+		height = (height < 76 + 20 )?76 +20:height	
+		let tp = (height)/2  - window.scrollY
+		let lt = (width)/2  - window.scrollX
+		let zindex = did.style.zIndex
+
+		did.setAttribute("style","z-index:"+(zindex)+";top:calc(50% - "+(tp)+"px);left:calc(50% - "+(lt)+"px);height:"+(height-2)+"px;width:"+(width-2)+"px;")
+	}
+	filmActive(did,id){
+		M.l(did.className)
+		this.dialogActive(this.id(id+"_dialog"))
+		if(did.className == "film film_active1"){
+			did.classList.remove("film_active1")
+			did.classList.add("film_active2");
+		}else{
+			did.classList.remove("film_active2")
+			did.classList.add("film_active1");
+		}
+	}
+	dialogActive(did){
+		if(did.className == "dialog dialog_active1"){
+			did.classList.remove("dialog_active1")
+			did.classList.add("dialog_active2");
+		}else{
+			did.classList.remove("dialog_active2")
+			did.classList.add("dialog_active1");
+		}
+	}
+	dialogClose(id){
+		this.id(id).parentNode.removeChild(this.id(id))
+		this.id(id+"_dialog").parentNode.removeChild(this.id(id+"_dialog"))
+		this.b.style.overflow = "auto"
+	}
 }
 class gpu extends main {
 	constructor(){
