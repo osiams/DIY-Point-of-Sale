@@ -1,0 +1,13 @@
+.group_table_prop{width:100%}
+.group_table_prop input{width:calc(100% - 8px);}
+.group_table_prop select{width:100px;}
+.group_add_prop{width:50%;}
+
+.list_checkbox{display:inline-block;width:150px;padding:5px;white-space: nowrap;overflow:hidden;text-align:left;}
+.list_checkbox:hover{background-color:LightGreen;cursor:pointer;}
+.prop_data_type{display:inline-block;padding:3px 10px;margin:1px 2px;border-radius: 10px 10px 10px 10px;}
+.data_type_s{background-color:white;border:1px solid black;}
+.data_type_n{background-color:green;color:white;}
+.data_type_b{background-color:MediumVioletRed;color:white;}
+.group_dir{text-align:left;padding:5px;background-color:white;color:gray;border:2px solid gray;margin:10px 0px;}
+.group_this_prop{text-align:left;padding:5px;background-color:rgb(250,250,180);color:black;border:2px solid gray;margin:10px 0px;}
