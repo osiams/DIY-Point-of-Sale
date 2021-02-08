@@ -93,8 +93,8 @@ class it_view extends it{
 				
 			}
 			echo '<tr'.$cm.'><td>'.$id.'</td>
-				<td>'.$sku.'</td>
-				<td>'.$barcode.'</td>
+				<td class="l">'.$sku.'</td>
+				<td class="l">'.$barcode.'</td>
 				<td class="l">
 					<div><a href="?a=it&amp;b=view&amp;sku_root='.$sku_root.'&amp;c=lot&amp;pd='.$se[$i]["product_sku_root"].'">'.$name.'</a></div>
 					<div>'.$sku.','.$barcode.'</div>
