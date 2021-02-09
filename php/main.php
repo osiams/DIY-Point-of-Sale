@@ -15,21 +15,27 @@ class main{
 			"data"=>[],
 			"message_error"=>""
 		];
+		$this->s_type=[
+			"p"=>["icon"=>"⚃","desc"=>"ขายเป็น อัน","opg"=>"อัน"],
+			"w"=>["icon"=>"⚖️","desc"=>"ชั่งน้ำหนักขาย","opg"=>"น้ำหนัก"],
+			"l"=>["icon"=>"📏","desc"=>"วัดความยาวขาย","opg"=>"ความยาว"],
+			"v"=>["icon"=>"🧊","desc"=>"ขายเป็นปริมาตร","opg"=>"ปริมาตร"]
+		];
 		$this->tb=[
 			"product"=>[
 				"name"=>"product",
-				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props",
+				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type",
 					"unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pdstat"=>"c"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pdstat"=>"c","s_type"=>"p"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
 				"not_null"=>["name","sku_root"],
 				"primary"=>"sku_root",
 				"unique"=>["sku","name","barcode"],
-				"index"=>["pdstat","skuroot1","skuroot2","group_root"]
+				"index"=>["pdstat","skuroot1","skuroot2","group_root","s_type"]
 			],
 			"product_ref"=>[
 				"name"=>"product_ref",
-				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props",
+				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type",
 					"unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
 				"not_null"=>["name","sku_root"],
@@ -38,8 +44,8 @@ class main{
 			],
 			"unit"=>[
 				"name"=>"unit",
-				"column"=>["id","sku","sku_key","sku_root","name","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"column"=>["id","sku","sku_key","sku_root","name","s_type","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","s_type"=>"p"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
 				"primary"=>"sku_root",
 				"not_null"=>["name"],
@@ -47,8 +53,8 @@ class main{
 			],
 			"unit_ref"=>[
 				"name"=>"unit_ref",
-				"column"=>["id","sku","sku_key","sku_root","name","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"column"=>["id","sku","sku_key","sku_root","name","s_type","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","s_type"=>"p"],
 				"primary"=>"sku_key",
 				"index"=>["sku_root"]
 			],
@@ -238,6 +244,7 @@ class main{
 			"r"=>["name"=>"คืน","type"=>"INT","length_value"=>10],
 			"r_"=>["name"=>"เริ่ม","type"=>"INT","length_value"=>10],
 			"_r"=>["name"=>"สิ้นสุด","type"=>"INT","length_value"=>10],
+			"s_type"=>["name"=>"รูปแบบการขาย","type"=>"ENUM","length_value"=>["p","w","l","v"]],
 			"sq"=>["name"=>"ลำดับ","type"=>"INT","length_value"=>10],
 			"sku"=>["name"=>"รหัสภายใน","type"=>"CHAR","length_value"=>25],
 			"sku_key"=>["name"=>"รหัสอ้างอิง","type"=>"CHAR","length_value"=>25],
@@ -518,7 +525,7 @@ class main{
 						$barcode=["barcode"];
 						$password=["password"];
 						$money=["price","cost"];
-						$enum = ["data_type"];
+						$enum = ["data_type","s_type"];
 						$json_arr = ["prop"];
 						if(in_array($v,$sku)){
 							$pt="/^[0-9a-zA-Z-+\.&\/]{1,25}$/";

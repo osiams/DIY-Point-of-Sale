@@ -395,10 +395,11 @@ class gpu extends main {
 		this.end(z,[y])
 		return z
 	}
-	unitEdit(sku_root){
+	unitEdit(sku_root,s_type){
 		let f=document.forms.unit
 		f.action="?a=unit&b=edit"
 		f.sku_root.value=sku_root
+		f.s_type.value=s_type
 		f.submit()
 	}
 	unitDelete(sku_root,name){

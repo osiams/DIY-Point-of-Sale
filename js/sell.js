@@ -172,6 +172,7 @@ class sell extends main{
 					this.sums()
 					this.setLast(sku_root)
 					this.id(this.dpro).scrollTo({ top: this.id(this.dpro).scrollHeight,left:0,behavior: "smooth"})
+					
 				}
 			}else{
 				this.sellcon.n_before=this.dt[sku_root]["n"]
@@ -442,6 +443,7 @@ class sell extends main{
 		}else{
 			this.dlast.innerHTML=`ล่าสุด:#${at}  ${name} ลด ${last} กลายเป็น ${n}`
 		}
+		
 		this.sellcon.skurootlast=sku_root
 		this.sellcon.sum=this.dsums.innerHTML
 		this.sellcon.n_now=n
@@ -501,6 +503,7 @@ class sell extends main{
 			let n=form.get("n")
 			let nt=(n.trim().length==0)?null:Number(n)
 			S.setFl2Pd2Insert(re,nt);
+			
 		}else{
 			S.getPdFromServerError(re,form,bt)
 		}

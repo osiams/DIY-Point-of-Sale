@@ -103,10 +103,16 @@ class install extends main{
 		}else{
 			$conn =$this->dbConnect();
 			$sql=[];
-			$sql["default_unit"]="
-				INSERT INTO `unit` (`id`,`sku`,`sku_key`,`sku_root`,`name`) VALUES (1,'default','defaultroot','defaultroot','_ไม่ระบุ') 
-				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`name`='ไม่ระบุ';
-			";
+			$sql["default_unit"]="BEGIN NOT ATOMIC
+				INSERT INTO `unit` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`s_type`) VALUES (1,'default','defaultroot','defaultroot','_ไม่ระบุ','p') 
+				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`name`='_ไม่ระบุ',`s_type`='p';
+				INSERT INTO `unit` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`s_type`) VALUES (2,'kilogram','kilogramroot','kilogramroot','กิโลกรัม','w') 
+				ON DUPLICATE KEY UPDATE `sku`='kilogram',`sku_key`='kilogramroot',`sku_root`='kilogramroot',`name`= 'กิโลกรัม',`s_type`='w';
+				INSERT INTO `unit` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`s_type`) VALUES (3,'meter','meterroot','meterroot','เมตร','l') 
+				ON DUPLICATE KEY UPDATE `sku`='meter',`sku_key`='meterroot',`sku_root`='meterroot',`name`= 'เมตร',`s_type`='l';
+				INSERT INTO `unit` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`s_type`) VALUES (4,'litre','litreroot','litreroot','ลิตร','v') 
+				ON DUPLICATE KEY UPDATE `sku`='litre',`sku_key`='litreroot',`sku_root`='litreroot',`name`= 'ลิตร',`s_type`='v';
+			END;";
 			$sql["default_group"]="
 				INSERT INTO `group` (`id`,`sku`,`sku_key`,`sku_root`,`d1`,`name`) VALUES (1,'default','defaultroot','defaultroot','defaultroot','_ไม่ระบุ') 
 				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`d1`='defaultroot',`name`='_ไม่ระบุ';
@@ -135,10 +141,10 @@ class install extends main{
 				ON DUPLICATE KEY UPDATE `sku`='e',`sku_key`='eroot',`sku_root`='eroot',`name`='หมดอายุ',`note`='หมดอายุ ตกรุ่น เก่า';
 			END;";
 			$sql["default_prop"]="BEGIN NOT ATOMIC 
-				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (1,'width-mm','width-mmroot','width-mmroot','กว้าง มม.','n') 
-				ON DUPLICATE KEY UPDATE `sku`='width-mm',`sku_key`='width-mmroot',`sku_root`='width-mmroot',`name`='กว้าง มม.',`data_type`='n';
-				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (2,'height-mm','height-mmroot','height-mmroot','สูง มม.','n') 
-				ON DUPLICATE KEY UPDATE `sku`='height-mm',`sku_key`='height-mmroot',`sku_root`='height-mmroot',`name`='สูง มม.',`data_type`='n';
+				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (1,'width-mm','width-mmroot','width-mmroot','กว้าง (มม.)','n') 
+				ON DUPLICATE KEY UPDATE `sku`='width-mm',`sku_key`='width-mmroot',`sku_root`='width-mmroot',`name`='กว้าง (มม.)',`data_type`='n';
+				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (2,'height-mm','height-mmroot','height-mmroot','สูง (มม.)','n') 
+				ON DUPLICATE KEY UPDATE `sku`='height-mm',`sku_key`='height-mmroot',`sku_root`='height-mmroot',`name`='สูง (มม.)',`data_type`='n';
 				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (3,'color','colorroot','colorroot','สี','s') 
 				ON DUPLICATE KEY UPDATE `sku`='color',`sku_key`='colorroot',`sku_root`='colorroot',`name`='สี',`data_type`='s';
 				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (4,'flavor','flavorroot','flavorroot','รส','s') 
@@ -150,7 +156,10 @@ class install extends main{
 				INSERT INTO `s` (`tr`,`bi_c`,`bil_c`,`bs_c`,`bsl_c`) VALUES(1,0,0,0,0)
 				ON DUPLICATE KEY UPDATE `bi_c`=0,`bil_c`=0,`bs_c`=0,`bsl_c`=0;
 			";
-			$sql["ref_unit"]=$this->ref("unit","sku_key","defaultroot");
+			$sql["ref_unit1"]=$this->ref("unit","sku_key","defaultroot");
+			$sql["ref_unit2"]=$this->ref("unit","sku_key","kilogramroot");
+			$sql["ref_unit3"]=$this->ref("unit","sku_key","meterroot");
+			$sql["ref_unit4"]=$this->ref("unit","sku_key","litreroot");
 			$sql["ref_group"]=$this->ref("group","sku_key","defaultroot");
 			$sql["ref_user1"]=$this->ref("user","sku_key","administratorroot");
 			$sql["ref_user2"]=$this->ref("user","sku_key","systemroot");
@@ -763,11 +772,12 @@ private function createTable(string $table,string $sql):array{
 		}
 		$sql["unit_ref"]="INSERT INTO unit_ref 
 			SELECT *
-			FROM unit WHERE id>1";
+			FROM unit WHERE id>5";
 		$sql["product_ref"]="INSERT INTO product_ref 
 			SELECT *
 			FROM product";
 		$se=$this->metMnSql($sql,[]);
+		//print_r($se);
 	}
 }
 session_start();

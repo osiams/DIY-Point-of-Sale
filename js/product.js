@@ -127,4 +127,29 @@ class product extends main{
 			tb.rows[index].cells[1].appendChild(ip)
 		}
 	}
+	setUnitSelect(did){
+		let f=this.id("product_regis_unit")
+		let hg=f.querySelectorAll("optgroup")
+
+		let has=0;
+		for(let i=0;i<hg.length;i++){
+			if(hg[i].getAttribute("data-s_type") == did.value){
+				has=1;
+				hg[i].hidden=false
+				//hg[i].childNodes[0].selected
+				f.value=hg[i].childNodes[0].value
+			}else{
+				hg[i].hidden=true
+			}
+		}
+		if(has==0){
+			did.value="p"
+			f.value="defaultroot"		
+			for(let i=0;i<hg.length;i++){
+				if(hg[i].getAttribute("data-s_type") =="p"){
+					hg[i].hidden=false
+				}
+			}		
+		}
+	}
 }

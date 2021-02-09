@@ -30,7 +30,9 @@ class ws extends main{
 		data["to"] = to
 		data["key"] = this.mykey
 		data["oto"] = this.myoto
-		this.ws.send(JSON.stringify(data))
+		//if(this.ws.readyState==1){
+			this.ws.send(JSON.stringify(data))
+		//}
 	}
 	getStat(){
 		let st = this.ws.readyState

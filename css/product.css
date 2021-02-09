@@ -3,10 +3,10 @@
 #product{position: relative;}
 #product  th{position: sticky;top: 0px;}
 #product td{vertical-align: middle;}
-#product  tr > td:nth-child(4) > div:nth-child(2){display:none;font-size:12px;color:#333333;text-align:right;padding-right:10px;}
-#product  tr > td:nth-child(4) > div:nth-child(3){text-align:right;font-size:0.9em;color:DimGrey}
-#product  tr > td:nth-child(5) > div:nth-child(2){display:none;font-size:12px;color:#333333;text-align:right;padding-right:2px;}
-#product  tr > td:nth-child(7) > div:nth-child(2){display:none;font-size:12px;color:#333333;text-align:right;padding-right:2px;}
+#product  tr > td:nth-child(5) > div:nth-child(2){display:none;font-size:12px;color:#333333;text-align:right;padding-right:10px;}
+#product  tr > td:nth-child(5) > div:nth-child(3){text-align:right;font-size:0.9em;color:DimGrey}
+#product  tr > td:nth-child(6) > div:nth-child(2){display:none;font-size:12px;color:#333333;text-align:right;padding-right:2px;}
+#product  tr > td:nth-child(8) > div:nth-child(2){display:none;font-size:12px;color:#333333;text-align:right;padding-right:2px;}
 #product td.action >  a:nth-child(1){display:block;}
 #product td.action >  a:nth-child(2){display:none;}
 #product td.action >  a:nth-child(3){display:none;}
@@ -19,17 +19,17 @@
 .pd_search > form > label > select{width:80px;}
 .pd_search >form >   label >input[type="text"]{width:calc(100% - 160px);}
 .pd_search > form > label > input[type="button"]{width:60px;}
-#product  th:nth-child(2){display:none}
 #product  th:nth-child(3){display:none}
-#product  th:nth-child(6){display:none}
-#product  th:nth-child(8){display:none}
-#product  tr > td:nth-child(2){display:none}
+#product  th:nth-child(5){display:none}
+#product  th:nth-child(7){display:none}
+#product  th:nth-child(9){display:none}
 #product  tr > td:nth-child(3){display:none}
-#product  tr > td:nth-child(6){display:none}
-#product  tr > td:nth-child(8){display:none}
-#product  tr > td:nth-child(4) > div:nth-child(2){display:block}
+#product  tr > td:nth-child(4){display:none}
+#product  tr > td:nth-child(7){display:none}
+#product  tr > td:nth-child(9){display:none}
 #product  tr > td:nth-child(5) > div:nth-child(2){display:block}
-#product  tr > td:nth-child(7) > div:nth-child(2){display:block}
+#product  tr > td:nth-child(6) > div:nth-child(2){display:block}
+#product  tr > td:nth-child(8) > div:nth-child(2){display:block}
 #product  th{font-size:12px;}
 }
 

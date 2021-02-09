@@ -7,8 +7,8 @@ define("CF", [
 #้ข้อมูลการเชื่อมต่อกับ ฐานข้อมูล MariaDB
 	"server"=>"127.0.0.1",
 	"database"=>"diypos_0.2",
-	"user"=>"",		
-	"password"=>"",	
+	"user"=>"diypos",		
+	"password"=>"mr12345678",	
 #http port ต้องตรงกับในไฟล์ httpd.conf
 	"http_port"=>80,
 	"https_port"=>443,

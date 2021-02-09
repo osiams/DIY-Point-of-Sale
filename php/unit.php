@@ -31,7 +31,7 @@ class unit extends main{
 	protected function editUnit():void{
 		$error="";
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
-			$se=$this->checkSet("unit",["post"=>["name","sku","sku_root"]],"post");
+			$se=$this->checkSet("unit",["post"=>["name","sku","sku_root","s_type"]],"post");
 			if(!$se["result"]){
 				$error=$se["message_error"];
 			}else{
@@ -56,6 +56,7 @@ class unit extends main{
 	}
 	private function editUnitUpdate():array{
 		$name=$this->getStringSqlSet($_POST["name"]);
+		$s_type=$this->getStringSqlSet($_POST["s_type"]);
 		$sku=$this->getStringSqlSet($_POST["sku"]);
 		$skuk=$this->key("key",7);
 		$sku_key=$this->getStringSqlSet($skuk);
@@ -75,7 +76,8 @@ class unit extends main{
 		";
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
-				UPDATE `unit` SET  `sku`=".$sku.",`sku_key`=".$sku_key.",  `name`= ".$name." WHERE `sku_root`=".$sku_root.";
+				UPDATE `unit` SET  `sku`=".$sku.",`sku_key`=".$sku_key.",  `name`= ".$name." ,  `s_type`= ".$s_type." 
+				WHERE `sku_root`=".$sku_root.";
 				SET @result=1;
 			END IF;
 		";
@@ -97,7 +99,7 @@ class unit extends main{
 	protected function editUnitOldData(string $sku_root):array{
 		$sku_root=$this->getStringSqlSet($sku_root);
 		$sql=[];
-		$sql["result"]="SELECT `name`,`sku` FROM `unit` WHERE `sku_root`=".$sku_root."";
+		$sql["result"]="SELECT `name`,`sku`,`s_type` FROM `unit` WHERE `sku_root`=".$sku_root."";
 		$re=$this->metMnSql($sql,["result"]);
 		if(isset($re["data"]["result"][0])){
 			return $re["data"]["result"][0];
@@ -106,6 +108,7 @@ class unit extends main{
 	}
 	protected function editUnitPage(string $error):void{
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
+		$s_type=(isset($_POST["s_type"]))?htmlspecialchars($_POST["s_type"]):"p";
 		$sku=(isset($_POST["sku"]))?htmlspecialchars($_POST["sku"]):"";
 		$sku_root=(isset($_POST["sku_root"]))?htmlspecialchars($_POST["sku_root"]):"";
 		$this->addDir("","แก้ไขหน่วยสินค้า ".$name);
@@ -122,8 +125,9 @@ class unit extends main{
 					<p><label for="unit_name">ชื่อ</label></p>
 					<div><input id="unit_name" class="want" type="text" name="name" value="'.$name.'" autocomplete="off" /></div>
 					<p><label for="unit_sku">รหัสภายใน</label></p>
-					<div><input id="unit_sku" type="text" value="'.$sku.'"  name="sku"  autocomplete="off" /></div>
-					<br />
+					<div><input id="unit_sku" type="text" value="'.$sku.'"  name="sku"  autocomplete="off" /></div>';
+		$this->writeSelectUnitStype($s_type);				
+		echo '		<br />
 					<input type="submit" value="แก้ไข" />
 				</form>
 			</div>
@@ -132,7 +136,7 @@ class unit extends main{
 	protected function regisUnit():void{
 		$error="";
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
-			$se=$this->checkSet("unit",["post"=>["name","sku"]],"post");
+			$se=$this->checkSet("unit",["post"=>["name","sku","s_type"]],"post");
 			//print_r($se);
 			if(!$se["result"]){
 				$error=$se["message_error"];
@@ -156,6 +160,7 @@ class unit extends main{
 	}
 	protected function regisUnitInsert():array{
 		$name=$this->getStringSqlSet($_POST["name"]);
+		$s_type=$this->getStringSqlSet($_POST["s_type"]);
 		$sku=$this->getStringSqlSet($_POST["sku"]);
 		$skuk=$this->key("key",7);
 		$sku_root=$this->getStringSqlSet($skuk);
@@ -175,7 +180,7 @@ class unit extends main{
 		";
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
-				INSERT INTO `unit`  (`sku`,`sku_key`,`sku_root`,`name`) VALUES (".$sku.",".$sku_root.",".$sku_root.",".$name.");
+				INSERT INTO `unit`  (`sku`,`sku_key`,`sku_root`,`name`,`s_type`) VALUES (".$sku.",".$sku_root.",".$sku_root.",".$name.",".$s_type.");
 				SET @result=1;
 			END IF;
 		";
@@ -201,16 +206,25 @@ class unit extends main{
 					<p><label for="unit_name">ชื่อ</label></p>
 					<div><input id="unit_name" class="want" type="text" name="name" value="'.$name.'" autocomplete="off" /></div>
 					<p><label for="unit_sku">รหัสภายใน</label></p>
-					<div><input id="unit_sku" type="text" value="'.$sku.'"  name="sku" autocomplete="off"  /></div>
-					<br />
+					<div><input id="unit_sku" type="text" value="'.$sku.'"  name="sku" autocomplete="off"  /></div>';
+		$this->writeSelectUnitStype();			
+		echo '		<br />
 					<input type="submit" value="เพิ่ม" />
 				</form>
 			</div>
 		</div>';
 		$this->pageFoot();
 	}
-	protected function regisUnitCheck():array{
-		
+	protected function writeSelectUnitStype(string $s_type="p"):void{
+		echo '<p><label for="unit_sku">รูปแบบการขาย</label></p>
+			<div>
+				<select name="s_type">';
+		foreach($this->s_type as $k=>$v){
+			echo '<option value="'.$k.'"'.($s_type==$k?" selected":"").'>'.$v["opg"].'</option>';
+		}
+		echo '		</select>
+			</div>
+		';
 	}
 	protected function pageUnit(){
 		$this->pageHead(["title"=>"หน่วยสินค้า DIYPOS"]);
@@ -226,9 +240,11 @@ class unit extends main{
 		$se=$this->getAllUnit();
 		echo '<form class="form100" name="unit" method="post">
 			<input type="hidden" name="sku_root" value="" />
+			<input type="hidden" name="s_type" value="p" />
 			<table><tr><th>ที่</th>
 			<th>รหัสภายใน</th>
 			<th>ชื่อ</th>
+			<th>ประเภท</th>
 			<th>กระทำ</th>
 			</tr>';
 		for($i=0;$i<count($se);$i++){
@@ -239,9 +255,10 @@ class unit extends main{
 			$cm=($i%2!=0)?" class=\"i2\"":"";
 			echo '<tr'.$cm.'><td class="r">'.$se[$i]["id"].'</td>
 				<td class="l">'.$se[$i]["sku"].'</td>
-				<td class="l">'.htmlspecialchars($se[$i]["name"]).'</td>
+				<td class="l"><b>'.htmlspecialchars($se[$i]["name"]).'</b></td>
+				<td class="l">'.htmlspecialchars($this->s_type[$se[$i]["s_type"]]["opg"]).'</td>
 				<td class="action">
-					<a onclick="G.unitEdit(\''.$se[$i]["sku_root"].'\')" title="แก้ไข">📝</a>
+					<a onclick="G.unitEdit(\''.$se[$i]["sku_root"].'\',\''.$se[$i]["s_type"].'\')" title="แก้ไข">📝</a>
 					<a onclick="G.unitDelete(\''.$se[$i]["sku_root"].'\',\''.htmlspecialchars($se[$i]["name"]).'\')" title="ทิ้ง">🗑</a>
 					'.$ed.'
 					</td>
@@ -252,7 +269,7 @@ class unit extends main{
 	protected function getAllUnit():array{
 		$re=[];
 		$sql=[];
-		$sql["get"]="SELECT * FROM `unit` ORDER BY `id` DESC";
+		$sql["get"]="SELECT * FROM `unit` ORDER BY `s_type` ASC, `name` ASC";
 		$se=$this->metMnSql($sql,["get"]);
 		if($se["result"]){
 			$re=$se["data"]["get"];

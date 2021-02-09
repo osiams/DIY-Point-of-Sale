@@ -165,7 +165,7 @@ class product extends main{
 				$kbc=str_replace($this->txsearch,'<span class="bgyl">'.$this->txsearch.'</span>',$kbc);
 			}
 			echo '<tr><td>'.($i+1).'.</td>
-				<td class="l"><p>'.$nm.'</p><p class="p_bc">';
+				<td class="l"><p>'.$nm.'</p><p class="p_bc"><big>'.$this->s_type[$se[$i]["s_type"]]["icon"].'</big> ';
 			$bcsku="";	
 			$bc=0;
 			if(strlen($se[$i]["barcode"])>0){
@@ -277,6 +277,7 @@ class product extends main{
 		$price=(strlen(trim($_POST["price"]))>0)?$_POST["price"]:"NULL";
 		$cost=(strlen(trim($_POST["cost"]))>0)?$_POST["cost"]:"NULL";
 		$unit=$this->getStringSqlSet($_POST["unit"]);
+		$s_type=$this->getStringSqlSet($_POST["s_type"]);
 		$group_root=$this->getStringSqlSet($_POST["group_root"]);
 		$skuk=$this->key("key",7);
 		$sku_key=$this->getStringSqlSet($skuk);
@@ -306,7 +307,7 @@ class product extends main{
 		";
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
-				UPDATE `product` SET  `sku`=".$sku.",`sku_key`=".$sku_key.",  `name`= ".$name." ,  `barcode`=".$barcode.", `price`=".$price.",
+				UPDATE `product` SET  `sku`=".$sku.",`sku_key`=".$sku_key.",  `name`= ".$name." ,  `barcode`=".$barcode.", `price`=".$price.",`s_type`=".$s_type.",
 					 `cost`=".$cost.", `unit`=".$unit." ,`group_key` = @group_key,`group_root` = @group_root,`props` = JSON_MERGE_PATCH(`props`,@props)
 				WHERE `sku_root`=".$sku_root.";
 				SET @result=1;
@@ -325,6 +326,7 @@ class product extends main{
 		$price=(isset($_POST["price"]))?htmlspecialchars($_POST["price"]):"";
 		$cost=(isset($_POST["cost"]))?htmlspecialchars($_POST["cost"]):"";
 		$unit=(isset($_POST["unit"]))?htmlspecialchars($_POST["unit"]):"";
+		$s_type=(isset($_POST["s_type"]))?$_POST["s_type"]:"p";
 		$group = "defaultroot";
 		//echo $_POST["group_root"];
 		if(isset($_POST["group_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["group_root"])){
@@ -352,9 +354,10 @@ class product extends main{
 						<div><input id="product_regis_price" type="text" value="'.$price.'"  name="price"  /></div>
 						<p><label for="product_regis_cost">ต้นทุน</label></p>
 						<div><input id="product_regis_cost" type="text" value="'.$cost.'"  name="cost"  /></div>';
+			$this->writeStype($s_type);
 			echo '<p><label for="product_regis_unit">หน่วย</label></p>
 							<div><select id="product_regis_unit" name="unit">';
-							$this->writeSelectOption("unit",$unit);
+							$this->writeSelectOption("unit",$unit,$s_type);
 			echo '</select></div>';		
 			echo '<p><label for="product_regis_unit">กลุ่ม</label></p>
 							<div>';
@@ -416,6 +419,7 @@ class product extends main{
 		$price=(strlen(trim($_POST["price"]))>0)?$_POST["price"]:"NULL";
 		$cost=(strlen(trim($_POST["cost"]))>0)?$_POST["cost"]:"NULL";
 		$unit=$this->getStringSqlSet($_POST["unit"]);
+		$s_type=$this->getStringSqlSet($_POST["s_type"]);
 		$group_root=$this->getStringSqlSet($_POST["group_root"]);
 		$skuk=$this->key("key",7);
 		$sku_root=$this->getStringSqlSet($skuk);
@@ -445,8 +449,8 @@ class product extends main{
 		";
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
-				INSERT INTO `product`  (`sku`,`sku_key`,`sku_root`,`barcode`,`name`,`price`,`cost`,`unit`,`group_key`,`group_root`,`props`) 
-				VALUES (".$sku.",".$sku_root.",".$sku_root.",".$barcode.",".$name.",".$price.",".$cost.",".$unit.",@group_key,@group_root,@props); 
+				INSERT INTO `product`  (`sku`,`sku_key`,`sku_root`,`barcode`,`name`,`price`,`cost`,`unit`,`group_key`,`group_root`,`props`,`s_type`) 
+				VALUES (".$sku.",".$sku_root.",".$sku_root.",".$barcode.",".$name.",".$price.",".$cost.",".$unit.",@group_key,@group_root,@props,".$s_type."); 
 				SET @result=1;
 			END IF;
 		";
@@ -458,11 +462,14 @@ class product extends main{
 	}
 	private function editProductSetCurent(string $sku_root):void{
 		$od=$this->editProductOldData($sku_root);
-		$fl=["sku","barcode","name","price","cost","unit","group_root"];
+		$fl=["sku","barcode","name","price","cost","unit","group_root","s_type"];
 		foreach($fl as $v){
 			if(isset($od[$v])){
 				$_POST[$v]=$od[$v];
 			}
+		}
+		if(!isset($od["props"])){
+			$od["props"]="[]";
 		}
 		$props = json_decode($od["props"],true);
 		$this->props2PostProp_($props);
@@ -475,7 +482,7 @@ class product extends main{
 	private function editProductOldData(string $sku_root):array{
 		$sku_root=$this->getStringSqlSet($sku_root);
 		$sql=[];
-		$sql["result"]="SELECT `name`,`sku`,`barcode` ,`price`,`cost`,`unit`,IFNULL(`group_root`,\"defaultroot\") AS `group_root`,IFNULL(`props`,\"[]\") AS `props` 
+		$sql["result"]="SELECT `name`,`sku`,`barcode` ,`price`,`cost`,`unit`,IFNULL(`group_root`,\"defaultroot\") AS `group_root`,IFNULL(`props`,\"[]\") AS `props` ,`s_type`
 			FROM `product` 
 			WHERE `sku_root`=".$sku_root."";
 		$re=$this->metMnSql($sql,["result"]);
@@ -493,6 +500,7 @@ class product extends main{
 		$price=(isset($_POST["price"]))?htmlspecialchars($_POST["price"]):"";
 		$cost=(isset($_POST["cost"]))?htmlspecialchars($_POST["cost"]):"";
 		$unit=(isset($_POST["unit"]))?htmlspecialchars($_POST["unit"]):"";
+		$s_type=(isset($_POST["s_type"]))?$_POST["s_type"]:"p";
 		$group = "defaultroot";
 		if(isset($_POST["group_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["group_root"])){
 			$group = $_POST["group_root"];
@@ -533,9 +541,10 @@ class product extends main{
 						<div><input id="product_regis_price" type="text" value="'.$price.'"  name="price"  /></div>
 						<p><label for="product_regis_cost">ต้นทุน</label></p>
 						<div><input id="product_regis_cost" type="text" value="'.$cost.'"  name="cost"  /></div>';
+			$this->writeStype($s_type);
 			echo '<p><label for="product_regis_unit">หน่วย</label></p>
 							<div><select id="product_regis_unit" name="unit">';
-							$this->writeSelectOption("unit",$unit);
+							$this->writeSelectOption("unit",$unit,$s_type);
 			echo '</select></div>';	
 			echo '<p><label for="product_regis_unit">กลุ่ม</label></p>
 							<div>';
@@ -548,6 +557,18 @@ class product extends main{
 			</div>';
 		$this->pageFoot();	
 	}
+	private function writeStype(string $s_type="p"):void{
+		echo '<p><label for="product_regis_unit">รูปแบบการขาย</label></p>
+							<div>
+								<select id="product_regis_s_type" name="s_type" onchange="Pd.setUnitSelect(this)">
+									<option value="p"'.($s_type=="p"?" selected":"").'>'.$this->s_type["p"]["icon"].' '.$this->s_type["p"]["desc"].'</option>
+									<option value="w"'.($s_type=="w"?" selected":"").'>'.$this->s_type["w"]["icon"].' '.$this->s_type["w"]["desc"].'</option>
+									<option value="l"'.($s_type=="l"?" selected":"").'>'.$this->s_type["l"]["icon"].' '.$this->s_type["l"]["desc"].'</option>
+									<option value="v"'.($s_type=="c"?" selected":"").'>'.$this->s_type["v"]["icon"].' '.$this->s_type["v"]["desc"].'</option>
+								</select>
+							</div>
+		';
+	}
 	private function regisSetDataAs(string $sku_root):array{
 		$re=[];
 		$sql=[];
@@ -559,15 +580,29 @@ class product extends main{
 		}
 		return $re;
 	}
-	private function writeSelectOption(string $table,string $sku_root):void{
+	private function writeSelectOption(string $table,string $sku_root,string $s_type):void{
+		$ho="";
+		$n_ho=0;
+		$type=["p"=>"อัน","w"=>"น้ำหนัก","l"=>"ความยาว","v"=>"ปริมาตร"];
 		foreach($this->select[$table] as $k => $v){
+			$txh="";
+			if($v["s_type"]!=$ho){
+				$ho = $v["s_type"];
+				$n_ho += 1;
+				$txh = ' <optgroup data-s_type="'.$v["s_type"].'" label="'.$type[$v["s_type"]].'"'.($s_type!=$v["s_type"]?" hidden":"").'>';
+				if($n_ho > 1){
+					$txh = '</optionfroup>'.$txh;
+				}
+			}
 			$sel=($v["sku_root"]==$sku_root)?' selected="selected"':'';
-			echo '<option value="'.$v["sku_root"].'"'.$sel.'>'.$v["name"].'</option>';
+			echo $txh;
+			echo '<option data-s_type="'.$v["s_type"].'" value="'.$v["sku_root"].'"'.$sel.'>'.$v["name"].'</option>';
 		}
+		echo '</optionfroup>';
 	}
 	private function getSelect():void{
 		$sql=[];
-		$sql["unit"]="SELECT * FROM `unit` ORDER BY `id` ASC";
+		$sql["unit"]="SELECT * FROM `unit` ORDER BY `s_type` ASC,`name` ASC";
 		$se=$this->metMnSql($sql,["unit"]);
 		if($se["result"]){
 			$this->select["unit"]=$se["data"]["unit"];
@@ -605,8 +640,10 @@ class product extends main{
 		echo '<form class="form100"  name="product" method="post">
 			<input type="hidden" name="sku_root" value="" />
 			<table id="product"><tr><th>ที่</th>
+			<th>ป.</th>			
 			<th>รหัสภายใน</th>
 			<th>รหัสแท่ง</th>
+
 			<th>ชื่อ</th>
 			<th>ราคา</th>
 			<th>ต้นทุน</th>
@@ -647,8 +684,10 @@ class product extends main{
 			$namejs=str_replace("\\","\\\\",$namejs);
 			$namejs=str_replace("'","\'",$namejs);
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
+				<td class="l">'.$this->s_type[$se[$i]["s_type"]]["icon"].'</td>
 				<td class="l">'.$sku.'</td>
 				<td class="l">'.$barcode.'</td>
+				
 				<td class="l">
 					<div><a href="?a=product&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a>'.$stat.'</div>
 					<div>'.$sku.','.$barcode.'</div>
@@ -710,7 +749,7 @@ class product extends main{
 		if($for=="sell"||$for=="label"||$for=="itmw"){
 			$sql["get"]="SELECT 
 					 `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
-					`product`.`name`, `product`.`price`, `product`.`cost`, 
+					`product`.`name`, `product`.`price`, `product`.`cost`, `product`.`s_type`,
 					 `unit`.`name` AS `unit_name`,
 					 SUM(`bill_in_list`.`balance`) AS balance
 				FROM `product` 
@@ -724,7 +763,7 @@ class product extends main{
 		}else if($for=="billsin"){
 			$sql["get"]="SELECT 
 				`product`.`id`, `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
-				`product`.`name`, `product`.`price`, `product`.`cost`, 
+				`product`.`name`, `product`.`price`, `product`.`cost`,  `product`.`s_type`,
 				`product`.`unit` AS `unit_sku_root`, `unit`.`name` AS `unit_name`,
 				SUM(`bill_in_list`.`balance`) AS balance
 			FROM `product` 
@@ -743,7 +782,7 @@ class product extends main{
 			//print_r($sh);
 			$sql["get"]="SELECT 
 				`product`.`id`, `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
-				`product`.`name`, `product`.`price`, `product`.`cost`, 
+				`product`.`name`, `product`.`price`, `product`.`cost`, `product`.`s_type`,
 				`product`.`unit` AS `unit_sku_root`,product.pdstat, IFNULL(`product`.`group_root`,\"defaultroot\") AS `group_root`,`unit`.`name` AS `unit_name`,
 				`group`.`d1` AS `d1`,`group`.`d2` AS `d2`,`group`.`d3` AS `d3`,`group`.`d4` AS `d4`,
 				SUM(IF(bill_in_list.stroot='proot',`bill_in_list`.`balance`,0)) AS balance
