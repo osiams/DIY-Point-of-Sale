@@ -61,6 +61,7 @@ class it_view extends it{
 		echo '<form class="form100"  name="product" method="post">
 			<input type="hidden" name="sku_root" value="" />
 			<table id="it_view"><tr><th>ที่</th>
+			<th>ป.</th>
 			<th>รหัสภายใน</th>
 			<th>รหัสแท่ง</th>
 			<th>ชื่อ</th>
@@ -93,11 +94,12 @@ class it_view extends it{
 				
 			}
 			echo '<tr'.$cm.'><td>'.$id.'</td>
+				<td class="pwlv">'.$this->s_type[$se[$i]["s_type"]]["icon"].'</td>
 				<td class="l">'.$sku.'</td>
 				<td class="l">'.$barcode.'</td>
 				<td class="l">
 					<div><a href="?a=it&amp;b=view&amp;sku_root='.$sku_root.'&amp;c=lot&amp;pd='.$se[$i]["product_sku_root"].'">'.$name.'</a></div>
-					<div>'.$sku.','.$barcode.'</div>
+					<div><span  class="pwlv">'.$this->s_type[$se[$i]["s_type"]]["icon"].'</span> '.$sku.','.$barcode.'</div>
 				</td>
 				<td class="r">
 					<div>'.$se[$i]["price"].'</div>
@@ -150,7 +152,7 @@ class it_view extends it{
 		$sql["product"]="SELECT bill_in_list.sum,bill_in_list.n,bill_in_list.product_sku_root,
 					IFNULL(SUM(bill_in_list.balance),0) AS balance,
 					IFNULL(COUNT(*),0) AS `count`,
-					`product`.`id`,product.sku,product.barcode,product.name,product.price,product.cost,
+					`product`.`id`,product.sku,product.barcode,product.name,product.price,product.cost,`product`.`s_type`,
 					unit.name AS unit_name
 				FROM bill_in_list
 				LEFT JOIN product
@@ -427,6 +429,7 @@ class it_view_lot extends it_view{
 			<input type="hidden" name="sku_root" value="'.$sku_root.'" />
 			<table id="it_view_lot"><tr><th>ที่</th>
 			<th>งวด (ตัดสินค้าจากบน ลง ล่าง)</th>
+			<th>ป.</th>
 			<th>ชื่อ</th>
 			<th>ต้นทุน</th>
 			<th>รับเข้า</th>
@@ -478,10 +481,11 @@ class it_view_lot extends it_view{
 			$tx='<a href="?a=bills&amp;b=view&amp;c='.$c.'&amp;sku='.$key.'&amp;ed='.$se[$i]["product_sku_root"].'">'.$tx.'</a>';
 			echo '<tr'.$cm.'><td data-id="'.$se[$i]["id"].'">'.$id.'</td>
 				<td class="l">'.$tx.'<p>ผ่านมา '.$this->ago(time()-strtotime($se[$i]["date_reg"])).'</p></td>
+				<td  class="pwlv">'.$this->s_type[$se[$i]["s_type"]]["icon"].'</td>
 				<td class="l"><div><a href="?a=product&amp;b=details&amp;sku_root='.$se[$i]["product_sku_root"].'">'.$se[$i]["product_name"].'</a>
-						<span> ทุนรวม '.number_format($se[$i]["cost"],2,'.',',').'</span>
+						<span>ทุน/หน่วย '.number_format($se[$i]["cost"],2,'.',',').'</span>
 						</div>
-					<div>'.$se[$i]["product_sku"].','.$se[$i]["barcode"].'</div>
+					<div><span  class="pwlv">'.$this->s_type[$se[$i]["s_type"]]["icon"].' </span>'.$se[$i]["product_sku"].','.$se[$i]["barcode"].'</div>
 				</td>
 				<td class="r">'.number_format($se[$i]["cost"],2,'.',',').'</td>
 				<td class="r">'.$se[$i]["n"].'</td>
@@ -532,7 +536,7 @@ class it_view_lot extends it_view{
 				bill_in_list.name AS `product_name`,(bill_in_list.sum/bill_in_list.n) AS cost,
 				bill_in.in_type,bill_in.bill,IFNULL(bill_in.note,'')  AS bill_note,
 				bill_in.sku,IFNULL(bill_in.note,'') AS `note`,bill_in.date_reg,
-				product_ref.barcode,product_ref.sku AS product_sku,
+				product_ref.barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`,
 				IFNULL(product.skuroot1,'') AS skuroot1,IFNULL(product.skuroot1_n,0) AS skuroot1_n,
 				IFNULL(product.skuroot2,'') AS skuroot2,IFNULL(product.skuroot2_n,0) AS skuroot2_n,
 				unit_ref.name AS unit_name

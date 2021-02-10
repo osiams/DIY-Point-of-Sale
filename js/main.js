@@ -304,7 +304,7 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 		let lt = (width)/2  - window.scrollX
 		let zindex = did.style.zIndex
 
-		did.setAttribute("style","z-index:"+(zindex)+";top:calc(50% - "+(tp)+"px);left:calc(50% - "+(lt)+"px);height:"+(height-2)+"px;width:"+(width-2)+"px;")
+		did.setAttribute("style","z-index:"+(zindex)+";top:calc(50% - "+(tp)+"px);left:calc(50% - "+(lt)+"px);height:"+(height-2+1)+"px;width:"+(width-2+1)+"px;")
 	}
 	filmActive(did,id){
 		M.l(did.className)

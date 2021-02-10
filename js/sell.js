@@ -135,11 +135,13 @@ class sell extends main{
 					this.end(dname,[this.cn("สินค้า "),spnlist])
 					let dn=this.ce("div",{})
 					this.end(dn,[this.cn("จำนวน")])
+					let dun=this.ce("div",{})
+					this.end(dun,[this.cn("หน่วย")])
 					let dpu=this.ce("div",{})
 					this.end(dpu,[this.cn("ราคา/หน่วย")])
 					let dsum=this.ce("div",{})
 					this.end(dsum,[this.cn("ราคารวม")])
-				this.end(dprohead,[dat,dbc,dst,dname,dn,dpu,dsum])
+				this.end(dprohead,[dat,dbc,dst,dname,dn,dun,dpu,dsum])
 				let dprolist=this.ce("div",{"id":"dlist"})
 			this.end(dpro,[dprohead,dprolist])
 			let dtotal=this.ce("div",{})
@@ -388,6 +390,7 @@ class sell extends main{
 		let per=this.nb(this.pd[sku_root]["price"])
 		let bc=(this.pd[sku_root]["barcode"]!=null)?this.pd[sku_root]["barcode"]:""
 		let n=this.dt[sku_root]["n"]
+		let un=this.pd[sku_root]["unit_name"]
 		let sum=this.nb(n*this.pd[sku_root]["price"])
 		let dlist=this.ce("div",{"id":sku_root})
 			let dat=this.ce("div",{})
@@ -400,16 +403,26 @@ class sell extends main{
 				let dnamenbc=this.ce("div",{})
 					let dnamest=this.ce("span",{})
 					let dnamebc=this.ce("span",{})
-					this.end(dnamebc,[this.cn(bc)])
-				this.end(dnamenbc,[ dnamest,this.cn(" " ), dnamebc])
+					this.end(dnamebc,[this.cn(bc)])	
+						let dnameprice=this.ce("span",{})
+						this.end(dnameprice,[this.cn(" ฿"+per)])					
+				this.end(dnamenbc,[ dnamest,this.cn(" " ), dnamebc,dnameprice])
 			this.end(dname,[this.cn(name),dnamenbc])			
 			let dn=this.ce("div",{"class":"set_n","onclick":"S.setN(this)"})
-			this.end(dn,[this.cn(n)])
+				let gn_group=this.ce("div",{})
+					let dnn=this.ce("div",{})
+					this.end(dnn,[this.cn(n)])
+					let dnun=this.ce("div",{})
+					this.end(dnun,[this.cn(un)])
+				this.end(gn_group,[dnn,dnun])	
+			this.end(dn,[gn_group])
+			let dun=this.ce("div",{})
+			this.end(dun,[this.cn(un)])
 			let dper=this.ce("div",{})
 			this.end(dper,[this.cn(per)])
 			let dsum=this.ce("div",{})
 			this.end(dsum,[this.cn(sum)])
-		this.end(dlist,[dat,dbc,dst,dname,dn,dper,dsum])
+		this.end(dlist,[dat,dbc,dst,dname,dn,dun,dper,dsum])
 		this.end(this.dlist,[dlist])
 	}
 	updateNewList(sku_root){
@@ -417,9 +430,8 @@ class sell extends main{
 		let sum=this.nb(n*this.pd[sku_root]["price"])
 		let d=this.id(sku_root)
 		this.id(this.dpro).scrollTo({top:d.offsetTop-57,left:0,behavior: "smooth"});
-		M.l(d.offsetTop-57)
-		d.childNodes[4].innerHTML=n
-		d.childNodes[6].innerHTML=sum
+		d.childNodes[4].childNodes[0].childNodes[0].innerHTML=n
+		d.childNodes[7].innerHTML=sum
 		if(d.className=="updater"){
 			d.className="updater2"
 		}else if(d.className=="updater2"){
@@ -502,11 +514,36 @@ class sell extends main{
 		if(re["result"]){
 			let n=form.get("n")
 			let nt=(n.trim().length==0)?null:Number(n)
-			S.setFl2Pd2Insert(re,nt);
-			
+			if(re["s_type"]=="p"){
+				S.setFl2Pd2Insert(re,nt)
+			}else{
+				S.pressInput(re,nt)
+			}
 		}else{
 			S.getPdFromServerError(re,form,bt)
 		}
+	}
+	pressInput(re,nt){
+		let tt={"w":"น้ำหนัก","l":"ความยาว","v":"ปริมาตร"}
+		let rid = this.rid()
+		
+		let ct = this.ce("div",{"class":"cal_d_press"})
+			let p=this.ce("p",{})
+			this.end(p,[this.cn(re["name"]+" "+re["unit_name"]+"ละ ฿"+this.nb(re["price"]))])
+			let ip=this.ce("input",{"type":"text"})
+			let d=this.ce("div",{})
+				for(let i=9;i>=0;i--){
+					let dn=this.ce("button",{"type":"button"})
+					this.end(dn,[this.cn(i)])
+					this.end(d,[dn])	
+				}
+		this.end(ct,[p,ip,d])				
+		let bts = [
+			{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"')"},
+			{"value":"ตกลง","onclick":""}
+		]
+
+		M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":"โปรดกรอก "+tt[re["s_type"]],"width":"250"})
 	}
 	getPdFromServerError(re,form,bt){
 		if(re["message_error"]!=undefined){

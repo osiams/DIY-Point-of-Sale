@@ -271,7 +271,7 @@ class sell extends main{
 		$sql["get"]="SELECT 
 			 `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
 			`product`.`name`, `product`.`price`, `product`.`cost`, 
-			 `unit`.`name` AS `unit_name`
+			 `unit`.`name` AS `unit_name`,`product`.`s_type`
 		FROM `product` 
 		LEFT JOIN (`unit`) 
 		ON (`product`.`unit` = `unit`.`sku_root`) 

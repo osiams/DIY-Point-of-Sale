@@ -165,7 +165,7 @@ class product extends main{
 				$kbc=str_replace($this->txsearch,'<span class="bgyl">'.$this->txsearch.'</span>',$kbc);
 			}
 			echo '<tr><td>'.($i+1).'.</td>
-				<td class="l"><p>'.$nm.'</p><p class="p_bc"><big>'.$this->s_type[$se[$i]["s_type"]]["icon"].'</big> ';
+				<td class="l"><p>'.$nm.'</p><p class="p_bc"><span class="pwlv">'.$this->s_type[$se[$i]["s_type"]]["icon"].'</span> ';
 			$bcsku="";	
 			$bc=0;
 			if(strlen($se[$i]["barcode"])>0){
@@ -684,7 +684,7 @@ class product extends main{
 			$namejs=str_replace("\\","\\\\",$namejs);
 			$namejs=str_replace("'","\'",$namejs);
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
-				<td class="l">'.$this->s_type[$se[$i]["s_type"]]["icon"].'</td>
+				<td class="pwlv">'.$this->s_type[$se[$i]["s_type"]]["icon"].'</td>
 				<td class="l">'.$sku.'</td>
 				<td class="l">'.$barcode.'</td>
 				

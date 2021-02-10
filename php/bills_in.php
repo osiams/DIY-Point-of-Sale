@@ -628,7 +628,10 @@ class bills_in extends bills{
 			<table class="page r"><tr><td>บันทึกโดย : '.$dt[0]["user_name"].' วันที่ '.$dt[0]["date_reg"].'
 				<br />⏳ผ่านมาแล้ว '.$this->ago(time()-strtotime($dt[0]["date_reg"])).'
 				</td></tr><tr><td>
-			<table  id="billinlist" class="l"><tr><th>ที่</th><th>รหัสแท่ง</th><th>สินค้า</th><th>จำนวน</th>
+			<table  id="billinlist" class="l"><tr>
+				<th>ที่</th>
+				<th>ป.</th>
+				<th>รหัสแท่ง</th><th>สินค้า</th><th>จำนวน</th>
 				<th>คงเเหลือ<sup class="q" onclick="M.tooltups(this,\'นับเฉพาะ ในคลังสินค้าพร้อมขาย หมายเหตุ 100/105 >>100 = จำนวนในงวดนี้ , 105 = รวมจำนวนทั้งหมด (รวมงวดอื่นด้วย)\')">?</sup></th>
 				<th>หน่วย</th>
 			<th>ราคา / หน่วย</th><th>ราคารวม</th>
@@ -645,6 +648,7 @@ class bills_in extends bills{
 				$cl=' class="ed"';
 			}
 			echo '<tr'.$cl.'><td>'.($i+1).'</td>
+			<td class="pwlv">'.$this->s_type[$dt[$i]["s_type"]]["icon"].'</td>
 			<td class="l">'.$dt[$i]["barcode"].'</td>
 			<td><div>'.htmlspecialchars($dt[$i]["name"]).'</div>
 				<div>'.$dt[$i]["barcode"].'</div>
@@ -680,7 +684,7 @@ class bills_in extends bills{
 				bill_in_list.id AS bill_in_list_id,bill_in_list.product_sku_key  AS `pd_sku_root`,bill_in_list.product_sku_root,bill_in_list.product_sku_root AS sku_root ,bill_in_list.n ,bill_in_list.balance,bill_in_list.sum ,bill_in_list.name,
 				IFNULL(SUM(bill_in_list2.balance),0) AS `sum_balance`,
 				unit_ref.name AS unit_name,
-				product_ref.barcode AS barcode,product_ref.sku AS product_sku
+				product_ref.barcode AS barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`
 			FROM `bill_in` 
 			LEFT JOIN bill_in_list 
 			ON(bill_in_list.id>=bill_in.r_ AND bill_in_list.id<=bill_in._r  AND bill_in.sku=bill_in_list.bill_in_sku AND bill_in_list.stroot='proot' )		
