@@ -6,10 +6,10 @@ body{overflow:hidden;}
 #sell > div:nth-child(1) > div:nth-child(1) > input{float:left;width:50px;font-size:20px;background-color:transparent;text-align:center;padding:2px;height:30px;border:0px;}
 #sell > div:nth-child(1) > div:nth-child(3){display:grid;text-align:center;font-size:20px;height:100%;align-content: center;cursor:pointer;}
 #sell > div:nth-child(2){display:grid;grid-template-rows:25px auto;width:100%;height:100%;background-color:transparent;text-align:center;overflow-y:auto;}
-#sell > div:nth-child(2) > div:nth-child(1){display:grid;grid-template-columns:25px 120px  35px auto 60px 60px 90px 100px ;width:100%;/*color:#eeeeee;*/border-top:1px solid #eeeeee;border-bottom:1px solid #eeeeee;position: sticky;top: 0;}
+#sell > div:nth-child(2) > div:nth-child(1){display:grid;grid-template-columns:25px 120px  35px auto 90px 60px 90px 100px ;width:100%;/*color:#eeeeee;*/border-top:1px solid #eeeeee;border-bottom:1px solid #eeeeee;position: sticky;top: 0;}
 #sell > div:nth-child(2) > div:nth-child(1) > div{display:flex;align-items: center;justify-content:center;white-space: nowrap;}
 #sell > div:nth-child(2) > div:nth-child(2){display: grid;align-content: start;width:100%;background-color:transparent;}
-#sell > div:nth-child(2) > div:nth-child(2) > div{display:grid;grid-template-columns:25px 120px  35px auto 60px 60px 90px 90px ;width:100%;animation-name:sp1;animation-duration:2s;animation-iteration-count:1;padding:4px 0px;}
+#sell > div:nth-child(2) > div:nth-child(2) > div{display:grid;grid-template-columns:25px 120px  35px auto 90px 60px 90px 90px ;width:100%;animation-name:sp1;animation-duration:2s;animation-iteration-count:1;padding:4px 0px;}
 #sell > div:nth-child(2) > div:nth-child(2) > div.updater{animation-name:sp2;animation-duration:2s;animation-iteration-count:1;}
 #sell > div:nth-child(2) > div:nth-child(2) > div.updater2{animation-name:sp3;animation-duration:2s;animation-iteration-count:1;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(1){display: grid;text-align:left;padding:1px 3px;align-content: center;}
@@ -21,7 +21,7 @@ body{overflow:hidden;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4) > div > span:nth-child(2){font-size:0.9em;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4) > div > span:nth-child(3){font-size:0.9em;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(5){display: grid;text-align:right;padding:1px 3px; align-content: center;overflow-x:auto;word-break: break-all;}
-#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(5) > div >div:nth-child(1){display: grid;text-align:right;padding:0px; align-content: center;overflow-x:auto;font-weight:bold;width:100%;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(5) > div >div:nth-child(1){display: grid;text-align:right;padding:0px; align-content: center;overflow-x:auto;width:100%;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(5) > div >div:nth-child(2){display: none;text-align:right;padding:0px;overflow-x:hidden;font-style:italic;font-size:0.9em;width:100%;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(6){display: grid;text-align:right;padding:1px 3px; align-content: center;overflow-x:hidden}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(7){display: grid;text-align:right;padding:1px 3px; align-content: center;overflow-x:auto;word-break: break-all;}
@@ -121,6 +121,6 @@ body{overflow:hidden;}
 
 .cal_d_press{display:grid;grid-template-rows:auto auto auto;width:100%;height:100%;align-content: start;}
 .cal_d_press > p{text-align:left;}
-.cal_d_press > input[type="text"]:nth-child(2){width:calc(100% - 8px);text-align:right;font-weight:bold;font-size:25px;margin:2px 0;padding:5px 3px;font-family:"Lucida Console", "Courier New", monospace}
+.cal_d_press > input[type="text"]:nth-child(2){width:calc(100% - 8px);text-align:right;font-weight:bold;font-size:25px;margin:2px 0;padding:5px 3px;font-family:"Lucida Console", "Courier New", monospace;color:green}
 .cal_d_press > div{display:grid;grid-template-columns:auto auto auto;width:100%;}
 .cal_d_press > div > button{height:40px;}

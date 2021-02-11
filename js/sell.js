@@ -23,6 +23,12 @@ class sell extends main{
 			"Numpad5":"5","Numpad6":"6","Numpad7":"7","Numpad8":"8","Numpad9":"9",
 			"ArrowDown":"-","ArrowUp":"+","NumpadDivide":"/"
 		}
+		this.float={"NumpadDecimal":".","Period":".","Backspace":"",
+			"Digit0":"0","Digit1":"1","Digit2":"2","Digit3":"3","Digit4":"4",
+			"Digit5":"5","Digit6":"6","Digit7":"7","Digit8":"8","Digit9":"9",
+			"Numpad0":"0","Numpad1":"1","Numpad2":"2","Numpad3":"3","Numpad4":"4",
+			"Numpad5":"5","Numpad6":"6","Numpad7":"7","Numpad8":"8","Numpad9":"9"
+		}
 		this.sco1=""
 		this.sco2=""
 		this.sct=""
@@ -33,6 +39,9 @@ class sell extends main{
 		this.sellcon={"n_unit":0,"n_list":0,"sum":0,"skurootlast":null,"n_before":0,"n_now":0,"n_last":0,}
 		this.ip=""
 		this.mykey=""
+		this.listen_cm=null
+		this.listen_target_id=null
+		this.bypass_pressInput=[]
 	}
 	run(){
 		this.writeContent()
@@ -46,7 +55,7 @@ class sell extends main{
 		this.setiplus()
 		window.addEventListener("keydown",S.kb)
 		window.addEventListener("keyup",S.kb)
-		window.addEventListener('fullscreenchange',S.fullScreenChange)
+		//window.addEventListener('fullscreenchange',S.fullScreenChange)
 		
 	}
 	wsRegis(){
@@ -359,7 +368,7 @@ class sell extends main{
 		//let n=this.idn.value*1
 		
 		if(n>0){
-			this.dt[sku_root]={"n":n,"last":Number(n)}
+			this.dt[sku_root]={"n":n,"last":Number(n),"n_wlv":this.pd[sku_root]["n_wlv"]}		
 		}else{
 			re=false
 		}
@@ -390,8 +399,12 @@ class sell extends main{
 		let per=this.nb(this.pd[sku_root]["price"])
 		let bc=(this.pd[sku_root]["barcode"]!=null)?this.pd[sku_root]["barcode"]:""
 		let n=this.dt[sku_root]["n"]
+		let n_wlv=""
+		if(this.pd[sku_root]["s_type"]!="p"){
+			n_wlv="×"+this.dt[sku_root]["n_wlv"]
+		}
 		let un=this.pd[sku_root]["unit_name"]
-		let sum=this.nb(n*this.pd[sku_root]["price"])
+		let sum=this.nb(n*this.pd[sku_root]["n_wlv"]*this.pd[sku_root]["price"])
 		let dlist=this.ce("div",{"id":sku_root})
 			let dat=this.ce("div",{})
 			this.end(dat,[this.cn(at)])
@@ -411,7 +424,7 @@ class sell extends main{
 			let dn=this.ce("div",{"class":"set_n","onclick":"S.setN(this)"})
 				let gn_group=this.ce("div",{})
 					let dnn=this.ce("div",{})
-					this.end(dnn,[this.cn(n)])
+					this.end(dnn,[this.cn(n+""+n_wlv)])
 					let dnun=this.ce("div",{})
 					this.end(dnun,[this.cn(un)])
 				this.end(gn_group,[dnn,dnun])	
@@ -427,10 +440,14 @@ class sell extends main{
 	}
 	updateNewList(sku_root){
 		let n=this.dt[sku_root]["n"]
-		let sum=this.nb(n*this.pd[sku_root]["price"])
+		let n_wlv=""
+		if(this.pd[sku_root]["s_type"]!="p"){
+			n_wlv="×"+this.dt[sku_root]["n_wlv"]
+		}
+		let sum=this.nb(n*this.pd[sku_root]["n_wlv"]*this.pd[sku_root]["price"])
 		let d=this.id(sku_root)
 		this.id(this.dpro).scrollTo({top:d.offsetTop-57,left:0,behavior: "smooth"});
-		d.childNodes[4].childNodes[0].childNodes[0].innerHTML=n
+		d.childNodes[4].childNodes[0].childNodes[0].innerHTML=n+""+n_wlv
 		d.childNodes[7].innerHTML=sum
 		if(d.className=="updater"){
 			d.className="updater2"
@@ -475,7 +492,7 @@ class sell extends main{
 		let n_list=0
 		for (let k in this.dt) {
 			n_list+=1
-			sums+=this.pd[k]["price"]*this.dt[k]["n"]
+			sums+=this.pd[k]["price"]*this.dt[k]["n"]*this.dt[k]["n_wlv"]
 		}
 		this.sellcon.n_list=n_list
 		if(type=="set"){
@@ -515,6 +532,7 @@ class sell extends main{
 			let n=form.get("n")
 			let nt=(n.trim().length==0)?null:Number(n)
 			if(re["s_type"]=="p"){
+				re["n_wlv"]=1
 				S.setFl2Pd2Insert(re,nt)
 			}else{
 				S.pressInput(re,nt)
@@ -524,26 +542,54 @@ class sell extends main{
 		}
 	}
 	pressInput(re,nt){
+		this.listen_cm="pressInput"
 		let tt={"w":"น้ำหนัก","l":"ความยาว","v":"ปริมาตร"}
+		let bt=["7","8","9","4","5","6","1","2","3","0",".","⬅"]
 		let rid = this.rid()
-		
+		let rid_listen = this.rid()
+		this.listen_target_id=rid_listen
 		let ct = this.ce("div",{"class":"cal_d_press"})
 			let p=this.ce("p",{})
 			this.end(p,[this.cn(re["name"]+" "+re["unit_name"]+"ละ ฿"+this.nb(re["price"]))])
-			let ip=this.ce("input",{"type":"text"})
+			let ip=this.ce("input",{"type":"text","id":rid_listen,"data-unit_name":re["unit_name"],"value":" "+re["unit_name"]})
 			let d=this.ce("div",{})
-				for(let i=9;i>=0;i--){
-					let dn=this.ce("button",{"type":"button"})
-					this.end(dn,[this.cn(i)])
+				for(let i=0;i<bt.length;i++){
+					let t=bt[i]
+					let dn=this.ce("button",{"type":"button","onclick":"S.ipFloat(event,'"+t+"')"})
+					this.end(dn,[this.cn(bt[i])])
 					this.end(d,[dn])	
 				}
-		this.end(ct,[p,ip,d])				
+		this.end(ct,[p,ip,d])		
+		this.bypass_pressInput=[re,nt]		
 		let bts = [
 			{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"')"},
-			{"value":"ตกลง","onclick":""}
+			{"value":"ตกลง","onclick":"S.pressInputOK('"+rid+"','"+rid_listen+"')"}
 		]
-
 		M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":"โปรดกรอก "+tt[re["s_type"]],"width":"250"})
+		ip.readOnly = true
+		ip.focus()
+	}
+	pressInputOK(id_dialog,id_listen){
+		let re=this.bypass_pressInput[0]
+		let nt=parseInt(this.idn.value)
+		let n_wlv=this.id(id_listen).value.split(" ")[0]*1
+		M.dialogClose(id_dialog)
+		re["barcode"]=this.doBarcode(re["barcode"],n_wlv)
+		re["sku_root"]=re["barcode"]+"_"+re["barcode"]
+		re["name"]=re["name"]+" "+n_wlv.toString()+" "+re["unit_name"]
+		re["n_wlv"]=n_wlv
+		this.setFl2Pd2Insert(re,nt)	
+		this.bypass_pressInput=[]
+	}
+	doBarcode(barcode="",float){
+		let f=""
+		let q=float.toString().split(".")
+		if(q.length==2){
+			f=barcode+""+q[0]+""+q[1]+""+(q[0].length>9?q[0].length:"0"+q[0].length)+""+(barcode.length>9?barcode.length:"0"+barcode.length)
+		}else{
+			f=barcode+""+q[0]+""+(q[0].length>9?q[0].length:"0"+q[0].length)+""+(barcode.length>9?barcode.length:"0"+barcode.length)
+		}
+		return f
 	}
 	getPdFromServerError(re,form,bt){
 		if(re["message_error"]!=undefined){
@@ -554,7 +600,7 @@ class sell extends main{
 	}
 	kb(event){
 		let act=document.activeElement.tagName
-		if(act=="BODY"){
+		if(act=="BODY" && S.listen_cm == null){
 			let el=event.target		
 			let key=event.code
 			if(event.type=="keyup"){
@@ -598,6 +644,38 @@ class sell extends main{
 					}
 				}
 			}
+		}else if(event.type=="keyup"&&S.listen_cm=="pressInput"){
+			S.ipFloat(event,"  ")
+		}
+	}
+	ipFloat(event,t=""){
+		let ip=this.id(this.listen_target_id)
+		let ep=ip.value.split(" ")		
+		if(event.type=="keyup"){
+			let skey = event.code
+			if(this.float.hasOwnProperty(skey)){
+				t=this.float[skey]
+			}
+		}else if(event.type=="click"){
+			if(t.length!=1||"0123456789.⬅".indexOf(t)==-1){
+				t="  "
+			}else if(t=="⬅"){
+				t=""
+			}
+			event.target.blur()
+		}
+		if(t=="."&&ep[0].indexOf(".")>=0){
+						
+		}else if(t==""){
+			ip.value=ep[0].substring(0,ep[0].length-1)+" "+ep[1]
+		}else{
+			let float = ep[0]+""+t.trim()
+			if(ep[0].indexOf(".")<0&&t!="."){
+				float=(ep[0]+""+t.trim())*1
+			}else if(ep[0].length==0&&t=="."){
+				float="0."
+			}
+			ip.value=float+" "+ep[1]
 		}
 	}
 	comand(cm){
@@ -654,7 +732,11 @@ class sell extends main{
 				}
 				if(S.loadlocalst==1){G.loading("sell_loading58x","setget",0,1,"S.loadlocalst")}
 				//M.l("**"+bc+"="+n)
-				S.insertList(bc,n)
+				if(S.pd[sku_root].s_type=="p"){
+					S.insertList(bc,n)
+				}else{
+					S.pressInput(S.pd[sku_root],0)
+				}
 			}
 		}
 	}
