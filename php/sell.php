@@ -250,12 +250,31 @@ class sell extends main{
 			$field="sku_root";
 			$barcode=substr($barcode,3);
 		}
-		$dt=$this->getProduct($field,$barcode);
+		$barcode_wlv="";
+		$be=(int) substr($barcode,-2);
+		if($field=="barcode"&&strlen($barcode)>=8){
+			
+			if($be<=strlen($barcode)-4-1){
+				$barcode_wlv=substr($barcode,0,$be);
+			}
+		}
+		$dt=$this->getProduct($field,$barcode,$barcode_wlv);
 		if(count($dt)==1){
 			$dt[0]["result"]=true;
 			$dt[0]["message_error"]="";
 			settype($dt[0]["price"], "integer");
 			settype($dt[0]["cost"], "integer");
+			if($dt[0]["bc_type"]=="bc_wlv"){
+				$int_start=substr($barcode,-4);
+				$int_start=substr($int_start,0,2);
+				$wlv_int_float=substr($barcode,$be,-4);
+				$wlv_int= (int) substr($wlv_int_float,0,$int_start);
+				$wlv_float= substr($wlv_int_float,$int_start);
+				$wlv=$wlv_int.".".$wlv_float;
+				$wlv=(strlen($wlv_float)==0)?$wlv_int:$wlv;
+				$dt[0]["barcode"]=$barcode;
+				$dt[0]["name"]=$dt[0]["name"]. " ".$wlv." ".$dt[0]["unit_name"];
+			}
 		}else{
 			$dt[0]=[];
 			$dt[0]["result"]=false;
@@ -264,24 +283,36 @@ class sell extends main{
 		header('Content-type: application/json');
 		echo json_encode($dt[0]);
 	}
-	private function getProduct(string $field,string $bc):array{
+	private function getProduct(string $field,string $bc,string $bc_wlv):array{
 		$barcode=$this->getStringSqlSet($bc);
+		$barcode_wlv=$this->getStringSqlSet($bc_wlv);
 		$re=[];
 		$sql=[];
-		$sql["get"]="SELECT 
-			 `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
-			`product`.`name`, `product`.`price`, `product`.`cost`, 
-			 `unit`.`name` AS `unit_name`,`product`.`s_type`
-		FROM `product` 
-		LEFT JOIN (`unit`) 
-		ON (`product`.`unit` = `unit`.`sku_root`) 
-		WHERE `product`.`".$field."`=".$barcode." LIMIT 1
+		$sql["set"]="SELECT @n_bc:=(SELECT COUNT(*) FROM `product` WHERE `".$field."`=".$barcode." LIMIT 1),
+			@field:='".$field."',
+			@bc:=".$barcode.",
+			@bc_type:='bc',
+			@bc_wlv:=".$barcode_wlv."";
+		$sql["set_r"]="IF @n_bc = 0 && @field = 'barcode' THEN
+				SET @bc=@bc_wlv;
+				SET @bc_type='bc_wlv';
+		END IF";
+		$sql["get"]="
+			SELECT 
+				 `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
+				`product`.`name`, `product`.`price`, `product`.`cost`, 
+				 `unit`.`name` AS `unit_name`,`product`.`s_type`,@bc_type AS `bc_type`
+			FROM `product` 
+			LEFT JOIN (`unit`) 
+			ON (`product`.`unit` = `unit`.`sku_root`) 
+			WHERE `product`.`".$field."`=@bc LIMIT 1;
 		";
 		//print_r($sql);
 		$se=$this->metMnSql($sql,["get"]);
 		if($se["result"]){
 			$re=$se["data"]["get"];
 		}
+		//print_r($se);exit;
 		return $re;
 	}
 	private function sendSt():void{

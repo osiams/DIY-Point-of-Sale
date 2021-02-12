@@ -909,7 +909,7 @@ class bill58 extends main{
 	private function getPd(string $sku_root):array{
 		$re=[];
 		$sql=[];
-		$sql["get"]="SELECT product.name,product.barcode,product.price,unit.name  AS `unit_name`
+		$sql["get"]="SELECT product.name,product.barcode,IFNULL(product.price,'') AS `price`,unit.name  AS `unit_name`
 			FROM product 
 			LEFT JOIN unit ON (product.unit=unit.sku_root) 
 			WHERE product.sku_root='".$sku_root."';";

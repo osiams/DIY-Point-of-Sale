@@ -535,11 +535,27 @@ class sell extends main{
 				re["n_wlv"]=1
 				S.setFl2Pd2Insert(re,nt)
 			}else{
-				S.pressInput(re,nt)
+				if(re["bc_type"]=="bc_wlv"){
+					re["sku_root"]=re["sku_root"]+"_"+re["barcode"]
+					re["n_wlv"]=S.get_n_wlv(re["barcode"])
+					S.setFl2Pd2Insert(re,nt)	
+				}else{
+					S.pressInput(re,nt)
+				}
 			}
 		}else{
 			S.getPdFromServerError(re,form,bt)
 		}
+	}
+	get_n_wlv(barcode_wlv){
+		let length_bc=barcode_wlv.substring(barcode_wlv.length-2,barcode_wlv.length)*1
+		let length_int_n_wlv=barcode_wlv.substring(barcode_wlv.length-4,barcode_wlv.length)
+		length_int_n_wlv=length_int_n_wlv.substring(0,2)
+		let n_wlv=barcode_wlv.substring(length_bc,barcode_wlv.length-4)
+		let b_wlv_int=n_wlv.substring(0,length_int_n_wlv)
+		let b_wlv_float=n_wlv.substring(length_int_n_wlv,n_wlv.length)
+		let float=(b_wlv_int+"."+b_wlv_float)*1
+		return float
 	}
 	pressInput(re,nt){
 		this.listen_cm="pressInput"
@@ -563,7 +579,7 @@ class sell extends main{
 		this.bypass_pressInput=[re,nt]		
 		let bts = [
 			{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"')"},
-			{"value":"ตกลง","onclick":"S.pressInputOK('"+rid+"','"+rid_listen+"')"}
+			{"value":"ตกลง","id":"pressbuttoninputok","onclick":"S.pressInputOK('"+rid+"','"+rid_listen+"')"}
 		]
 		M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":"โปรดกรอก "+tt[re["s_type"]],"width":"250"})
 		ip.readOnly = true
@@ -573,22 +589,32 @@ class sell extends main{
 		let re=this.bypass_pressInput[0]
 		let nt=parseInt(this.idn.value)
 		let n_wlv=this.id(id_listen).value.split(" ")[0]*1
-		M.dialogClose(id_dialog)
-		re["barcode"]=this.doBarcode(re["barcode"],n_wlv)
-		re["sku_root"]=re["barcode"]+"_"+re["barcode"]
-		re["name"]=re["name"]+" "+n_wlv.toString()+" "+re["unit_name"]
-		re["n_wlv"]=n_wlv
-		this.setFl2Pd2Insert(re,nt)	
-		this.bypass_pressInput=[]
+		if(n_wlv>0){
+			M.dialogClose(id_dialog)
+			S.listen_cm=null
+			re["barcode"]=this.doBarcode(re["barcode"],n_wlv)
+			re["sku_root"]=re["sku_root"]+"_"+re["barcode"]
+			re["name"]=re["name"]+" "+n_wlv.toString()+" "+re["unit_name"]
+			re["n_wlv"]=n_wlv
+			this.setFl2Pd2Insert(re,nt)	
+			this.bypass_pressInput=[]
+		}
 	}
 	doBarcode(barcode="",float){
 		let f=""
 		let q=float.toString().split(".")
 		if(q.length==2){
 			f=barcode+""+q[0]+""+q[1]+""+(q[0].length>9?q[0].length:"0"+q[0].length)+""+(barcode.length>9?barcode.length:"0"+barcode.length)
+			if(f.length%2==1){
+				f=barcode+"0"+q[0]+""+q[1]+""+(q[0].length+1>9?q[0].length+1:"0"+(q[0].length+1))+""+(barcode.length>9?barcode.length:"0"+barcode.length)
+			}	
 		}else{
 			f=barcode+""+q[0]+""+(q[0].length>9?q[0].length:"0"+q[0].length)+""+(barcode.length>9?barcode.length:"0"+barcode.length)
+			if(f.length%2==1){
+				f=barcode+"0"+q[0]+""+(q[0].length+1>9?q[0].length+1:"0"+(q[0].length+1))+""+(barcode.length>9?barcode.length:"0"+barcode.length)
+			}			
 		}
+
 		return f
 	}
 	getPdFromServerError(re,form,bt){
@@ -655,6 +681,8 @@ class sell extends main{
 			let skey = event.code
 			if(this.float.hasOwnProperty(skey)){
 				t=this.float[skey]
+			}else if(skey=="NumpadEnter"||skey=="Enter"){
+				this.id("pressbuttoninputok").click()
 			}
 		}else if(event.type=="click"){
 			if(t.length!=1||"0123456789.⬅".indexOf(t)==-1){
@@ -915,7 +943,15 @@ class sell extends main{
 				this.st.close();
 				this.st=null
 			}
-			let k=Object.keys(this.dt)
+			let q=Object.keys(this.dt)
+			let k=[]
+			for(let i=0;i<q.length;i++){
+				let w=q[i].split("_")
+				if(k.indexOf(w[0]) == -1){
+					k.push(w[0])
+				}
+			}
+			//M.l(k)
 			k=JSON.stringify(k)
 			this.st=new EventSource("?a=sell&b=st&k="+k);
 			this.st.onmessage=S.getSt			
@@ -932,10 +968,16 @@ class sell extends main{
 		if(S.loadlocalst==1){return false}
 		let n=0;
 		for(let property in S.dt) {
+			let q=property.split("_")
 			if(st.hasOwnProperty(property)){
 				if(M.id(property)!=undefined){
 					M.id(property).childNodes[2].innerHTML=M.nb(st[property],0)
 					M.id(property).childNodes[3].childNodes[1].childNodes[0].innerHTML=M.nb(st[property],0)
+				}
+			}else if(q.length==2){
+				if(M.id(property)!=undefined&&st[q[0]]!=undefined){
+					M.id(property).childNodes[2].innerHTML=M.nb(st[q[0]],0)
+					M.id(property).childNodes[3].childNodes[1].childNodes[0].innerHTML=M.nb(st[q[0]],0)
 				}
 			}else{
 				if(M.id(property)!=undefined){

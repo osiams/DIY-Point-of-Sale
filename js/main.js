@@ -276,6 +276,9 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 					let sta_in = this.ce("div",{})
 						for(let i=0;i<data.bts.length;i++){
 							let bt = this.ce("input",{"type":"button","value":data.bts[i].value,"onclick":data.bts[i].onclick})
+							if(data.bts[i].id!=undefined){
+								bt.setAttribute("id",data.bts[i].id)
+							}
 							this.end(sta_in,[bt])	
 						}	
 				this.end(sta,[sta_in])	
