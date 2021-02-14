@@ -192,6 +192,8 @@ class product extends main{
 					"bcsku"=>$se[$i]["barcode"],
 					"name"=>$namejs,
 					"unit"=>$se[$i]["unit_name"],
+					"s_type"=>$se[$i]["s_type"],
+					"price"=>$se[$i]["price"]*1,
 					"cost"=>$se[$i]["cost"]*1]);
 				$dt=str_replace("\"","&quot;",$dt);
 				$dt=str_replace("'","&apos;",$dt);

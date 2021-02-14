@@ -413,6 +413,10 @@ class sell extends main{
 			let dbc=this.ce("div",{})
 			this.end(dbc,[this.cn(bc)])
 			let dname=this.ce("div",{})
+				let wlvt=""
+				if(this.pd[sku_root]["s_type"]!="p"){
+					wlvt=" [ชั่งตวงวัด]"
+				}
 				let dnamenbc=this.ce("div",{})
 					let dnamest=this.ce("span",{})
 					let dnamebc=this.ce("span",{})
@@ -420,7 +424,7 @@ class sell extends main{
 						let dnameprice=this.ce("span",{})
 						this.end(dnameprice,[this.cn(" ฿"+per)])					
 				this.end(dnamenbc,[ dnamest,this.cn(" " ), dnamebc,dnameprice])
-			this.end(dname,[this.cn(name),dnamenbc])			
+			this.end(dname,[this.cn(name+""+wlvt),dnamenbc])			
 			let dn=this.ce("div",{"class":"set_n","onclick":"S.setN(this)"})
 				let gn_group=this.ce("div",{})
 					let dnn=this.ce("div",{})
@@ -592,8 +596,11 @@ class sell extends main{
 		if(n_wlv>0){
 			M.dialogClose(id_dialog)
 			S.listen_cm=null
-			re["barcode"]=this.doBarcode(re["barcode"],n_wlv)
-			re["sku_root"]=re["sku_root"]+"_"+re["barcode"]
+			let bc=this.doBarcode(re["barcode"],n_wlv)
+			re["sku_root"]=re["sku_root"]+"_"+bc
+			if(re["barcode"]!=null){
+				re["barcode"]=bc
+			}
 			re["name"]=re["name"]+" "+n_wlv.toString()+" "+re["unit_name"]
 			re["n_wlv"]=n_wlv
 			this.setFl2Pd2Insert(re,nt)	
@@ -601,6 +608,9 @@ class sell extends main{
 		}
 	}
 	doBarcode(barcode="",float){
+		if(barcode==null){
+			barcode=""
+		}
 		let f=""
 		let q=float.toString().split(".")
 		if(q.length==2){
@@ -974,10 +984,13 @@ class sell extends main{
 					M.id(property).childNodes[2].innerHTML=M.nb(st[property],0)
 					M.id(property).childNodes[3].childNodes[1].childNodes[0].innerHTML=M.nb(st[property],0)
 				}
-			}else if(q.length==2){
+			}else if(q.length==2){M.l(888)
 				if(M.id(property)!=undefined&&st[q[0]]!=undefined){
 					M.id(property).childNodes[2].innerHTML=M.nb(st[q[0]],0)
 					M.id(property).childNodes[3].childNodes[1].childNodes[0].innerHTML=M.nb(st[q[0]],0)
+				}else{
+					M.id(property).childNodes[2].innerHTML=0
+					M.id(property).childNodes[3].childNodes[1].childNodes[0].innerHTML=0
 				}
 			}else{
 				if(M.id(property)!=undefined){

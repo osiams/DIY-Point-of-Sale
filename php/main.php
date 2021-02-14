@@ -120,11 +120,11 @@ class main{
 			"bill_sell_list"=>[
 				"name"=>"bill_sell_list",
 				"column"=>["id","sku","bill_in_list_id","lot","product_sku_key","product_sku_root",
-					"n","c","u","r","h","unit_sku_key","unit_sku_root","note","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","r"=>0,"h"=>0],
+					"n","n_wlv","c","u","r","h","unit_sku_key","unit_sku_root","note","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","r"=>0,"h"=>0,"n_wlv"=>1],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
 				"primary"=>"id",
-				"index"=>["sku","bill_in_list_id","lot","product_sku_key","product_sku_root"]
+				"index"=>["sku","bill_in_list_id","lot","product_sku_key","product_sku_root","n_wlv"]
 			],
 			"bill_in"=>[
 				"name"=>"bill_in",
@@ -146,7 +146,8 @@ class main{
 			],
 			"bill_in_list"=>[
 				"name"=>"bill_in_list",
-				"column"=>["id","stkey","stroot","bill_in_sku","lot","product_sku_key","product_sku_root","name","n","balance","sum","sq","unit_sku_key","unit_sku_root","note","idkey"],
+				"column"=>["id","stkey","stroot","bill_in_sku","lot","product_sku_key","product_sku_root","name","s_type",
+				"n","balance","n_wlv","balance_wlv","sum","sq","unit_sku_key","unit_sku_root","note","idkey"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],
 				"primary"=>"id",
 				"index"=>["lot","stkey","stroot","bill_in_sku","product_sku_key","product_sku_root","balance"]
@@ -189,6 +190,7 @@ class main{
 			"amount"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
 			"barcode"=>["name"=>"รหัสแท่ง","type"=>"CHAR","length_value"=>80],
 			"balance"=>["name"=>"คงเหลือ","type"=>"INT","length_value"=>10],
+			"balance_wlv"=>["name"=>"คงเหลือชั่งตวงวัด","type"=>"FLOAT","length_value"=>[10,4]],
 			"bill"=>["name"=>"ใบ","type"=>"CHAR","length_value"=>25],
 			"bill_in_id"=>["name"=>"ที่นำเขา","type"=>"INT","length_value"=>10],
 			"bill_in_list_id"=>["name"=>"ที่นำเขา","type"=>"INT","length_value"=>10],
@@ -210,6 +212,7 @@ class main{
 			"disc"=>["name"=>"รายละเอียด","type"=>"VARCHAR","length_value"=>1000,"charset"=>"thai"],
 			"date_reg"=>["name"=>"วันที่สร้าง","type"=>"TIMESTAMP"],
 			"email"=>["name"=>"อีเมล","type"=>"CHAR","length_value"=>30],
+			"float"=>["name"=>"จำนวน","type"=>"FLOAT","length_value"=>[10,4]],
 			"group_key"=>["name"=>"กลุ่มอ้างอิง","type"=>"CHAR","length_value"=>25],
 			"group_root"=>["name"=>"กลุ่มราก","type"=>"CHAR","length_value"=>25],
 			"h"=>["name"=>"เปลี่ยน","type"=>"INT","length_value"=>10],
@@ -225,6 +228,7 @@ class main{
 			"m_n"=>["name"=>"จำนวนสินค้ารากที่แตก","type"=>"INT","length_value"=>10],
 			"modi_date"=>["name"=>"วันปรับปรุง","type"=>"TIMESTAMP",],
 			"n"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
+			"n_wlv"=>["name"=>"จำนวนชั่งตวงวัด","type"=>"FLOAT","length_value"=>[10,4]],
 			"c"=>["name"=>"จำนวนที่ได้ตัด","type"=>"INT","length_value"=>10],
 			"u"=>["name"=>"จำนวนไมได้ตัด","type"=>"INT","length_value"=>10],
 			"name"=>["name"=>"ชื่อ","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],

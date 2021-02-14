@@ -47,22 +47,43 @@ class sell extends main{
 			print_r("{}");
 		}
 	}
+	private function getUniqPdData(array $pd_sell):array{
+		$re=[];
+		foreach($pd_sell AS $k=>$v){
+			$q=explode("_",$k);
+			if(count($q)==1){
+				$re[$q[0]]=$v;
+			}else{
+				if(!isset($re[$q[0]])){
+					$re[$q[0]]=$v;
+					$re[$q[0]]["n"]=$re[$q[0]]["n"]*$re[$q[0]]["n_wlv"];
+				}else{
+					$re[$q[0]]["n"]+=$v["n"]*$v["n_wlv"];
+				}
+			}
+		}
+		return $re;
+	}
 	private function fetchCutSt():array{
 		$re=["result"=>false,"message_error"=>""];
 		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$pd=json_decode($_POST["pd"],true);
+		$this->getUniqPdData($pd);
 		$n=0;
 		$price=0;
 		foreach($pd as $k=>$v){
 			$n+=1;
 		}
 		$jspd=$this->getStringSqlSet($_POST["pd"]);
-		//print_r($jspd);
+		$jspd_wlv=$this->getStringSqlSet(json_encode($this->getUniqPdData($pd)));
+		
+		//print_r($jspd_wlv);exit;
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
 			@message_error:='',
 			@pd_length:=0,
 			@jspd:=".$jspd.",
+			@jspd_wlv:=".$jspd_wlv.",
 			@n:=".$n.",
 			@sums:=0,
 			@flag:=0,
@@ -74,7 +95,8 @@ class sell extends main{
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
 		$sql["set2"]="
-			SET @pd_length=JSON_LENGTH(@jspd),@key=JSON_KEYS(@jspd);
+			SET @pd_length=JSON_LENGTH(@jspd),
+			@key=JSON_KEYS(@jspd);
 		";
 		$sql["set_sums"]="
 			BEGIN NOT ATOMIC
@@ -86,23 +108,30 @@ class sell extends main{
 				FOR i IN 0..(@pd_length-1) DO
 					SET pd_buy=0;
 					SET @pdroot=JSON_VALUE(@key		,		CONCAT('$['	,		i		,']'));
-					SET pd_buy=JSON_VALUE(@jspd	,		CONCAT('$.'	,		@pdroot		,'.n')			);
+				########################
+				SET @p=(INSTR(@pdroot,'_'));
+				IF @p > 0 THEN
+					SET  @pdroot=LEFT(@pdroot, @p-1);
+					#SET @TEST=CONCAT(@TEST,'-',@pdroot);
+				END IF;
+				######################
+					SET pd_buy=JSON_VALUE(@jspd_wlv	,		CONCAT('$.'	,		@pdroot		,'.n')			);
 					SET @pd_n=0;
 					SET @flag=(
 						SELECT 
 							(
 								`price`*JSON_VALUE(
-									@jspd	,	
+									@jspd_wlv	,	
 									CONCAT(
 										'$.'	,
-										JSON_VALUE(@key		,		CONCAT('$['	,		i		,']')		)	,	
+										@pdroot	,	
 										'.n'
 									)
 								)	
 							)	
-							FROM `product` WHERE `sku_root`=JSON_VALUE(@key		,		CONCAT('$['	,		i		,']')		) LIMIT 1 
+							FROM `product` WHERE `sku_root`=@pdroot	 LIMIT 1 
 					);
-
+SET @TEST=CONCAT(@TEST,'-',@flag);
 					SET @sums=@sums+@flag;	
 					SET @pd_n=(SELECT SUM(bill_in_list.balance) FROM bill_in_list 
 						WHERE bill_in_list.balance>0 
@@ -124,11 +153,12 @@ class sell extends main{
 						SET @over=1;
 					END IF;
 				END FOR;
+				
 				IF n_list>0 THEN
 					SET @message_error=CONCAT('มีสินค้า ',n_list,' รายการ ไม่มีจำนวนในระบบ\n');
 				END IF;
 				IF n_over>0 THEN
-					SET @message_error=CONCAT(@message_error,'มีสินค้า ',n_over,' รายการ ่มีจำนวนในระบบน้อยกว่า จำนวนที่จะขาย\n');
+					SET @message_error=CONCAT(@message_error,'มีสินค้า ',n_over,' รายการ มีจำนวนในระบบน้อยกว่า จำนวนที่จะขาย\nและ หรือ\n กรณีสินค้า ชั่งตวงวัด จำนวนสินค้ารวมหลายรายการ อาจมีจำนวนมากกว่า สินค้าที่มีอยู่');
 				END IF;
 				IF n_price_null>0 THEN
 					SET @message_error=CONCAT(@message_error,'มีสินค้า ',n_price_null,' รายการ  ที่ยังไม่ได้ตั้งราคาขาย หรือ ราคาขาย <= 0.00\n');
@@ -142,6 +172,7 @@ class sell extends main{
 				DECLARE pdroot CHAR(25) DEFAULT '';
 				DECLARE pdkey CHAR(25) DEFAULT '';
 				DECLARE pdn INT DEFAULT 0;
+				DECLARE pdn_wlv FLOAT DEFAULT 1.0000;
 				DECLARE pdcoat FLOAT DEFAULT 0;
 				DECLARE unitkey CHAR(25) DEFAULT 'defaultroot';
 				DECLARE unitroot CHAR(25) DEFAULT 'defaultroot';
@@ -167,8 +198,15 @@ class sell extends main{
 							SET stn=0;
 							SET stbalance=0;
 							SET pdroot=JSON_VALUE(@key		,		CONCAT('$['	,		i		,']')		);
+							########################
+							SET @p=(INSTR(pdroot,'_'));
+							IF @p > 0 THEN
+								SET  @pdroot_true=LEFT(pdroot, @p-1);
+							END IF;
+							######################
 							SET pdn=JSON_VALUE(@jspd	,		CONCAT('$.'	,		pdroot		,'.n')			);
-							SET cuts=pdn-cut;
+							SET pdn_wlv=JSON_VALUE(@jspd	,		CONCAT('$.'	,		pdroot		,'.n_wlv')			);
+							SET cuts=pdn*pdn_wlv-cut;
 							SELECT id,bill_in_sku,n,balance,sum INTO stid,stsku,stn,stbalance,stsum
 								FROM bill_in_list 
 								WHERE balance>0 AND  product_sku_root=pdroot AND stroot='proot' 
@@ -358,7 +396,7 @@ class sell extends main{
 		catch(Exception $e) {
 			//print_r($e);
 		}
-		//print_r($sql);
+		//print_r($se);exit;
 		
 	if(isset($se["data"]["get"][0])){
 		foreach($se["data"]["get"] as $k=>$v){

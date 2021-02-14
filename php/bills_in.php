@@ -240,11 +240,14 @@ class bills_in extends bills{
 				SET @stkey=(SELECT sku_key FROM  it WHERE sku_root='proot');
 				SET @pd_length=JSON_LENGTH(@jspd);
 				FOR i IN 0..(@pd_length-1) DO
-					INSERT  INTO `bill_in_list`  (`stkey`,`stroot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,`name`,`n`,balance,`sum`,`unit_sku_key`,`unit_sku_root`) 
+					INSERT  INTO `bill_in_list`  (`stkey`,`stroot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,`name`,`s_type`,`n`,balance,`n_wlv`,`balance_wlv`,`sum`,`unit_sku_key`,`unit_sku_root`) 
 					SELECT @stkey, 'proot',@sku,`product`.`sku_key`,`product`.`sku_root`,
 						JSON_VALUE(@jspd,CONCAT('$[',i,'].name')),
-						JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),
-						JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),
+						`product`.`s_type`,
+						IF(`product`.`s_type`='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
+						IF(`product`.`s_type`='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
+						IF(`product`.`s_type`!='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
+						IF(`product`.`s_type`!='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
 						JSON_VALUE(@jspd,CONCAT('$[',i,'].sum')),
 						`unit`.`sku_key`,
 						`product`.`unit` 
@@ -369,7 +372,7 @@ class bills_in extends bills{
 		for($i=0;$i<count($dt);$i++){
 			$name=$this->jsD((string) $dt[$i]["name"]);
 			$unit=$this->jsD((string) $dt[$i]["unit_name"]);
-			echo  $br.'{"name":"'.$name.'","n":"'.intval($dt[$i]["n"]).'","balance":"'.intval($dt[$i]["balance"]).'","sum":"'.number_format($dt[$i]["sum"],2,".","").'","bcsku":"'.$dt[$i]["barcode"].' , '.$dt[$i]["product_sku"].'","sku_root":"'.$dt[$i]["sku_root"].'","unit":"'.$unit.'"},';
+			echo  $br.'{"name":"'.$name.'","n":"'.intval($dt[$i]["n"]).'","balance":"'.intval($dt[$i]["balance"]).'","sum":"'.number_format($dt[$i]["sum"],2,".","").'","bcsku":"'.$dt[$i]["barcode"].' , '.$dt[$i]["product_sku"].'","sku_root":"'.$dt[$i]["sku_root"].'","unit":"'.$unit.'","s_type":"'.$dt[$i]["s_type"].'"},';
 		}
 		echo '],'.$edb.');</script>';
 	}
@@ -398,9 +401,8 @@ class bills_in extends bills{
 						<option value="sku">รห้สภายใน</option>
 						<option value="barcode">รห้สแท่ง</option>
 						<option value="name" selected="selected">ชื่อ</option>
-					
-					<input type="text" name="tx" onkeydown="Bi.productInSearch(event);"/>
 					</select>
+					<input type="text" name="tx" onkeydown="Bi.productInSearch(event);"/>
 					<input type="button" onclick="Bi.productInSearch()" value="ค้นหา" /></label>
 					</td>
 			</tr>';
@@ -675,14 +677,16 @@ class bills_in extends bills{
 		$sql["set"]="SELECT @date_reg:=(SELECT date_reg FROM bill_in WHERE sku=".$sku." ),
 			@bill:=(SELECT IFNULL(bill,'') FROM bill_in WHERE sku=".$sku.")
 		";
-		$sql["get"]="BEGIN NOT ATOMIC 
+		g$sql["get"]="BEGIN NOT ATOMIC 
 			DECLARE r ROW (r__ INT,__r INT);
 			SELECT r_,_r INTO r.r__,r.__r FROM bill_in WHERE sku=@sku LIMIT 1;
 			SELECT  `bill_in`.`id`  AS  `id`,`bill_in`.`in_type`  AS  `in_type`,`bill_in`.`sku`  AS  `sku`,IFNULL(`bill_in`.`note`,'')  AS  `note`, 
 				`bill_in`.`bill`  AS  `bill`,`bill_in`.`n` AS `n_list`, `bill_in`.`sum` AS `sum`, `bill_in`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
-				bill_in_list.id AS bill_in_list_id,bill_in_list.product_sku_key  AS `pd_sku_root`,bill_in_list.product_sku_root,bill_in_list.product_sku_root AS sku_root ,bill_in_list.n ,bill_in_list.balance,bill_in_list.sum ,bill_in_list.name,
-				IFNULL(SUM(bill_in_list2.balance),0) AS `sum_balance`,
+				bill_in_list.id AS bill_in_list_id,bill_in_list.product_sku_key  AS `pd_sku_root`,bill_in_list.product_sku_root,bill_in_list.product_sku_root AS sku_root ,
+				IF(`bill_in_list`.`s_type`='p',bill_in_list.n,bill_in_list.n_wlv) AS `n` ,
+				IF(`bill_in_list`.`s_type`='p',bill_in_list.balance,bill_in_list.balance_wlv) AS `balance`,bill_in_list.sum ,bill_in_list.name,
+				IFNULL(SUM(IF(`bill_in_list2`.`s_type`='p',bill_in_list2.balance,bill_in_list2.balance_wlv)),0) AS `sum_balance`,
 				unit_ref.name AS unit_name,
 				product_ref.barcode AS barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`
 			FROM `bill_in` 
@@ -707,7 +711,7 @@ class bills_in extends bills{
 		if($se["result"]){
 			$re=$se["data"]["get"];
 		}
-		//print_r($se);
+		print_r($se);
 		return $re;
 	}
 }
