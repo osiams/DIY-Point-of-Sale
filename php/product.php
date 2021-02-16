@@ -178,7 +178,7 @@ class product extends main{
 				$bcsku.=$cm."".$se[$i]["sku"];
 			}	
 			echo $bcsku.'</p></td>
-				<td class="r">'.$se[$i]["balance"].'</td>
+				<td class="r">'.($se[$i]["balance"]*1).'</td>
 				<td class="l">'.$se[$i]["unit_name"].'</td>
 				<td class="action c">';
 			if($for=="billsin"){
@@ -753,12 +753,13 @@ class product extends main{
 					 `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
 					`product`.`name`, `product`.`price`, `product`.`cost`, `product`.`s_type`,
 					 `unit`.`name` AS `unit_name`,
-					 SUM(`bill_in_list`.`balance`) AS balance
+					 SUM(IF(bill_in_list.s_type='p',`bill_in_list`.`balance`,`bill_in_list`.`balance_wlv`)) AS balance
 				FROM `product` 
 				LEFT JOIN (`unit`) 
 				ON (`product`.`unit` = `unit`.`sku_root`) 
 				LEFT JOIN (`bill_in_list`) 
-				ON (`product`.`sku_root` = `bill_in_list`.`product_sku_root` AND  `bill_in_list`.`balance`>0 AND bill_in_list.stroot='proot') 
+				ON (`product`.`sku_root` = `bill_in_list`.`product_sku_root` 
+					AND  IF(bill_in_list.s_type='p',`bill_in_list`.`balance`,`bill_in_list`.`balance_wlv`)>0 AND bill_in_list.stroot='proot') 
 				".$sh." 
 				GROUP BY product.sku_root ORDER BY `product`.`id` DESC  LIMIT 20
 			";
@@ -767,12 +768,13 @@ class product extends main{
 				`product`.`id`, `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
 				`product`.`name`, `product`.`price`, `product`.`cost`,  `product`.`s_type`,
 				`product`.`unit` AS `unit_sku_root`, `unit`.`name` AS `unit_name`,
-				SUM(`bill_in_list`.`balance`) AS balance
+				SUM(IF(bill_in_list.s_type='p',`bill_in_list`.`balance`,`bill_in_list`.`balance_wlv`)) AS balance
 			FROM `product` 
 			LEFT JOIN (`unit`) 
 			ON (`product`.`unit` = `unit`.`sku_root`) 
 			LEFT JOIN (`bill_in_list`) 
-			ON (`product`.`sku_root` = `bill_in_list`.`product_sku_root` AND  `bill_in_list`.`balance`>0 AND bill_in_list.stroot='proot') 
+			ON (`product`.`sku_root` = `bill_in_list`.`product_sku_root` 
+				AND  IF(bill_in_list.s_type='p',`bill_in_list`.`balance`,`bill_in_list`.`balance_wlv`)>0 AND bill_in_list.stroot='proot') 
 			".$sh." 
 			GROUP BY product.sku_root ORDER BY `product`.`id` DESC LIMIT 20
 			";

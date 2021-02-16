@@ -403,9 +403,9 @@ class bill58 extends main{
 			for($i=0;$i<count($se["list"]);$i++){
 				$re["list_".$i]=[
 					["t"=>$se["list"][$i]["n"],"lcr"=>"l"],
-					["t"=>"".$se["list"][$i]["product_name"],"lcr"=>"l"],
-					["t"=>" ฿".number_format($se["list"][$i]["product_price"],2,'.',',')."","lcr"=>"r"],
-					["t"=>number_format($se["list"][$i]["product_price"]*$se["list"][$i]["n"],2,'.',','),"lcr"=>"r"]
+					["t"=>"".$se["list"][$i]["product_name"].''.($se["list"][$i]["s_type"]!="p"?" ".($se["list"][$i]["n"]*$se["list"][$i]["n_wlv"]*1)." ".$se["list"][$i]["unit_name"]:""),"lcr"=>"l"],
+					["t"=>" ฿".($se["list"][$i]["s_type"]=="p"?number_format($se["list"][$i]["product_price"],2,'.',','):number_format(($se["list"][$i]["product_price"]*$se["list"][$i]["n_wlv"]),2,'.',','))."","lcr"=>"r"],
+					["t"=>number_format($se["list"][$i]["product_price"]*$se["list"][$i]["n"]*$se["list"][$i]["n_wlv"],2,'.',','),"lcr"=>"r"]
 				];
 			}
 			$re["total"]=[
@@ -433,8 +433,8 @@ class bill58 extends main{
 			WHERE bill_sell.sku=".$sku." LIMIT 1
 		";
 		$sql["list"]="SELECT  
-				bill_sell_list.n AS n,
-				product_ref.name AS product_name,product_ref.barcode AS product_barcode,product_ref.price AS product_price,
+				bill_sell_list.n AS n,bill_sell_list.n_wlv AS n_wlv,
+				product_ref.name AS product_name,product_ref.barcode AS product_barcode,product_ref.price AS product_price,product_ref.s_type,
 				unit_ref.name AS unit_name
 			FROM `bill_sell_list` 
 			LEFT JOIN product_ref

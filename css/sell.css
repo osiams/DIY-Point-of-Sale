@@ -14,7 +14,7 @@ body{overflow:hidden;}
 #sell > div:nth-child(2) > div:nth-child(2) > div.updater2{animation-name:sp3;animation-duration:2s;animation-iteration-count:1;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(1){display: grid;text-align:left;padding:1px 3px;align-content: center;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(2){display: grid;text-align:left;padding:1px 3px; align-content: center;}
-#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(3){display: grid;text-align:right;padding:1px 3px; align-content: center;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(3){display: grid;text-align:right;padding:1px 3px; align-content: center;word-break: break-all;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4){display: grid;text-align:left;padding:1px 3px; align-content: center;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4) > div{display:none;padding-left:10px;font-style:italic}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4) > div > span:nth-child(1){font-size:0.9em;}

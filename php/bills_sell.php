@@ -28,7 +28,7 @@ class bills_sell extends bills{
 		}
 	}
 	public function fetch(){
-		if(isset($_POST["b"])&&$_POST["b"]=="delete"){echo "44";
+		if(isset($_POST["b"])&&$_POST["b"]=="delete"){
 			require_once("php/bill_sell_".$_GET["b"].".php");
 			eval("(new bill_sell_".$_GET["b"]."())->run();");
 		}else{
@@ -104,24 +104,28 @@ echo $mo->format('U')-$reg->format("U");*/
 						$rt='<p class="saddlebrown l size12">คืน '.$list[$i]["n_r"].' '.$list[$i]["unit_name"].' 📌 '.htmlspecialchars($list[$i]["note"]).'</p>';
 					}
 					$sum_r=($list[$i]["product_price"]*($list[$i]["n"]-$list[$i]["r"]));
-					$pft=(($list[$i]["product_price"]-$list[$i]["product_lot_cost"]/$list[$i]["n"])*$list[$i]["n"]);
+					$pft=(($list[$i]["product_price"]-$list[$i]["product_lot_cost"]/$list[$i]["n"])*$list[$i]["n"]*$list[$i]["n_wlv"]);
 					#$pftr=(($list[$i]["product_price"]-$list[$i]["product_lot_cost"]/($list[$i]["n"]))*($list[$i]["n"]-$list[$i]["r"]));
 					$pftr=((($list[$i]["n"])*$list[$i]["product_price"])-$list[$i]["product_lot_cost"])-(($list[$i]["product_price"]*$list[$i]["n_r"])-$list[$i]["product_lot_costr"]);
 					$pf+=$pft;
 					$pfr+=$pftr;
 					$sumr+=$sum_r;
+					
 					echo '<tr'.$cm.'>
 						<td>'.($i+1).'</td>
 						<td>'.$list[$i]["product_barcode"].'</td>
-						<td><div>'.$list[$i]["product_name"].''.$rt.'</div>
+						<td><div>'.$list[$i]["product_name"].'
+							'.($list[$i]["s_type"]!="p"?" ".($list[$i]["n_wlv"]*1)." ".$list[$i]["unit_name"]:"").'
+							'.$rt.'</div>
 							<div>'.$list[$i]["product_barcode"].'</div>
 						</td>
-						<td><div class="r">'.$list[$i]["n"].'</div>
+						<td><div class="r">'.$list[$i]["n"].'
+						'.($list[$i]["s_type"]!="p"?"×".($list[$i]["n_wlv"]*1):"").'</div>
 							<div>'.$list[$i]["unit_name"].'</div>
 						</td>
 						<td>'.$list[$i]["unit_name"].'</td>
 						<td class="r">'.number_format($list[$i]["product_price"],2,'.',',').'</td>
-						<td class="r">'.number_format(($list[$i]["product_price"]*$list[$i]["n"]),2,'.',',').'</td>
+						<td class="r">'.number_format(($list[$i]["product_price"]*$list[$i]["n"]*$list[$i]["n_wlv"]),2,'.',',').'</td>
 						<td class="darkgreen r">'.number_format($pft,2,'.',',').'</td>
 					</tr>';
 				}
@@ -158,17 +162,17 @@ echo $mo->format('U')-$reg->format("U");*/
 						<td rowspan="'.$rowspan.'">'.$dt[$i]["n"].'</td>';
 				}else{
 					$pd_root_now=$dt[$i]["product_sku_root"];
-					echo '
-					<td>'.($at++).'</td>
-					<td>'.$dt[$i]["name"].'</td>
-					<td>'.$dt[$i]["n"].'</td>';			
+				echo '
+				<td>'.($at++).'</td>
+				<td>'.$dt[$i]["name"].''.($dt[$i]["s_type"]=="p"?"":" ".($dt[$i]["n_wlv"]*1)." ".$dt[$i]["unit_name"]).'</td>
+				<td class="r">'.$dt[$i]["n"].''.($dt[$i]["s_type"]=="p"?"":"×".($dt[$i]["n_wlv"]*1)).'</td>';		
 				}
 			}else if($dt[$i]["product_sku_root"]!=$pd_root_now){
 				$pd_root_now=$dt[$i]["product_sku_root"];
 				echo '
 				<td>'.($at++).'</td>
-				<td>'.$dt[$i]["name"].'</td>
-				<td>'.$dt[$i]["n"].'</td>';			
+				<td>'.$dt[$i]["name"].''.($dt[$i]["s_type"]=="p"?"":" ".($dt[$i]["n_wlv"]*1)." ".$dt[$i]["unit_name"]).'</td>
+				<td class="r">'.$dt[$i]["n"].''.($dt[$i]["s_type"]=="p"?"":"×".($dt[$i]["n_wlv"]*1)).'</td>';			
 			}
 			$tx="";
 			$c="in";
@@ -195,8 +199,8 @@ echo $mo->format('U')-$reg->format("U");*/
 				$tx='<!--<a onclick="M.popup(this,\'Bs.selectLotCut(did,\\\''.$pd_root_now.'\\\')\')">-->ไม่พบใบนำเข้า<!--</a>-->';
 			}
 			echo '	<td>'.$tx.'</td>
-				<td>'.$dt[$i]["c"].'</td>
-				<td>'.$dt[$i]["u"].'</td>
+				<td class="r">'.$dt[$i]["c"].''.($dt[$i]["s_type"]=="p"?"":"×".($dt[$i]["n_wlv"]*1)).'</td>
+				<td class="r">'.$dt[$i]["u"].'</td>
 			</tr>';
 		}
 		echo '</table>';
@@ -216,14 +220,16 @@ echo $mo->format('U')-$reg->format("U");*/
 		$sku=$this->getStringSqlSet($sku);
 		$re=[];
 		$sql=[];
-		$sql["cut"]="SELECT bill_sell_list.lot,bill_sell_list.product_sku_root,bill_sell_list.n,bill_sell_list.c,bill_sell_list.u,
-			product_ref.name,
-			bill_in.in_type,bill_in.sku,IFNULL(bill_in.note,'') AS `note`,bill_in.bill
+		$sql["cut"]="SELECT bill_sell_list.lot,bill_sell_list.product_sku_root,bill_sell_list.n,bill_sell_list.n_wlv,bill_sell_list.c,bill_sell_list.u,
+			product_ref.name,product_ref.s_type,
+			bill_in.in_type,bill_in.sku,IFNULL(bill_in.note,'') AS `note`,bill_in.bill,unit_ref.name AS unit_name
 			FROM bill_sell_list
 			LEFT JOIN product_ref
 			ON(bill_sell_list.product_sku_key=product_ref.sku_key)
 			LEFT JOIN bill_in
 			ON(bill_sell_list.lot=bill_in.sku)
+			LEFT JOIN unit_ref
+			ON(bill_sell_list.unit_sku_key=unit_ref.sku_key)
 			WHERE bill_sell_list.sku=".$sku." ORDER BY bill_sell_list.id DESC
 		";
 		$se=$this->metMnSql($sql,["cut"]);
@@ -250,12 +256,13 @@ echo $mo->format('U')-$reg->format("U");*/
 			WHERE bill_sell.sku=".$sku." LIMIT 1
 		";
 		$sql["list"]="SELECT  
-				bill_sell_list.product_sku_root AS product_sku_root,bill_sell_list.n AS n,bill_sell_list.r AS r,IFNULL(bill_sell_list.note,'') AS `note`,
+				bill_sell_list.product_sku_root AS product_sku_root,bill_sell_list.n AS n,bill_sell_list.n_wlv AS n_wlv,bill_sell_list.r AS r,IFNULL(bill_sell_list.note,'') AS `note`,
 				product_ref.name AS product_name,product_ref.barcode AS product_barcode,product_ref.cost AS product_cost,product_ref.price AS product_price,
 				SUM(bill_sell_list.r) AS `n_r`,
 				unit_ref.name AS unit_name,
-				SUM(IFNULL((bill_in_list.sum/(bill_in_list.n)),product_ref.cost)*IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u)) AS product_lot_cost,
-				SUM(IFNULL((bill_in_list.sum/(bill_in_list.n)),product_ref.cost)*bill_sell_list.r) AS product_lot_costr
+				SUM(IFNULL((bill_in_list.sum/(IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv))),product_ref.cost)*IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u)) AS product_lot_cost,
+				SUM(IFNULL((bill_in_list.sum/(IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv))),product_ref.cost)*bill_sell_list.r) AS product_lot_costr,
+				product_ref.s_type
 				
 			FROM `bill_sell_list` 
 			LEFT JOIN product_ref

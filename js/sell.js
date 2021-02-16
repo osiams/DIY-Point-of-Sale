@@ -986,8 +986,8 @@ class sell extends main{
 				}
 			}else if(q.length==2){M.l(888)
 				if(M.id(property)!=undefined&&st[q[0]]!=undefined){
-					M.id(property).childNodes[2].innerHTML=M.nb(st[q[0]],0)
-					M.id(property).childNodes[3].childNodes[1].childNodes[0].innerHTML=M.nb(st[q[0]],0)
+					M.id(property).childNodes[2].innerHTML=st[q[0]]*1
+					M.id(property).childNodes[3].childNodes[1].childNodes[0].innerHTML=st[q[0]]*1
 				}else{
 					M.id(property).childNodes[2].innerHTML=0
 					M.id(property).childNodes[3].childNodes[1].childNodes[0].innerHTML=0

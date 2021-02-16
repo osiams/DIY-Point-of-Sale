@@ -667,8 +667,7 @@ class it extends main{
 			<th>รหัสภายใน</th>
 			<th>ชื่อ/อธิบาย</th>
 			<th>จำนวน<br />งวด</th>
-			<th>จำนวน<br />ชนิดสินค้า</th>
-			<th>จำนวน<br />หน่วย</th>
+			<th>จำนวน สินค้า</th>
 			<th>ต้นทน<br />รวม</th>
 			<th>กระทำ</th>
 			</tr>';
@@ -682,14 +681,14 @@ class it extends main{
 			if($se[$i]["sku_root"]=="defaultroot"){
 				$default_sku=$se[$i]["sku"];
 			}
-			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
+			echo '<tr row'.$cm.'><td>'.$se[$i]["id"].'</td>
 				<td class="l">'.$se[$i]["sku"].'</td>
 				<td class="l"><a href="?a=it&amp;b=view&amp;sku_root='.$se[$i]["sku_root"].'">'.htmlspecialchars($se[$i]["name"]).'</a>
 					<div>'.$se[$i]["sku"].'</div>
 					<p class="size12 gray555 ti20">'.htmlspecialchars($se[$i]["note"]).'</p></td>
 				<td class="r">'.number_format($se[$i]["count"],0,'.',',').'</td>
-				<td class="r">'.number_format($se[$i]["list"],0,'.',',').'</td>
-				<td class="r">'.number_format($se[$i]["sum"],0,'.',',').'</td>
+				<td class="r">'.number_format($se[$i]["list_p"],0,'.',',').'</td>				
+
 				<td class="r">'.number_format($se[$i]["costs"],2,'.',',').'</td>
 				<td class="action">
 					<a onclick="It.edit(\''.$se[$i]["sku_root"].'\')" title="แก้ไข">📝</a>';
@@ -711,13 +710,12 @@ class it extends main{
 		$re=[];
 		$sql=[];
 		$sql["get"]="SELECT  it.id,it.sku,it.name,it.note ,it.sku_key,it.sku_root,
-			IFNULL(COUNT(bill_in_list.id),0) AS `count`,
-			IFNULL(SUM(bill_in_list.balance),0) AS `sum`,
-			IFNULL(COUNT(DISTINCT (bill_in_list.product_sku_root)),0) AS `list`,
-			IFNULL(SUM(bill_in_list.balance*(bill_in_list.sum/bill_in_list.n)),0) AS `costs`
+			IFNULL(COUNT(bill_in_list.s_type='p'),0) AS `count`,
+			IFNULL(COUNT(DISTINCT (bill_in_list.product_sku_root)),0) AS `list_p`,
+			IFNULL(SUM(IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)*(bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv))),0) AS `costs`
 			FROM `it` 
 			LEFT JOIN bill_in_list
-			ON (it.sku_root=bill_in_list.stroot AND bill_in_list.balance>0)
+			ON (it.sku_root=bill_in_list.stroot AND IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)>0)
 			WHERE  1=1
 			GROUP BY it.sku_root
 			ORDER BY `costs` DESC

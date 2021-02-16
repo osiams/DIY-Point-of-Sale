@@ -228,9 +228,9 @@ class it extends main{
 			}
 		}
 		let did=this.id(actionid)
-		let namehtml=did.parentNode.parentNode.cells[2].firstChild.firstChild.innerHTML
-		let barcodehtml=did.parentNode.parentNode.cells[2].childNodes[2].innerHTML
-		let unithtml=did.parentNode.parentNode.cells[6].innerHTML
+		let namehtml=did.parentNode.parentNode.cells[3].firstChild.firstChild.innerHTML
+		let barcodehtml=did.parentNode.parentNode.cells[3].childNodes[2].innerHTML
+		let unithtml=did.parentNode.parentNode.cells[7].innerHTML
 		let ct=this.ce("div",{"data-width":"100px","class":"size14"})
 			let tb=this.ce("table",{"class":"it_m_product"})
 				let cpt=this.ce("caption",{})

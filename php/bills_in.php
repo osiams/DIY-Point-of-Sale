@@ -118,8 +118,10 @@ class bills_in extends bills{
 						IF JSON_VALUE(@jspd,CONCAT('$[',i,'].act'))='2' THEN
 							UPDATE bill_in_list SET
 								name=JSON_VALUE(@jspd,CONCAT('$[',i,'].name')),
-								balance=IFNULL(balance,0)-(IFNULL(n,0)-JSON_VALUE(@jspd,CONCAT('$[',i,'].n'))),
-								n=IFNULL(n,0)-(IFNULL(n,0)-JSON_VALUE(@jspd,CONCAT('$[',i,'].n'))),
+								balance=IF(s_type='p',IFNULL(balance,0)-(IFNULL(n,0)-JSON_VALUE(@jspd,CONCAT('$[',i,'].n'))),NULL),
+								n=IF(s_type='p',IFNULL(n,0)-(IFNULL(n,0)-JSON_VALUE(@jspd,CONCAT('$[',i,'].n'))),NULL),
+								balance_wlv=IF(s_type!='p',IFNULL(balance_wlv,0)-(IFNULL(n_wlv,0)-JSON_VALUE(@jspd,CONCAT('$[',i,'].n'))),NULL),
+								n_wlv=IF(s_type!='p',IFNULL(n_wlv,0)-(IFNULL(n_wlv,0)-JSON_VALUE(@jspd,CONCAT('$[',i,'].n'))),NULL),
 								sum=JSON_VALUE(@jspd,CONCAT('$[',i,'].sum'))
 							WHERE bill_in_list.id>=r.r__ AND bill_in_list.id<=r.__r  AND bill_in_sku=".$sku." AND product_sku_root=JSON_VALUE(@jspd,CONCAT('$[',i,'].sku_root')) LIMIT 1;
 							IF @ischange=0 THEN 
@@ -133,15 +135,18 @@ class bills_in extends bills{
 							DELETE FROM bill_in_list WHERE bill_in_list.id>=r.r__ 
 								AND bill_in_list.id<=r.__r AND bill_in_sku=".$sku."  
 								AND product_sku_root=JSON_VALUE(@jspd,CONCAT('$[',i,'].sku_root')) 
-								AND bill_in_list.n=bill_in_list.balance
+								AND IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv)=IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)
 								LIMIT 1 ;
 						ELSEIF JSON_VALUE(@jspd,CONCAT('$[',i,'].act'))='4' THEN
 							INSERT  INTO `bill_in_list`  (`stkey`,`stroot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,`name`,`n`,balance,`sum`,`unit_sku_key`,`unit_sku_root`) 
 							SELECT  @stkey,'proot',@sku,`product`.`sku_key`,`product`.`sku_root`,
-								JSON_VALUE(@jspd,CONCAT('$[',i,'].name')),
-								JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),
-								JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),
-								JSON_VALUE(@jspd,CONCAT('$[',i,'].sum')),
+							JSON_VALUE(@jspd,CONCAT('$[',i,'].name')),
+							`product`.`s_type`,
+							IF(`product`.`s_type`='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
+							IF(`product`.`s_type`='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
+							IF(`product`.`s_type`!='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
+							IF(`product`.`s_type`!='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
+							JSON_VALUE(@jspd,CONCAT('$[',i,'].sum')),
 								`unit`.`sku_key`,
 								`product`.`unit` 
 							 FROM `product` 
@@ -366,13 +371,14 @@ class bills_in extends bills{
 		}
 	}
 	private function writeJsDataEdit(array $dt,bool $editable=true):void{
+		//print_r($dt);
 		$br="\n";
 		$edb=($editable)?"true":"false";
 		echo '<script type="text/javascript">Bi.insertData([';
 		for($i=0;$i<count($dt);$i++){
 			$name=$this->jsD((string) $dt[$i]["name"]);
 			$unit=$this->jsD((string) $dt[$i]["unit_name"]);
-			echo  $br.'{"name":"'.$name.'","n":"'.intval($dt[$i]["n"]).'","balance":"'.intval($dt[$i]["balance"]).'","sum":"'.number_format($dt[$i]["sum"],2,".","").'","bcsku":"'.$dt[$i]["barcode"].' , '.$dt[$i]["product_sku"].'","sku_root":"'.$dt[$i]["sku_root"].'","unit":"'.$unit.'","s_type":"'.$dt[$i]["s_type"].'"},';
+			echo  $br.'{"name":"'.$name.'","n":"'.intval($dt[$i]["n"]).'","balance":"'.intval($dt[$i]["balance"]).'","sum":"'.number_format($dt[$i]["sum"],2,".","").'","bcsku":"'.$dt[$i]["barcode"].' , '.$dt[$i]["product_sku"].'","sku_root":"'.$dt[$i]["sku_root"].'","unit":"'.$unit.'","s_type":"'.$dt[$i]["s_type"].'","price":"'.$dt[$i]["price"].'","cost":"'.$dt[$i]["cost"].'"},';
 		}
 		echo '],'.$edb.');</script>';
 	}
@@ -655,10 +661,10 @@ class bills_in extends bills{
 			<td><div>'.htmlspecialchars($dt[$i]["name"]).'</div>
 				<div>'.$dt[$i]["barcode"].'</div>
 			</td>
-			<td class="r"><div>'.$dt[$i]["n"].'</div>
+			<td class="r"><div>'.($dt[$i]["n"]*1).'</div>
 				<div>'.$dt[$i]["unit_name"].'</div>
 			</td>
-			<td class="r billinbalance'.$bl.'">'.$dt[$i]["balance"].'/<a href="?a=it&amp;b=view&amp;sku_root=proot&amp;c=lot&amp;pd='.$dt[$i]["product_sku_root"].'">'.$dt[$i]["sum_balance"].'</a></td>
+			<td class="r billinbalance'.$bl.'">'.($dt[$i]["balance"]*1).'/<a href="?a=it&amp;b=view&amp;sku_root=proot&amp;c=lot&amp;pd='.$dt[$i]["product_sku_root"].'">'.($dt[$i]["sum_balance"]*1).'</a></td>
 			<td>'.$dt[$i]["unit_name"].'</td>
 			<td class="r">'.$putx.'</td>
 			<td class="r">'.$sumtx.'</td>
@@ -677,7 +683,7 @@ class bills_in extends bills{
 		$sql["set"]="SELECT @date_reg:=(SELECT date_reg FROM bill_in WHERE sku=".$sku." ),
 			@bill:=(SELECT IFNULL(bill,'') FROM bill_in WHERE sku=".$sku.")
 		";
-		g$sql["get"]="BEGIN NOT ATOMIC 
+		$sql["get"]="BEGIN NOT ATOMIC 
 			DECLARE r ROW (r__ INT,__r INT);
 			SELECT r_,_r INTO r.r__,r.__r FROM bill_in WHERE sku=@sku LIMIT 1;
 			SELECT  `bill_in`.`id`  AS  `id`,`bill_in`.`in_type`  AS  `in_type`,`bill_in`.`sku`  AS  `sku`,IFNULL(`bill_in`.`note`,'')  AS  `note`, 
@@ -688,12 +694,13 @@ class bills_in extends bills{
 				IF(`bill_in_list`.`s_type`='p',bill_in_list.balance,bill_in_list.balance_wlv) AS `balance`,bill_in_list.sum ,bill_in_list.name,
 				IFNULL(SUM(IF(`bill_in_list2`.`s_type`='p',bill_in_list2.balance,bill_in_list2.balance_wlv)),0) AS `sum_balance`,
 				unit_ref.name AS unit_name,
-				product_ref.barcode AS barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`
+				product_ref.barcode AS barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`,
+				product.price,product.cost
 			FROM `bill_in` 
 			LEFT JOIN bill_in_list 
 			ON(bill_in_list.id>=bill_in.r_ AND bill_in_list.id<=bill_in._r  AND bill_in.sku=bill_in_list.bill_in_sku AND bill_in_list.stroot='proot' )		
 			LEFT JOIN bill_in_list AS bill_in_list2
-			ON(bill_in_list2.balance>0 AND bill_in_list.product_sku_root=bill_in_list2.product_sku_root  AND bill_in_list2.stroot='proot')			
+			ON(IF(bill_in_list2.s_type='p',bill_in_list2.balance,bill_in_list2.balance_wlv)>0 AND bill_in_list.product_sku_root=bill_in_list2.product_sku_root  AND bill_in_list2.stroot='proot')			
 			LEFT JOIN `user_ref`
 			ON( `bill_in`.`user`=`user_ref`.`sku_key`)
 			
@@ -702,7 +709,8 @@ class bills_in extends bills{
 			ON(bill_in_list.unit_sku_key=unit_ref.sku_key)
 			LEFT JOIN product_ref
 			ON(bill_in_list.product_sku_key=product_ref.sku_key)
-
+			LEFT JOIN product
+			ON(bill_in_list.product_sku_root=product.sku_root)
 			WHERE bill_in.in_type='b' AND bill_in.sku=".$sku."
 			GROUP BY bill_in_list.product_sku_root
 			ORDER BY `bill_in_list`.`id` ASC ;
@@ -711,7 +719,7 @@ class bills_in extends bills{
 		if($se["result"]){
 			$re=$se["data"]["get"];
 		}
-		print_r($se);
+		//print_r($se);
 		return $re;
 	}
 }

@@ -2,14 +2,14 @@ tr.billsin_add{background-color:PaleGreen}
 tr.billsin_edit{background-color:Orange}
 tr.billsin_delete{background-color:IndianRed}
 tr.ed{background-color:LightGreen}
-td{vertical-align: middle;border-bottom:1px solid gray}
+td{vertical-align: middle;}
 .content > div{display:inline-block;margin:0px auto;padding:0px;}
 .billinbalance{background-color:#F3E2A9;}
 .billinbalancei2{background-color:#F5DA81;}
 div.billsin_note_edit{margin:0 auto;}
 div.billsin_note_edit > input{width:98%;text-align:center}
 #billsin{width:calc(100vw - 20px);max-width:800px;}
-
+#billsin td{border-bottom:1px solid gray}
 
 /*#billsin  tr > td:nth-child(2) > input{width:calc(100% - 10px);}*/
 .wwp{width:calc(100% - 10px);background-color:transparent;}

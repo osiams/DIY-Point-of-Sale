@@ -142,15 +142,15 @@ class it_view extends it{
 		";
 		$sql["count"]="SELECT COUNT(DISTINCT (bill_in_list.product_sku_root)) AS `count`
 			FROM bill_in_list 
-			WHERE bill_in_list.balance>0 AND bill_in_list.stroot=@sku_root;
+			WHERE IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)>0 AND bill_in_list.stroot=@sku_root;
 		";
 		$sql["it"]="SELECT  * FROM it WHERE sku_root=@sku_root;";
 		$limit_page=(($this->page-1)*$this->per).",".($this->per+1);
 		if($this->txsearch!=""){
 				$limit_page=$this->per+1;
 		}
-		$sql["product"]="SELECT bill_in_list.sum,bill_in_list.n,bill_in_list.product_sku_root,
-					IFNULL(SUM(bill_in_list.balance),0) AS balance,
+		$sql["product"]="SELECT bill_in_list.sum,IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv) AS n,bill_in_list.product_sku_root,
+					IFNULL(SUM(IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)),0) AS balance,
 					IFNULL(COUNT(*),0) AS `count`,
 					`product`.`id`,product.sku,product.barcode,product.name,product.price,product.cost,`product`.`s_type`,
 					unit.name AS unit_name
@@ -159,7 +159,7 @@ class it_view extends it{
 				ON(bill_in_list.product_sku_root=product.sku_root)
 				LEFT JOIN unit
 				ON(product.unit=unit.sku_root)
-				WHERE  bill_in_list.balance>0 AND bill_in_list.stroot=@sku_root
+				WHERE  IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)>0 AND bill_in_list.stroot=@sku_root
 				".$this->sh." 
 				GROUP BY bill_in_list.product_sku_root  ORDER BY `product`.`id` LIMIT ".$limit_page.";
 		";
@@ -408,6 +408,7 @@ class it_view_lot extends it_view{
 	}
 	protected function _pageLot(string $sku_root,string $pd):void{	
 		$se=$this->getPdLot($sku_root,$pd);
+		
 		if(count($se["it"])>0&&count($se["lot"])>=0){
 			$pdname=(isset($se["product"]["name"]))?$se["product"]["name"]:"ไม่มีงวดสินค้า";
 			$this->addDir("?a=it&amp;b=view&amp;sku_root=".$sku_root."&amp;c=lot&amp;pd=".$pd," ".htmlspecialchars($pdname));
@@ -417,6 +418,7 @@ class it_view_lot extends it_view{
 		}
 	}
 	private function writeContentItViewLot(string $sku_root,array $product,array $it,array $pd):void{
+		//print_r($pd);
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
 		$pdname=(isset($product["name"]))?$product["name"]:"ไม่มีงวดสินค้า";
 		echo '<div class="content">
@@ -488,9 +490,9 @@ class it_view_lot extends it_view{
 					<div><span  class="pwlv">'.$this->s_type[$se[$i]["s_type"]]["icon"].' </span>'.$se[$i]["product_sku"].','.$se[$i]["barcode"].'</div>
 				</td>
 				<td class="r">'.number_format($se[$i]["cost"],2,'.',',').'</td>
-				<td class="r">'.$se[$i]["n"].'</td>
+				<td class="r">'.($se[$i]["n"]*1).'</td>
 				<td class="r">
-					<div>'.$se[$i]["balance"].'</div>
+					<div>'.($se[$i]["balance"]*1).'</div>
 					<div>'.$se[$i]["unit_name"].'</div>
 				</td>
 				<td class="l">'.$se[$i]["unit_name"].'</td>
@@ -532,8 +534,11 @@ class it_view_lot extends it_view{
 		";
 		$sql["product"]="SELECT name FROM product WHERE sku_root=@pd";
 		$sql["it"]="SELECT  * FROM it WHERE sku_root=@sku_root;";
-		$sql["lot"]="SELECT bill_in_list.id,bill_in_list.stroot,bill_in_list.n ,bill_in_list.balance,bill_in_list.sum,bill_in_list.product_sku_root,
-				bill_in_list.name AS `product_name`,(bill_in_list.sum/bill_in_list.n) AS cost,
+		$sql["lot"]="SELECT bill_in_list.id,bill_in_list.stroot,
+				IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv) AS n ,
+				IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv) AS balance,
+				bill_in_list.sum,bill_in_list.product_sku_root,
+				bill_in_list.name AS `product_name`,(bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv)) AS cost,
 				bill_in.in_type,bill_in.bill,IFNULL(bill_in.note,'')  AS bill_note,
 				bill_in.sku,IFNULL(bill_in.note,'') AS `note`,bill_in.date_reg,
 				product_ref.barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`,
@@ -549,7 +554,7 @@ class it_view_lot extends it_view{
 			ON(bill_in_list.product_sku_key=product_ref.sku_key)
 			LEFT JOIN unit_ref
 			ON(bill_in_list.unit_sku_key=unit_ref.sku_key)
-			WHERE bill_in_list.product_sku_root=@pd AND  bill_in_list.balance>0  AND bill_in_list.stroot=@sku_root ORDER BY bill_in_list.sq,bill_in_list.id ASC;
+			WHERE bill_in_list.product_sku_root=@pd AND  IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)>0  AND bill_in_list.stroot=@sku_root ORDER BY bill_in_list.sq,bill_in_list.id ASC;
 		";
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@TEST AS `TEST`";
 		$se=$this->metMnSql($sql,["it","product","lot","result"]);

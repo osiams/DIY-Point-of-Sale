@@ -109,7 +109,7 @@ class billsin extends main{
 			amu=a.n
 		}
 		let div3_1=M.ce("div",{})
-		let ip=M.ce("input",{"class":"wwp","type":"number","onkeyup":"Bi.setAct(this)","min":"0","step":step,"class":"c","value":amu})
+		let ip=M.ce("input",{"class":"wwp","type":"number","onkeyup":"Bi.setAct(this)","onchange":"Bi.setAct(this)","min":"0","step":step,"class":"c","value":amu})
 		div3_1.appendChild(ip)
 		let div3_2=M.ce("div",{})
 		div3_2.appendChild(M.cn(a.unit))
@@ -123,7 +123,7 @@ class billsin extends main{
 		if(a.sum!=undefined){
 			tol=a.sum
 		}
-		let ip2=M.ce("input",{"type":"number","min":"0","class":"r","value":tol,"onkeyup":"Bi.setAct(this)","step":"any"})
+		let ip2=M.ce("input",{"type":"number","min":"0","class":"r","value":tol,"onkeyup":"Bi.setAct(this)","onchange":"Bi.setAct(this)","step":"any"})
 		let tavg=this.nb(tol/amu,2)
 		let avg=M.ce("p",{})
 			avg.appendChild(M.cn(isNaN(tavg)?"0.00":tavg))
@@ -140,14 +140,7 @@ class billsin extends main{
 		row_an.style.height="0px"
 		let ho=row.offsetHeight
 		row.style.display="none"
-		//row.style.transform="scale(1.0,0)"
-		
-		//alert(row.id+"-"+ho)		
 		setTimeout("Bi.setTrHeight('"+row.id+"',"+ho+",0)",10)
-		//row.style.height="10px"
-
-		
-
 	}
 	setTrHeight(id,n,n_an){
 		let m=1
@@ -213,7 +206,8 @@ class billsin extends main{
 		if(a.s_type!="p"){
 			p2.appendChild(s_wlv)
 		}
-		p2.appendChild(M.cn(a.bcsku))
+		p2.appendChild(M.cn(a.bcsku==null?"":a.bcsku))
+		this.end(p2,[s_price,s_cost])
 		cell1.appendChild(ipn)
 		cell1.appendChild(p2)
 		let amu=0
@@ -221,7 +215,7 @@ class billsin extends main{
 			amu=a.n
 		}
 		let div3_1=M.ce("div",{})
-		let ip=M.ce("input",{"type":"number","data-old":amu,"data-balance":balance,"min":"0","step":step,"class":"c","onchange":"Bi.setAct(this)","value":amu})
+		let ip=M.ce("input",{"type":"number","data-old":amu,"data-balance":balance,"min":"0","step":step,"class":"c","onkeyup":"Bi.setAct(this)","onchange":"Bi.setAct(this)","value":amu})
 		div3_1.appendChild(ip)
 		let div3_2=M.ce("div",{})
 		div3_2.appendChild(M.cn(a.unit))
@@ -253,10 +247,10 @@ class billsin extends main{
 		if(a.sum!=undefined){
 			tol=a.sum
 		}
-		let ip2=M.ce("input",{"data-old":old_sum,"type":"number","min":"0","onchange":"Bi.setAct(this)","class":"r","value":tol,"step":"any"})
+		let ip2=M.ce("input",{"data-old":old_sum,"type":"number","min":"0","onkeyup":"Bi.setAct(this)","onchange":"Bi.setAct(this)","class":"r","value":tol,"step":"any"})
 		let tavg=this.nb(tol/amu,2)
 		let avg=M.ce("p",{})
-			avg.appendChild(M.cn(tavg))
+			avg.appendChild(M.cn(isNaN(tavg)?"0.00":tavg))
 		cell4.appendChild(ip2)
 		cell4.appendChild(avg)
 
@@ -275,7 +269,13 @@ class billsin extends main{
 			ip.setAttribute("readonly","readony")
 			ip2.setAttribute("readonly","readony")
 		}
-		
+		row.id=this.rid()
+		let row_an=t.insertRow(ls+1)
+		row_an.id=row.id+"_an"
+		row_an.style.height="0px"
+		let ho=row.offsetHeight
+		row.style.display="none"
+		setTimeout("Bi.setTrHeight('"+row.id+"',"+ho+",0)",10)
 	}
 	billsinNo(did){
 		let o=did.parentNode.parentNode
