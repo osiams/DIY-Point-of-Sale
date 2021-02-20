@@ -120,8 +120,8 @@ class main{
 			"bill_sell_list"=>[
 				"name"=>"bill_sell_list",
 				"column"=>["id","sku","bill_in_list_id","lot","product_sku_key","product_sku_root",
-					"n","n_wlv","c","u","r","h","unit_sku_key","unit_sku_root","note","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","r"=>0,"h"=>0,"n_wlv"=>1],
+					"n","n_wlv","c","u","r","h","sq","unit_sku_key","unit_sku_root","note","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","r"=>0,"h"=>0,"n_wlv"=>1,"sq"=>1],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
 				"primary"=>"id",
 				"index"=>["sku","bill_in_list_id","lot","product_sku_key","product_sku_root","n_wlv"]
@@ -716,6 +716,27 @@ class main{
 		$re=$_SERVER['REMOTE_ADDR'];
 		if($re==$_SERVER["SERVER_ADDR"]){
 			$re=$this->findIPv4();
+		}
+		return $re;
+	}
+	protected function createBcWLV(string $bc,float $n_wlv):string{
+		$re="";
+		$bc_len=strlen($bc);
+		if(strlen(trim($bc))>0){
+			$bc_len_tx=strlen($bc)<10?"0".strlen($bc):strlen($bc);
+			$a=(string) $n_wlv*1;
+			$b=explode(".",$a);
+			if(count($b)==1){
+				$b[1]="";
+			}
+			$n_tx=$b[0];
+			$float_tx=$b[1];	
+			$n_len_tx=strlen($n_tx)<10?"0".strlen($n_tx):strlen($n_tx);
+			if(($bc_len+strlen($n_tx)+strlen($float_tx))%2!=0){
+				$n_tx="0".$b[0];
+				$n_len_tx=strlen($n_tx);
+			}
+			$re=$bc."".$n_tx."".$float_tx."".$n_len_tx."".$bc_len_tx;
 		}
 		return $re;
 	}

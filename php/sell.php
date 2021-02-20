@@ -104,6 +104,7 @@ class sell extends main{
 				DECLARE n_over INT DEFAULT 0;
 				DECLARE pd_buy INT DEFAULT 0;
 				DECLARE n_price_null INT DEFAULT 0;
+				DECLARE flag TEXT DEFAULT '{}';
 				SET @sku=(SELECT CONCAT('00',LPAD(CAST(@id AS CHAR(25)),7,'0')));
 				FOR i IN 0..(@pd_length-1) DO
 					SET pd_buy=0;
@@ -131,8 +132,12 @@ class sell extends main{
 							)	
 							FROM `product` WHERE `sku_root`=@pdroot	 LIMIT 1 
 					);
-SET @TEST=CONCAT(@TEST,'-',@flag);
-					SET @sums=@sums+@flag;	
+					IF JSON_EXISTS(flag,CONCAT('$.' ,@pdroot)) = 0 THEN
+						SET flag=JSON_INSERT(flag,CONCAT('$.' ,@pdroot),1);
+						SET @sums=@sums+@flag;
+					END IF;
+					SET @TEST=CONCAT(@TEST,'@',@sums);
+					#SET @sums=@sums+@flag;	
 					SET @pd_n=(SELECT SUM(IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)) AS balance FROM bill_in_list 
 						WHERE IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)>0 
 						AND   `product_sku_root`=	@pdroot	
@@ -168,6 +173,7 @@ SET @TEST=CONCAT(@TEST,'-',@flag);
 		$sql["bill_sell_list_save"]="
 			BEGIN NOT ATOMIC
 				DECLARE i INT DEFAULT 0;
+				DECLARE `sq` INT DEFAULT 1;
 				DECLARE pdl INT DEFAULT 0;
 				DECLARE pdroot CHAR(25) DEFAULT '';
 				DECLARE pdkey CHAR(25) DEFAULT '';
@@ -183,6 +189,10 @@ SET @TEST=CONCAT(@TEST,'-',@flag);
 				DECLARE stn FLOAT DEFAULT 0.0000;			
 				DECLARE stbalance FLOAT DEFAULT 0.0000;	
 				DECLARE stsum FLOAT DEFAULT 0;	
+				DECLARE `mod` FLOAT DEFAULT 0;
+				DECLARE `n_wlv_mod` FLOAT DEFAULT 0;
+				DECLARE `cuts_mod` INT DEFAULT 0;
+				DECLARE `cut_mod` INT DEFAULT 0;
 				DECLARE w CHAR(1) DEFAULT '0';
 				DECLARE lastid INT DEFAULT NULL;	
 				DECLARE r__ INT DEFAULT 0;
@@ -208,7 +218,7 @@ SET @TEST=CONCAT(@TEST,'-',@flag);
 							######################
 							SET pdn=JSON_VALUE(@jspd	,		CONCAT('$.'	,		@pdroot_n_or_wlv		,'.n')			);
 							SET pdn_wlv=JSON_VALUE(@jspd	,		CONCAT('$.'	,		@pdroot_n_or_wlv		,'.n_wlv')			);
-							SET cuts=pdn*pdn_wlv-cut;
+							SET cuts=(pdn-cut);
 							SELECT id,bill_in_sku,IF(s_type='p',n,n_wlv),IF(s_type='p',balance,balance_wlv),sum INTO stid,stsku,stn,stbalance,stsum
 								FROM bill_in_list 
 								WHERE IF(s_type='p',balance,balance_wlv)>0 AND  product_sku_root=pdroot AND stroot='proot' 
@@ -223,34 +233,71 @@ SET @TEST=CONCAT(@TEST,'-',@flag);
 							SET pdkey=(SELECT sku_key  FROM product WHERE sku_root=pdroot LIMIT 1);	
 							IF stn>0 THEN		
 							SET @TEST=CONCAT(@TEST,'-','eeeeeeeeeeeeeeeeeeeeeee','^',cuts,'^',stbalance);
-								IF cuts<=stbalance THEN
-									SET pdcoat=pdcoat+(stsum/stn)*cuts;
-									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,r,unit_sku_key,unit_sku_root)
-									VALUE(@sku,stid,stsku,pdkey,pdroot,pdn,pdn_wlv,(pdn-cut),0,0,unitkey,unitroot);
+								IF `cut_mod`< `cuts_mod` THEN
+									IF `mod`>0 && `mod` < `n_wlv_mod` THEN
+										SET pdn=1;
+										SET pdn_wlv=`mod`;
+										SET cuts=1;
+									ELSE
+										SET pdn_wlv=`n_wlv_mod`;
+									END IF;
+								END IF;
+								IF cuts*pdn_wlv<=stbalance THEN
+									SET pdcoat=pdcoat+(stsum/stn)*cuts*pdn_wlv;
+									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,r,`sq`,unit_sku_key,unit_sku_root)
+									VALUE(@sku,stid,stsku,pdkey,pdroot,pdn,pdn_wlv,cuts,0,0,`sq`,unitkey,unitroot);
 									UPDATE bill_in_list 
-										SET balance=(IF(s_type='p',balance-cuts,NULL)) ,
-											balance_wlv=(IF(s_type!='p',balance_wlv-cuts,NULL)) 
+										SET balance=(IF(s_type='p',balance-cuts*pdn_wlv,NULL)) ,
+											balance_wlv=(IF(s_type!='p',balance_wlv-(cuts*pdn_wlv),NULL)) 
 									WHERE id=stid ;
 									SET @TEST=CONCAT(@TEST,'-','44444444444444');
-									SET stn=0;
-									SET cuts=0;
-									SET cut=0;
-									SET stbalance=0;
-									SET stsum=0;
-									SET i=i+1;
-								ELSEIF cuts>stbalance THEN
+									#################
+									SET `mod`=0;
+									SET `cut_mod`=`cut_mod`+cuts;
+									SET cut=cut+cuts;
+									IF `cut_mod`< `cuts_mod` THEN
+										SET `mod`=`n_wlv_mod`;
+									ELSE
+										SET stn=0;
+										SET cuts=0;
+										SET cut=0;
+										SET stbalance=0;
+										SET stsum=0;
+										SET i=i+1;
+										SET `cuts_mod`=0;
+										SET `cut_mod`=0;
+										SET `n_wlv_mod`=0;
+										SET `sq`=`sq`+1;
+									END IF;
+									##################
+								ELSEIF cuts*pdn_wlv>stbalance THEN
 									SET pdcoat=pdcoat+(stsum/stn)*stbalance;
-									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,r,unit_sku_key,unit_sku_root)
-									VALUE(@sku,stid,stsku,pdkey,pdroot,pdn,pdn_wlv,stbalance,(cuts-stbalance),0,unitkey,unitroot);
-									UPDATE bill_in_list 
-										SET balance=(IF(s_type='p',0,NULL)) ,
-											balance_wlv=(IF(s_type!='p',0,NULL)) 
-									WHERE id=stid ;
-									SET cut=cut+stbalance;
+									SET @cut_able=FLOOR(stbalance/pdn_wlv);
+									SET @mod=ABS(@cut_able*pdn_wlv-stbalance);
+									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,r,`sq`,unit_sku_key,unit_sku_root)
+									VALUE(@sku,stid,stsku,pdkey,pdroot,pdn,pdn_wlv,@cut_able,(cuts-@cut_able),0,`sq`,unitkey,unitroot);
+									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,r,`sq`,unit_sku_key,unit_sku_root)
+									VALUE(@sku,stid,stsku,pdkey,pdroot,1,@mod,1,0,0,`sq`,unitkey,unitroot);
+									IF pdn_wlv=1 THEN
+										UPDATE bill_in_list 
+											SET balance=(IF(s_type='p',0,NULL)) ,
+												balance_wlv=(IF(s_type!='p',0,NULL)) 
+										WHERE id=stid ;
+										SET `mod`=0;
+									ELSE 
+										UPDATE bill_in_list 
+											SET balance_wlv=0
+										WHERE id=stid ;
+										SET `mod`=pdn_wlv-@mod;
+										SET `n_wlv_mod`=pdn_wlv;
+										SET `cuts_mod`=cuts;
+										SET `cut_mod`=`cut_mod`+@cut_able;
+									END IF;
+									SET cut=cut+@cut_able;
 									################3
 									SET @TEST=CONCAT(@TEST,'-','zzzzzzzzzzzzzzz');
 									SET @TEST=CONCAT(@TEST,'$',cuts,'@',stbalance);
-									SET i=i+1;
+									#SET i=i+1;
 									###################
 								END IF;
 								SET lastid=(SELECT LAST_INSERT_ID());
@@ -266,8 +313,8 @@ SET @TEST=CONCAT(@TEST,'-',@flag);
 							SET @TEST=CONCAT(@TEST,'-','wwwwwwwwww');
 								SET w='1';
 								SET pdcoat=pdcoat+(SELECT cost FROM product WHERE sku_root=pdroot LIMIT 1)*cuts;
-								INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,unit_sku_key,unit_sku_root )
-								VALUE(@sku,NULL,NULL,pdkey,pdroot,pdn,pdn_wlv,0,cuts,unitkey,unitroot);
+								INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,`sq`,unit_sku_key,unit_sku_root )
+								VALUE(@sku,NULL,NULL,pdkey,pdroot,pdn,pdn_wlv,0,cuts,`sq`,unitkey,unitroot);
 								SET stn=0;
 								SET cuts=0;
 								SET cut=0;

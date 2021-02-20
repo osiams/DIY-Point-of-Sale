@@ -566,7 +566,7 @@ class product extends main{
 									<option value="p"'.($s_type=="p"?" selected":"").'>'.$this->s_type["p"]["icon"].' '.$this->s_type["p"]["desc"].'</option>
 									<option value="w"'.($s_type=="w"?" selected":"").'>'.$this->s_type["w"]["icon"].' '.$this->s_type["w"]["desc"].'</option>
 									<option value="l"'.($s_type=="l"?" selected":"").'>'.$this->s_type["l"]["icon"].' '.$this->s_type["l"]["desc"].'</option>
-									<option value="v"'.($s_type=="c"?" selected":"").'>'.$this->s_type["v"]["icon"].' '.$this->s_type["v"]["desc"].'</option>
+									<option value="v"'.($s_type=="v"?" selected":"").'>'.$this->s_type["v"]["icon"].' '.$this->s_type["v"]["desc"].'</option>
 								</select>
 							</div>
 		';

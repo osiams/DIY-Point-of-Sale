@@ -69,10 +69,10 @@ class day extends main{
 			$pf+=$dt[$i]["profit"];
 			echo '<tr'.$cm.'>
 				<td>'.($i+1).'</td>
-				<td>'.htmlspecialchars($dt[$i]["product_name"]).' <span class="blue">'.number_format($dt[$i]["product_price"],2,'.',',').'</span>
-				<p>'.$dt[$i]["barcode"].'</p>
+				<td>'.htmlspecialchars($dt[$i]["product_name"]).' <span class="blue">฿'.number_format($dt[$i]["product_price"],2,'.',',').'/'.htmlspecialchars($dt[$i]["unit_name"]).'</span>
+				<p><span class="pwlv">'.$this->s_type[$dt[$i]["s_type"]]["icon"].'</span> '.$dt[$i]["barcode"].'</p>
 				</td>
-				<td>'.$dt[$i]["n"].'
+				<td>'.($dt[$i]["n"]*1).'
 					<p>'.htmlspecialchars($dt[$i]["unit_name"]).'</p></td>
 				<td>'.number_format($dt[$i]["profit"],2,'.',',').'</td>
 			</tr>';
@@ -98,10 +98,10 @@ class day extends main{
 			FROM bill_sell 
 			WHERE id>=@r_ AND id<=@_r ;";
 		$sql["sum_price_profit_real"]="SELECT SUM(price-pricer) AS `prices`,SUM(price-pricer-(cost-costr)) AS `pf` FROM bill_sell WHERE id>=@r_ AND id<=@_r AND IFNULL(stat,'')!='c';";
-		$sql["pdo"]="SELECT product_ref.barcode,product_ref.name AS `product_name`, product_ref.price AS `product_price`,
+		$sql["pdo"]="SELECT product_ref.barcode,product_ref.name AS `product_name`, product_ref.price AS `product_price`,`product_ref`.`s_type`,
 			unit_ref.name AS `unit_name`,
-			SUM(		IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u)-bill_sell_list.r		) AS `n`,
-			SUM((product_ref.price*(		IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u)-bill_sell_list.r		))-IFNULL((bill_in_list.sum/bill_in_list.n),product_ref.cost)*(		IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u)-bill_sell_list.r		)) AS `profit`,
+			SUM(		IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u)-bill_sell_list.r		)*bill_sell_list.n_wlv AS `n`,
+			SUM((product_ref.price*(		IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u)-bill_sell_list.r		))-IFNULL((bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv)),product_ref.cost)*(		IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u)-bill_sell_list.r		))*bill_sell_list.n_wlv AS `profit`,
 			bill_sell.stat
 			FROM bill_sell
 			LEFT JOIN bill_sell_list

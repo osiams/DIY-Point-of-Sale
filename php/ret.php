@@ -35,7 +35,7 @@ class ret extends main{
 				}else if(isset($_POST["confirm"])&&$_POST["confirm"]=="ok"){
 					//print_r($_POST);
 					$se=$this->fetchRet($_POST);
-					//print_r($se);
+					//print_r($se);exit;
 					$we=$this->fetchRetSave($se);
 					header('Content-type: application/json');
 					echo json_encode($we);
@@ -76,7 +76,7 @@ class ret extends main{
 		}
 	}
 	private function fetchRetSave(array $dt):array{
-		//print_r($dt["pd"]);exit;
+		//print_r($dt);exit;
 		$user=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$sku=$this->getStringSqlSet($dt["sku"]);
 		$ch2=$this->getStringSqlSet($dt["ch2"]);
@@ -104,6 +104,7 @@ class ret extends main{
 		$sql["run"]="BEGIN NOT ATOMIC 
 			DECLARE done INT DEFAULT FALSE;
 			DECLARE k CHAR(25) DEFAULT '';
+			DECLARE bill_sell_list_id INT DEFAULT 0;
 			DECLARE n_r INT DEFAULT 0;
 			DECLARE c_r INT DEFAULT 0;
 			DECLARE c_r_ed INT DEFAULT 0;
@@ -119,21 +120,25 @@ class ret extends main{
 			DECLARE r__ INT DEFAULT 0;
 			DECLARE __r INT DEFAULT 0;
 			DECLARE addsku CHAR(25) CHARACTER SET ascii DEFAULT @sku;
-			DECLARE r ROW (lot VARCHAR(25),
+			DECLARE r ROW (id INT,
+													lot VARCHAR(25),
 													lot_root VARCHAR(25),
 													product_sku_key VARCHAR(25),
 													product_sku_root VARCHAR(25),
 													n INT ,
+													n_wlv FLOAT ,
 													r INT ,
 													unit_sku_key VARCHAR(25),
 													unit_sku_root VARCHAR(25),
+													s_type CHAR(1),
 													cost FLOAT,
 													name  VARCHAR(255)  CHARACTER SET utf8,
 													price FLOAT
 													);										
 			DECLARE cur1 CURSOR FOR 
-			SELECT  IFNULL(bill_sell_list.lot,'')	,bill_in.lot_root, bill_sell_list.product_sku_key , bill_sell_list.product_sku_root	, bill_sell_list.n,bill_sell_list.r,
-				 bill_sell_list.unit_sku_key ,bill_sell_list.unit_sku_root ,(bill_in_list.sum/bill_in_list.n) AS cost,
+			SELECT  `bill_sell_list`.`id`,IFNULL(bill_sell_list.lot,''),bill_in.lot_root, bill_sell_list.product_sku_key , bill_sell_list.product_sku_root	, 
+				bill_sell_list.n,bill_sell_list.n_wlv,bill_sell_list.r,
+				 bill_sell_list.unit_sku_key ,bill_sell_list.unit_sku_root,`bill_in_list`.`s_type`,(bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv)) AS cost,
 				product_ref.name,product_ref.price
 				FROM bill_sell_list 
 				LEFT JOIN bill_in
@@ -145,11 +150,13 @@ class ret extends main{
 				WHERE bill_sell_list.sku=CAST(@sku AS CHAR CHARACTER SET ascii) ;
 			DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;			
 			#SET @TEST=CONCAT(@TEST,'--',CURTIME(6),'');
+			SET @TEST=CONCAT(@TEST,'*',@jspd);
 			SET @date=date_reg;
 			SET k=KEY_();
 			SET n_list=0;
 			FOR i IN 0..(@pd_length-1) DO
 				SET done = 0;
+				SET bill_sell_list_id=JSON_VALUE(@jspd		,		CONCAT('$['	,		i		,'].id'));
 				SET ky=JSON_VALUE(@jspd		,		CONCAT('$['	,		i		,'].pd'));
 				SET n_r=JSON_VALUE(@jspd	,CONCAT('$['	,	i	,'].n'));
 				SET nt=JSON_VALUE(@jspd	,CONCAT('$['	,	i	,'].nt'));
@@ -160,16 +167,22 @@ class ret extends main{
 						IF done THEN
 							LEAVE read_loop;
 						END IF;
-						IF n_r<=r.n -r.r && n_r>0&& ky=r.product_sku_root && r.lot=lot THEN
+						IF n_r<=r.n -r.r && n_r>0 && bill_sell_list_id = r.id && ky=r.product_sku_root && r.lot=lot THEN
 							#SET @TEST=CONCAT(@TEST,IF(LENGTH(lot)>0,8,10),'-',r.lot);
 							IF r.cost IS NULL THEN
 								SET r.cost=(SELECT cost FROM product_ref WHERE sku_key=r.product_sku_key);
 							END IF;
 							SET @stkey=(SELECT sku_key FROM  it WHERE sku_root='proot');
 							UPDATE `bill_sell_list` SET r=(n_r+r.r),note=IF(LENGTH(nt)>0,nt,NULL)
-							WHERE  `bill_sell_list`.`product_sku_root`=ky AND  `bill_sell_list`.`sku`=addsku AND  (`bill_sell_list`.`lot`=lot OR (bill_sell_list.lot IS NULL AND  LENGTH(lot)=0));
-							INSERT  INTO `bill_in_list`  (`stkey`,`stroot`,`lot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,`name`,`n`,`balance`,`sum`,`unit_sku_key`,`unit_sku_root`,`note`) 
-							VALUES(@stkey,'proot',IF(LENGTH(r.lot)>0,r.lot,NULL),	k	,r.product_sku_key	,r.product_sku_root	,r.name	,n_r	,n_r	,(r.cost*n_r) ,r.unit_sku_key	,r.unit_sku_root,IF(LENGTH(nt)>0,nt,NULL));
+							WHERE  `bill_sell_list`.`id`=bill_sell_list_id
+								AND `bill_sell_list`.`product_sku_root`=ky 
+								AND  `bill_sell_list`.`sku`=addsku 
+								AND  (`bill_sell_list`.`lot`=lot OR (bill_sell_list.lot IS NULL AND  LENGTH(lot)=0));
+							INSERT  INTO `bill_in_list`  (`stkey`,`stroot`,`lot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,
+								`s_type`,`name`,`n`,`balance`,`n_wlv`,`balance_wlv`,`sum`,`unit_sku_key`,`unit_sku_root`,`note`) 
+							VALUES(@stkey,'proot',IF(LENGTH(r.lot)>0,r.lot,NULL),	k	,r.product_sku_key	,r.product_sku_root	,
+								r.s_type,r.name	,IF(r.s_type='p',n_r,NULL)	,IF(r.s_type='p',n_r,NULL)	,IF(r.s_type!='p',n_r*r.n_wlv,NULL)	,IF(r.s_type!='p',n_r*r.n_wlv,NULL),
+								(r.cost*n_r*r.n_wlv) ,r.unit_sku_key	,r.unit_sku_root,IF(LENGTH(nt)>0,nt,NULL));
 							SET lastid=(SELECT LAST_INSERT_ID());
 							IF r__=0 THEN 
 								SET r__=lastid;
@@ -177,11 +190,11 @@ class ret extends main{
 								SET __r=lastid;
 							END IF;
 							UPDATE bill_in_list SET sq=lastid WHERE id=lastid;
-							UPDATE bill_sell SET costr=(costr+(r.cost*n_r)),pricer=(IFNULL(pricer,0)+(r.price*n_r)),stat='r',user_edit= @user 
+							UPDATE bill_sell SET costr=(costr+(r.cost*n_r*r.n_wlv)),pricer=(IFNULL(pricer,0)+(r.price*n_r*r.n_wlv)),stat='r',user_edit= @user 
 							WHERE bill_sell.sku=addsku;							
 							SET @result=1;
 							SET n_list=n_list+1;
-							SET sum_cost=sum_cost+(r.cost*n_r);
+							SET sum_cost=sum_cost+(r.cost*n_r*r.n_wlv);
 							LEAVE read_loop;
 						END IF;
 					END LOOP;
@@ -211,12 +224,14 @@ class ret extends main{
 		$s=0;
 		for($i=0;$i<count($se["list"]);$i++){
 			foreach($se["pd"] as $k=>$v){
-				if($se["list"][$i]["lot"]==$v["lot"]&&$se["list"][$i]["product_sku_root"]==$v["pd"]){
+				if($se["list"][$i]["id"]==$v["id"]
+					&&$se["list"][$i]["product_sku_root"]==$v["pd"]
+					&&$se["list"][$i]["lot"]==$v["lot"]){
 					if($se["pd"][$k]["n"]>0){
 						$re["data"][$s]=[
-							"name"=>$se["list"][$i]["product_name"],
+							"name"=>$se["list"][$i]["product_name"]."".($se["list"][$i]["s_type"]!="p"?" ".($se["list"][$i]["n_wlv"]*1)." ".$se["list"][$i]["unit_name"]:""),
 							"n"=>$se["pd"][$k]["n"],
-							"price"=>$se["list"][$i]["product_price"],
+							"price"=>$se["list"][$i]["product_price"]*($se["list"][$i]["n_wlv"]*1),
 							"nt"=>$se["pd"][$k]["nt"]
 						];
 						$s+=1;
@@ -257,7 +272,10 @@ class ret extends main{
 						$nt=(string) $dt["nt_".$pd."_lot_".$pdf[1]];
 					}		
 					$w=(int) $v;
-					$re["pd"][$s++]=["pd"=>$pd,"n"=>$w,"nt"=>$nt,"lot"=>$pdf[1]];
+					$lot=explode("_id_",$pdf[1]);
+					$id=base_convert($lot[1],17,10);
+					$id=base_convert($id,2, 10);
+					$re["pd"][$s++]=["id"=>$id,"pd"=>$pd,"n"=>$w,"nt"=>$nt,"lot"=>$lot[0]];
 				}
 			}
 			if($dt["changto"]=="0"||$dt["changto"]=="1"){
@@ -276,6 +294,7 @@ class ret extends main{
 	}
 	private function retFormPage(string $sku,string $type="sku"):void{
 		$dt=$this->getBill($sku,$type);
+		//print_r($dt);
 		if($dt["result"]["result"]){
 			$this->addDir("?a=ret","ใบเสร็จเลขที่ ".$dt["head"]["sku"]);
 			$this->pageHead(["title"=>"คืนสินค้า DIYPOS","css"=>["ret"],"js"=>["ret","Rt"]]);
@@ -303,7 +322,6 @@ class ret extends main{
 			<input type="hidden" name="sku" value="'.$head["sku"].'" />
 			<table class="ret"><tr><th>ที่</th>	
 			<th>สินค้า</th>		
-			<th>ราคา/ชิ้น</th>
 			<th>จำนวน</th>
 			<th>ต้องการคืน</th>
 			<th>หมายเหตุ</th>
@@ -312,15 +330,18 @@ class ret extends main{
 			$cm=($i%2!=0)?" class=\"i2\"":"";
 			$tre="";
 			if($list[$i]["r"]>0){
-				$tre='<p class="darkgoldenrod l size11">คืน '.$list[$i]["r"].' '.htmlspecialchars($list[$i]["unit_name"]).' 📌 '.htmlspecialchars($list[$i]["note"]).'</p>';
+				$tre='<p class="darkgoldenrod l size11">คืน '.$list[$i]["r"].''.(($list[$i]["s_type"]!="p")?"×".($list[$i]["n_wlv"]*1):"").' '.htmlspecialchars($list[$i]["unit_name"]).' 📌 '.htmlspecialchars($list[$i]["note"]).'</p>';
 			}
+			$id=base_convert($list[$i]["id"],10,2);
+			$id=base_convert($id,10, 17);
 			echo '<tr'.$cm.'>
 				<td>'.($i+1).'</td>
-				<td class="l">'.$list[$i]["product_name"].''.$tre.'</td>
-				<td class="r">'.$list[$i]["product_price"].'</td>
+				<td class="l">'.$list[$i]["product_name"].''.(($list[$i]["s_type"]!="p")?" ".($list[$i]["n_wlv"]*1)." ".$list[$i]["unit_name"]:"").''.$tre.'
+					<p><span class="pwlv">'.$this->s_type[$list[$i]["s_type"]]["icon"].'</span>,'.$list[$i]["product_barcode"].' <span>฿'.(number_format($list[$i]["product_price"]*$list[$i]["c"]*$list[$i]["n_wlv"],2,'.',',')).'</span></p>
+				</td>
 				<td class="r"><a onclick="M.popup(this,\'Rt.infoLot()\');Rt.infoLotFetch(this,\''.$list[$i]["lot"].'\',\''.$list[$i]["product_sku_root"].'\')">'.$list[$i]["c"].'</a></td>
-				<td><input type="number" name="pd_'.$list[$i]["product_sku_root"].'_lot_'.$list[$i]["lot"].'" value="0" min="0" max="'.($list[$i]["c"]-$list[$i]["r"]).'" /></td>
-				<td><input type="text" name="nt_'.$list[$i]["product_sku_root"].'_lot_'.$list[$i]["lot"].'" value="'.htmlspecialchars($list[$i]["note"]).'" /></td>
+				<td><input type="number" name="pd_'.$list[$i]["product_sku_root"].'_lot_'.$list[$i]["lot"].'_id_'.$id.'" value="0" min="0" max="'.($list[$i]["c"]-$list[$i]["r"]).'" /></td>
+				<td><input type="text" name="nt_'.$list[$i]["product_sku_root"].'_lot_'.$list[$i]["lot"].'_id_'.$id.'" value="'.htmlspecialchars($list[$i]["note"]).'" /></td>
 			</tr>';
 		}	
 		echo '<tr>
@@ -365,8 +386,11 @@ class ret extends main{
 			WHERE bill_in.bill=".$sku.";
 		";
 		$sql["list"]="SELECT  
-				bill_sell_list.lot,bill_sell_list.product_sku_root AS product_sku_root,IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u) AS `c`,bill_sell_list.r AS `r`,IFNULL(bill_sell_list.note,'') AS `note`,
-				product_ref.name AS product_name,product_ref.barcode AS product_barcode,product_ref.price AS product_price,
+				bill_sell_list.id,bill_sell_list.lot,bill_sell_list.product_sku_root AS product_sku_root,bill_sell_list.n_wlv,
+				IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u) AS `c`,
+				bill_sell_list.r AS `r`,IFNULL(bill_sell_list.note,'') AS `note`,
+				product_ref.name AS product_name,product_ref.barcode AS product_barcode,
+				product_ref.price AS product_price,product_ref.s_type,
 				unit_ref.name AS unit_name
 			FROM `bill_sell_list` 
 			LEFT JOIN product_ref

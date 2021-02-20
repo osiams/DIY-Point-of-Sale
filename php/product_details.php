@@ -92,8 +92,8 @@ class product_details extends product{
 					<div>'.$dt[$i]["date_reg"].'</div>
 					<div class="r"><span>ทุน '.$cost.'/น. </span>  <span>🏘️ <a href="?a=it&amp;b=view&amp;sku_root='.$dt[$i]["stroot"].'&c=lot&pd='.$dt[$i]["product_sku_root"].'&amp;ed='.$key.'">'.htmlspecialchars($dt[$i]["it_name"]).'</a></div>
 				</td>
-				<td class="r">'.$dt[$i]["n"].'</td>
-				<td class="r">'.$dt[$i]["balance"].'</td>
+				<td class="r">'.($dt[$i]["n"]*1).'</td>
+				<td class="r">'.($dt[$i]["balance"]*1).'</td>
 			</tr>';
 		}
 		echo '</table>';
@@ -154,7 +154,10 @@ class product_details extends product{
 			LEFT JOIN (`group`) 
 			ON (`product`.`group_root` = `group`.`sku_root`) 
 			WHERE product.sku_root=".$sku_root." ORDER BY id DESC ";
-		$sql["stock"]="SELECT bill_in_list.stroot,IFNULL(bill_in_list.n,0) AS `n` ,IFNULL(bill_in_list.balance,0) AS `balance`,bill_in_list.sum,bill_in_list.product_sku_root,
+		$sql["stock"]="SELECT bill_in_list.stroot,
+				IFNULL(IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv),0) AS `n` ,
+				IFNULL(IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv),0) AS `balance`,
+				bill_in_list.sum,bill_in_list.product_sku_root,
 				bill_in.in_type,bill_in.bill,IFNULL(bill_in.note,'') AS `note`,
 				bill_in.sku,bill_in.date_reg,it_ref.name  AS `it_name`
 			FROM bill_in_list
@@ -162,7 +165,7 @@ class product_details extends product{
 			ON( bill_in_list.bill_in_sku=bill_in.sku)
 			LEFT JOIN it_ref
 			ON(bill_in_list.stkey=it_ref.sku_key)
-			WHERE  bill_in_list.balance>0 AND bill_in_list.product_sku_root=".$sku_root." ORDER BY bill_in_list.sq DESC ;
+			WHERE  IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)>0 AND bill_in_list.product_sku_root=".$sku_root." ORDER BY bill_in_list.sq DESC ;
 		";
 		$sql["setpdroot"]="SET @h=CAST(".$sku_root." AS CHAR CHARACTER SET  ascii);";
 		$sql["bill"]="SELECT  bill_sell.id, bill_sell.stat,bill_sell.sku,bill_sell.user,bill_sell.r_,bill_sell.date_reg,

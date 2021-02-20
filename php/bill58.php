@@ -403,7 +403,7 @@ class bill58 extends main{
 			for($i=0;$i<count($se["list"]);$i++){
 				$re["list_".$i]=[
 					["t"=>$se["list"][$i]["n"],"lcr"=>"l"],
-					["t"=>"".$se["list"][$i]["product_name"].''.($se["list"][$i]["s_type"]!="p"?" ".($se["list"][$i]["n"]*$se["list"][$i]["n_wlv"]*1)." ".$se["list"][$i]["unit_name"]:""),"lcr"=>"l"],
+					["t"=>"".$se["list"][$i]["product_name"].''.($se["list"][$i]["s_type"]!="p"?" ".($se["list"][$i]["n_wlv"]*1)." ".$se["list"][$i]["unit_name"]:""),"lcr"=>"l"],
 					["t"=>" ฿".($se["list"][$i]["s_type"]=="p"?number_format($se["list"][$i]["product_price"],2,'.',','):number_format(($se["list"][$i]["product_price"]*$se["list"][$i]["n_wlv"]),2,'.',','))."","lcr"=>"r"],
 					["t"=>number_format($se["list"][$i]["product_price"]*$se["list"][$i]["n"]*$se["list"][$i]["n_wlv"],2,'.',','),"lcr"=>"r"]
 				];
@@ -442,7 +442,7 @@ class bill58 extends main{
 			LEFT JOIN unit_ref
 			ON( bill_sell_list.unit_sku_key=unit_ref.sku_key)
 			WHERE bill_sell_list.sku=".$sku."
-				GROUP BY bill_sell_list.product_sku_root 
+				GROUP BY bill_sell_list.product_sku_root, bill_sell_list.sq
 			ORDER BY `bill_sell_list`.`id` ASC";
 		$se=$this->metMnSql($sql,["head","list"]);
 		//print_r($se);
@@ -723,7 +723,7 @@ class bill58 extends main{
 			ON( `bill_in`.`user`=`user_ref`.`sku_key`)
 			WHERE bill_in.sku=".$sku."
 		";
-		$sql["list"]="SELECT  `bill_in_list`.`n`  AS  `n`, `bill_in_list`.`note`  AS  `note`, 
+		$sql["list"]="SELECT  `bill_in_list`.`n`  AS  `n`, `bill_in_list`.`n_wlv`  AS  `n_wlv`,bill_in_list.s_type, `bill_in_list`.`note`  AS  `note`, 
 				`bill_in_list`.`product_sku_root` ,
 				product_ref.barcode AS `product_barcode`,product_ref.name AS `product_name`,product_ref.price AS `product_price`,
 				unit_ref.name AS `unit_name`
