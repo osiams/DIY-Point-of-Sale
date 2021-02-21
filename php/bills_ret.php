@@ -76,19 +76,19 @@ class bills_ret extends bills{
 						<td>'.($i+1).'</td>
 						<td class="pwlv">'.$this->s_type[$list[$i]["s_type"]]["icon"].'</td>
 						<td>'.$list[$i]["product_barcode"].'</td>
-						<td class="l"><div>'.$list[$i]["product_name"].''.($list[$i]["s_type"]!='p'?" ".($list[$i]["n_wlv"]*1)." ".$list[$i]["unit_name"]:"").''.$rt.'</div>
+						<td class="l"><div>'.$list[$i]["product_name"].''.($list[$i]["s_type"]!='p'?" ".($list[$i]["n_wlv"]/$list[$i]["n"])." ".$list[$i]["unit_name"]:"").''.$rt.'</div>
 							<div class="l gray555 size12"><span class="pwlv">'.$this->s_type[$list[$i]["s_type"]]["icon"].'</span>
 								'.htmlspecialchars($list[$i]["product_barcode"]).'</div>
 							<div class="l saddlebrown size12">'.htmlspecialchars($list[$i]["note"]).'</div>
 						</td>
-						<td><div class="r">'.$list[$i]["n"].''.($list[$i]["s_type"]!='p'?"×".($list[$i]["n_wlv"]*1):"").'</div>
+						<td><div class="r">'.$list[$i]["n"].''.($list[$i]["s_type"]!='p'?"×".($list[$i]["n_wlv"]/$list[$i]["n"]):"").'</div>
 						<div class="r">'.$list[$i]["unit_name"].'</div>
 						</td>
 						<td>'.$list[$i]["unit_name"].'</td>
 						<td class="r">'.number_format($list[$i]["product_price"],2,'.',',').'</td>
-						<td class="r">'.number_format(($list[$i]["product_price"]*$list[$i]["n"]*($list[$i]["s_type"]=='p'?1:$list[$i]["n_wlv"])),2,'.',',').'</td>
+						<td class="r">'.number_format(($list[$i]["product_price"]*$list[$i]["n"]*($list[$i]["s_type"]=='p'?1:$list[$i]["n_wlv"]/$list[$i]["n"])),2,'.',',').'</td>
 					</tr>';
-					$prices+=$list[$i]["product_price"]*$list[$i]["n"]*($list[$i]["s_type"]=='p'?1:$list[$i]["n_wlv"]);
+					$prices+=$list[$i]["product_price"]*$list[$i]["n"]*($list[$i]["s_type"]=='p'?1:$list[$i]["n_wlv"]/$list[$i]["n"]);
 				}
 		echo '</tr></table>
 					<div class="r">📃 จำนวน : <b>'.count($list).'</b> รายการ

@@ -543,6 +543,11 @@ class sell extends main{
 					re["sku_root"]=re["sku_root"]+"_"+re["barcode"]
 					re["n_wlv"]=S.get_n_wlv(re["barcode"])
 					S.setFl2Pd2Insert(re,nt)	
+				}else if(re["bc_type"]=="bc_wlv_null"){
+					re["barcode"]=null
+					re["sku_root"]=re["sku_root"]+"_"+re["barcode_wlv_no_bc"]
+					re["n_wlv"]=S.get_n_wlv(re["barcode_wlv_no_bc"])
+					S.setFl2Pd2Insert(re,nt)	
 				}else{
 					S.pressInput(re,nt)
 				}
@@ -772,6 +777,10 @@ class sell extends main{
 				//M.l("**"+bc+"="+n)
 				if(S.pd[sku_root].s_type=="p"){
 					S.insertList(bc,n)
+				}else if(S.pd.hasOwnProperty(sku_root)){
+					let re=S.pd[sku_root]
+					let nt=n
+					S.setFl2Pd2Insert(re,nt)
 				}else{
 					S.pressInput(S.pd[sku_root],0)
 				}

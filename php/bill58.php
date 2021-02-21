@@ -508,12 +508,12 @@ class bill58 extends main{
 			$sum=0;
 			for($i=0;$i<count($se["list"]);$i++){
 				$n_list+=1;
-				$sum+=$se["list"][$i]["n"]*$se["list"][$i]["product_price"];
+				$sum+=$se["list"][$i]["n"]*$se["list"][$i]["product_price"]*($se["list"][$i]["s_type"]=="p"?1:($se["list"][$i]["n_wlv"]/$se["list"][$i]["n"]));
 				$re["list_".$i]=[
 					["t"=>$se["list"][$i]["n"],"lcr"=>"l"],
-					["t"=>"   ".$se["list"][$i]["product_name"],"lcr"=>"l"],
-					["t"=>"  ฿".number_format($se["list"][$i]["product_price"],2,'.',',')."","lcr"=>"r"],
-					["t"=>number_format($se["list"][$i]["product_price"]*$se["list"][$i]["n"],2,'.',','),"lcr"=>"r"]
+					["t"=>"   ".$se["list"][$i]["product_name"]."".($se["list"][$i]["s_type"]=="p"?"":" ".($se["list"][$i]["n_wlv"]/$se["list"][$i]["n"])." ".$se["list"][$i]["unit_name"]),"lcr"=>"l"],
+					["t"=>"  ฿".number_format($se["list"][$i]["product_price"]*($se["list"][$i]["s_type"]=="p"?1:($se["list"][$i]["n_wlv"]/$se["list"][$i]["n"])),2,'.',',')."","lcr"=>"r"],
+					["t"=>number_format($se["list"][$i]["product_price"]*$se["list"][$i]["n"]*($se["list"][$i]["s_type"]=="p"?1:$se["list"][$i]["n_wlv"]/$se["list"][$i]["n"]),2,'.',','),"lcr"=>"r"]
 				];
 			}
 			$re["total"]=[

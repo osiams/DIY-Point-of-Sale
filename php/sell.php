@@ -355,28 +355,64 @@ class sell extends main{
 		$barcode_wlv="";
 		$be=(int) substr($barcode,-2);
 		if($field=="barcode"&&strlen($barcode)>=8){
-			
-			if($be<=strlen($barcode)-4-1){
+			if($be<=strlen($barcode)-4-1&&$be>=2&&$be%2==0){
 				$barcode_wlv=substr($barcode,0,$be);
 			}
 		}
-		$dt=$this->getProduct($field,$barcode,$barcode_wlv);
+		$wlv_no_bc=false;
+		$barcode_wlv_no_bc="";
+		if($field=="sku_root"){
+			if(strlen($barcode)>0){
+				$y=explode("_",$barcode);
+				if(count($y)==2&&strlen($y[1])>=4){
+					$be2=(int) substr($y[1],-2);
+					if($be2<=strlen($y[1])-4-1&&$be2>=2&&$be2%2==0){
+						$field="barcode";
+						$barcode=$y[1];
+						$barcode_wlv=substr($y[1],0,$be2);
+					}else{
+						$wlv_no_bc=true;
+						$barcode_wlv_no_bc=$y[0];
+					}
+				}
+			}
+		}
+		$dt=$this->getProduct($field,(!$wlv_no_bc?$barcode:$barcode_wlv_no_bc),$barcode_wlv);
+		//print_r($dt);
 		if(count($dt)==1){
 			$dt[0]["result"]=true;
 			$dt[0]["message_error"]="";
 			settype($dt[0]["price"], "integer");
 			settype($dt[0]["cost"], "integer");
-			if($dt[0]["bc_type"]=="bc_wlv"){
+			if($dt[0]["bc_type"]=="bc_wlv"||$wlv_no_bc==true){
 				$int_start=substr($barcode,-4);
 				$int_start=substr($int_start,0,2);
 				$wlv_int_float=substr($barcode,$be,-4);
 				$wlv_int= (int) substr($wlv_int_float,0,$int_start);
 				$wlv_float= substr($wlv_int_float,$int_start);
 				$wlv=$wlv_int.".".$wlv_float;
-				$wlv=(strlen($wlv_float)==0)?$wlv_int:$wlv;
+				$wlv=(strlen($wlv_float)==0)?$wlv_int:$wlv;	
 				$dt[0]["barcode"]=$barcode;
-				$dt[0]["name"]=$dt[0]["name"]. " ".$wlv." ".$dt[0]["unit_name"];
-			}
+				$name=$dt[0]["name"];
+				$dt[0]["name"]=$name. " ".$wlv." ".$dt[0]["unit_name"];			
+				if($wlv_no_bc==true){
+					$y=explode("_",$barcode);
+					if(count($y)==2){
+						$barcode=$y[1];
+						$int_start=substr($barcode,-4);
+						$int_start=substr($int_start,0,2);
+						$wlv_int_float=substr($barcode,$be,-4);
+						$wlv_int= (int) substr($wlv_int_float,0,$int_start);
+						$wlv_float= substr($wlv_int_float,$int_start);
+						$wlv=$wlv_int.".".$wlv_float;
+						$wlv=(strlen($wlv_float)==0)?$wlv_int:$wlv;	
+						$dt[0]["bc_type"]="bc_wlv_null";
+						$dt[0]["barcode"]="";
+						$dt[0]["barcode_wlv_no_bc"]=$barcode;
+						$dt[0]["name"]=$name. " ".$wlv." ".$dt[0]["unit_name"];	
+					}
+				}
+			}				
 		}else{
 			$dt[0]=[];
 			$dt[0]["result"]=false;

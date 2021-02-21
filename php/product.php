@@ -701,7 +701,7 @@ class product extends main{
 				</td>
 				<td class="r">'.number_format($se[$i]["cost"],2,'.',',').'</td>
 				<td class="r">
-					<div>'.number_format($se[$i]["balance"],0,'.',',').'</div>
+					<div>'.($se[$i]["s_type"]=="p"?number_format($se[$i]["balance"],0,'.',','):$se[$i]["balance"]*1).'</div>
 					<div>'.$se[$i]["unit_name"].'</div>
 				</td>
 				<td class="l">'.$se[$i]["unit_name"].'</td>
@@ -789,14 +789,14 @@ class product extends main{
 				`product`.`name`, `product`.`price`, `product`.`cost`, `product`.`s_type`,
 				`product`.`unit` AS `unit_sku_root`,product.pdstat, IFNULL(`product`.`group_root`,\"defaultroot\") AS `group_root`,`unit`.`name` AS `unit_name`,
 				`group`.`d1` AS `d1`,`group`.`d2` AS `d2`,`group`.`d3` AS `d3`,`group`.`d4` AS `d4`,
-				SUM(IF(bill_in_list.stroot='proot',`bill_in_list`.`balance`,0)) AS balance
+				SUM(IF(bill_in_list.stroot='proot',IF(`bill_in_list`.`s_type`='p',`bill_in_list`.`balance`,`bill_in_list`.`balance_wlv`),0)) AS balance
 			FROM `product` 
 			LEFT JOIN (`unit`) 
 			ON (`product`.`unit` = `unit`.`sku_root`) 
 			LEFT JOIN (`group`) 
 			ON (`product`.`group_root` = `group`.`sku_root`) 
 			LEFT JOIN (`bill_in_list`) 
-			ON (bill_in_list.stroot='proot' AND `bill_in_list`.`balance`> 0 AND `product`.`sku_root` = `bill_in_list`.`product_sku_root`  ) 
+			ON (bill_in_list.stroot='proot' AND IF(`bill_in_list`.`s_type`='p',`bill_in_list`.`balance`,`bill_in_list`.`balance_wlv`)> 0 AND `product`.`sku_root` = `bill_in_list`.`product_sku_root`  ) 
 			".$this->sh." 
 			GROUP BY product.sku_root  ORDER BY `product`.`id` DESC LIMIT ".$limit_page."
 			";

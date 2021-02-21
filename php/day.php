@@ -18,6 +18,7 @@ class day extends main{
 	}
 	private function writeContent(string $day):void{
 		$dt=$this->getData($day);
+		//print_r($dt);
 		echo '<div class="content">
 			<h2 class="c">สรุปประจำวัน </h2>
 			<label for="daydate">เลือกวันที่:</label>
@@ -28,8 +29,8 @@ class day extends main{
 			 <caption>ใบเสร็จรับเงิน</caption>
 			<tr><th>รายการ</th><th>ค่า</th><th>หน่วย</th></tr>
 			<tr><td class="l">จำนวน ที่ออก</td><td class="r">'.$dt["count"][0]["countt"].'</td><td class="l">ใบ</td></tr>
-			<tr class="i2"><td class="l">จำนวน ที่ถูกยกเลิก</td><td class="r">'.$dt["count_r_c"][0]["stat_c"].'</td><td class="l">ใบ</td></tr>
-			<tr><td class="l">จำนวนใบเสร็จที่มี คืนสินค้า่</td><td class="r">'.$dt["count_r_c"][0]["stat_r"].'</td><td class="l">ใบ</td></tr>
+			<tr class="i2"><td class="l">จำนวน ที่ถูกยกเลิก</td><td class="r">'.$dt["count_c"][0]["count_c"].'</td><td class="l">ใบ</td></tr>
+			<tr><td class="l">จำนวนใบเสร็จที่มี คืนสินค้า่</td><td class="r">'.$dt["count_r"][0]["count_r"].'</td><td class="l">ใบ</td></tr>
 			<tr class="i2">
 				<td class="l">ยอดขายรวม <br /><span class="size12 blue">ยังไม่หัก(ยกเลิก+คืนสินค้า)</span></td>
 				<td class="r">'.number_format($dt["sum_price_profit"][0]["sum_price"],2,'.',',').'</td>
@@ -92,11 +93,12 @@ class day extends main{
 			SUM(price) AS `sum_price` ,
 			SUM(price-cost) AS `profit`
 			FROM bill_sell  WHERE id>=@r_ AND id<=@_r;";
-		$sql["count_r_c"]="SELECT 
-			COUNT(stat='c')  AS `stat_c`,  
-			COUNT(stat='r')  AS `stat_r`
+		$sql["count_r"]="SELECT COUNT(*)  AS `count_r`
 			FROM bill_sell 
-			WHERE id>=@r_ AND id<=@_r ;";
+			WHERE id>=@r_ AND id<=@_r AND stat='r'";
+		$sql["count_c"]="SELECT COUNT(*)  AS `count_c`
+			FROM bill_sell 
+			WHERE id>=@r_ AND id<=@_r AND stat='c'";
 		$sql["sum_price_profit_real"]="SELECT SUM(price-pricer) AS `prices`,SUM(price-pricer-(cost-costr)) AS `pf` FROM bill_sell WHERE id>=@r_ AND id<=@_r AND IFNULL(stat,'')!='c';";
 		$sql["pdo"]="SELECT product_ref.barcode,product_ref.name AS `product_name`, product_ref.price AS `product_price`,`product_ref`.`s_type`,
 			unit_ref.name AS `unit_name`,
@@ -116,7 +118,7 @@ class day extends main{
 			GROUP BY bill_sell_list.product_sku_root 
 			ORDER BY n DESC ,profit DESC
 		";
-		$se=$this->metMnSql($sql,["count","sum_price_profit","count_r_c","sum_price_profit_real","pdo"]);
+		$se=$this->metMnSql($sql,["count","sum_price_profit","count_r","count_c","sum_price_profit_real","pdo"]);
 		//print_r($se);
 		return $se["data"];
 	}
