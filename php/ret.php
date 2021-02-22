@@ -179,9 +179,14 @@ class ret extends main{
 								AND  `bill_sell_list`.`sku`=addsku 
 								AND  (`bill_sell_list`.`lot`=lot OR (bill_sell_list.lot IS NULL AND  LENGTH(lot)=0));
 							INSERT  INTO `bill_in_list`  (`stkey`,`stroot`,`lot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,
-								`s_type`,`name`,`n`,`balance`,`n_wlv`,`balance_wlv`,`sum`,`unit_sku_key`,`unit_sku_root`,`note`) 
+								`s_type`,`name`,
+								`n`												,`balance`,
+								`n_wlv`										,`balance_wlv`,
+								`sum`,`unit_sku_key`,`unit_sku_root`,`note`) 
 							VALUES(@stkey,'proot',IF(LENGTH(r.lot)>0,r.lot,NULL),	k	,r.product_sku_key	,r.product_sku_root	,
-								r.s_type,r.name	,IF(r.s_type='p',n_r,n_r)	,IF(r.s_type='p',n_r,NULL)	,IF(r.s_type!='p',n_r*r.n_wlv,NULL)	,IF(r.s_type!='p',n_r*r.n_wlv,NULL),
+								r.s_type,r.name	,
+								n_r											,IF(r.s_type='p',n_r,NULL),
+								IF(r.s_type!='p',r.n_wlv,1)			,IF(r.s_type!='p',n_r*r.n_wlv,NULL),
 								(r.cost*n_r*r.n_wlv) ,r.unit_sku_key	,r.unit_sku_root,IF(LENGTH(nt)>0,nt,NULL));
 							SET lastid=(SELECT LAST_INSERT_ID());
 							IF r__=0 THEN 

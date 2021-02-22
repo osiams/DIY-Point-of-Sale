@@ -107,7 +107,7 @@ class it_view extends it{
 				</td>
 				<td class="r">'.number_format($se[$i]["cost"],2,'.',',').'</td>
 				<td class="r">
-					<div>'.number_format($se[$i]["balance"],0,'.',',').'</div>
+					<div>'.($se[$i]["s_type"]=="p"?number_format($se[$i]["balance"],0,'.',','):$se[$i]["balance"]*1).'</div>
 					<div>'.htmlspecialchars($se[$i]["unit_name"]).'</div>
 				</td>
 				<td class="l">'.$se[$i]["unit_name"].'</td>
@@ -277,7 +277,7 @@ class it_view_lot extends it_view{
 				$re["message_error"]="รหัสใบเลขที่ไม่ถูกต้อง";
 			}
 		}else if(isset($_POST["move"])&&isset($_POST["billinid"])&&isset($_POST["st"])){
-			if(preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}(=){1}[0-9]{1,10}$/",$_POST["move"])
+			if(preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}(=){1}[0-9]{1,10}.?[0-9]{0,10}$/",$_POST["move"])
 				&&preg_match("/^[0-9]{1,10}$/",$_POST["billinid"])
 				&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["st"])){
 				$dt=explode("=",$_POST["move"]);
@@ -300,7 +300,7 @@ class it_view_lot extends it_view{
 			echo json_encode($re);
 		//}
 	}
-	private function fetchMoveStock(int $billinid,string $it_sku,int $n,string $st):array{
+	private function fetchMoveStock(int $billinid,string $it_sku,float $n,string $st):array{
 		$it_sku=$this->getStringSqlSet($it_sku);
 		$st=$this->getStringSqlSet($st);
 		$user=$this->getStringSqlSet($_SESSION["sku_root"]);
@@ -318,7 +318,7 @@ class it_view_lot extends it_view{
 			@stroot:='',
 			@sku_n:='',
 			@has_it:=(SELECT COUNT(*) FROM it WHERE  sku=".$it_sku."),
-			@balance:=(SELECT balance FROM bill_in_list WHERE  id=".$billinid."),
+			@balance:=(SELECT IF(s_type='p',balance,balance_wlv) FROM bill_in_list WHERE  id=".$billinid."),
 			@TEST:=''";
 		$sql["reck"]="BEGIN NOT ATOMIC 
 			DECLARE lastid INT DEFAULT NULL;	
@@ -331,7 +331,8 @@ class it_view_lot extends it_view{
 													lot VARCHAR(25),
 													product_sku_key VARCHAR(25),
 													product_sku_root VARCHAR(25),
-													sum FLOAT ,
+													cost FLOAT ,
+													s_type CHAR(1),
 													name  VARCHAR(255)  CHARACTER SET utf8,
 													unit_sku_key VARCHAR(25),
 													unit_sku_root VARCHAR(25)	,	
@@ -340,15 +341,16 @@ class it_view_lot extends it_view{
 			IF @has_it=0 THEN 
 				SET @message_error=CONCAT('ไม่พบ รหัสภายในคลังสินค้า  \"',@it_sku,'\" ');
 			ELSEIF @n>@balance THEN
-				SET @message_error=CONCAT('จำนวนที่ย้ายมีมากกว่า จำนวนที่มีอยู่  มีอยู่ ',@balance);
+				SET @message_error=CONCAT('จำนวนที่ย้ายมีมากกว่า จำนวนที่มีอยู่  มีอยู่ ',(FLOOR(@balance*10000)/10000));
 			ELSE
 				SET key_n=KEY_();
 				SET @stkey_=(SELECT sku_key FROM it WHERE sku_root=@stroot_);
 				SET @stroot=(SELECT sku_root FROM it WHERE sku=@it_sku);
 				SET @stkey=(SELECT sku_key FROM it WHERE sku=@it_sku);
-				SELECT bill_in_list.id,bill_in_list.stroot,bill_in_list.stkey,bill_in_list.bill_in_sku AS `lot`,bill_in_list.product_sku_key,bill_in_list.product_sku_root,
-					(bill_in_list.sum/bill_in_list.n)*@n AS `sum`,bill_in_list.name,
-					bill_in_list.unit_sku_key ,bill_in_list.unit_sku_root ,
+				SELECT bill_in_list.id					,bill_in_list.stroot					,bill_in_list.stkey		,bill_in_list.bill_in_sku AS `lot`,
+					bill_in_list.product_sku_key		,bill_in_list.product_sku_root,
+					(bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n*bill_in_list.n_wlv)) AS `cost`							,bill_in_list.s_type		,bill_in_list.name,
+					bill_in_list.unit_sku_key 			,bill_in_list.unit_sku_root ,
 					bill_in.lot_root AS `lot_root`
 				FROM bill_in_list
 				LEFT JOIN bill_in
@@ -356,13 +358,25 @@ class it_view_lot extends it_view{
 				WHERE  bill_in_list.id=@billinid
 				INTO r;
 				IF @stroot!=r.stroot THEN
-					UPDATE bill_in_list SET balance=(balance-@n) WHERE id=@billinid;
-					INSERT  INTO `bill_in_list`  (`stkey`,`stroot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,`name`,`n`,`balance`,`sum`,`unit_sku_key`,`unit_sku_root`,`note`,`idkey`) 
-					VALUES(@stkey,@stroot,key_n,r.product_sku_key	,r.product_sku_root	,r.name	,@n,@n,r.sum ,r.unit_sku_key	,r.unit_sku_root,NULL,r.id);
+					UPDATE bill_in_list 
+					SET balance=IF(r.s_type='p',balance-@n,NULL),
+						balance_wlv= IF(r.s_type!='p',balance_wlv-@n,balance_wlv-@n) 
+					WHERE id=@billinid;
+					INSERT  INTO `bill_in_list`  (
+						`stkey`				,`stroot`				,`bill_in_sku`		,`product_sku_key`		,`product_sku_root`,
+						`name`				,`s_type`				,`n`					,`balance`						,`n_wlv`,
+						`balance_wlv`	,`sum`,
+						`unit_sku_key`	,`unit_sku_root`	,`note`				,`idkey`) 
+					VALUES(
+						@stkey				,@stroot				,key_n				,r.product_sku_key			,r.product_sku_root,
+						r.name				,r.s_type				,IF(r.s_type='p',@n,1)							,IF(r.s_type='p',@n,NULL)	,IF(r.s_type!='p',@n,1),							
+						@n					,r.cost*IF(r.s_type='p',@n,@n),
+						r.unit_sku_key	,r.unit_sku_root		,NULL				,r.id);
 					SET lastid=(SELECT LAST_INSERT_ID());
 					UPDATE bill_in_list SET sq=lastid WHERE id=lastid;
 					INSERT INTO  bill_in  (in_type,sku,lot_from,lot_root,bill,n,sum,user,stkey_,stroot_,r_,_r) 
-					VALUES ('m',key_n,r.lot,r.lot_root,NULL,@n/@n,r.sum,@user,@stkey_,@stroot_,lastid,lastid);			
+					VALUES ('m',key_n,r.lot,r.lot_root,NULL,@n/@n,
+						r.cost*IF(r.s_type='p',@n,@n),@user,@stkey_,@stroot_,lastid,lastid);			
 					SET @result=1;
 					SET @sku_n=key_n;
 				ELSE
@@ -372,7 +386,7 @@ class it_view_lot extends it_view{
 		END;	";
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@sku_n AS `sku`";
 		$se=$this->metMnSql($sql,["result"]);
-		//print_r($se);
+		print_r($se);
 		if(isset($se["data"]["result"])){
 			$re=$se["data"]["result"][0];
 		}
@@ -433,7 +447,7 @@ class it_view_lot extends it_view{
 			<th>งวด (ตัดสินค้าจากบน ลง ล่าง)</th>
 			<th>ป.</th>
 			<th>ชื่อ</th>
-			<th>ต้นทุน</th>
+			<th>ต้นทุน : หน่วย</th>
 			<th>รับเข้า</th>
 			<th>เหลือ</th>
 			<th>หน่วย</th>
@@ -490,7 +504,7 @@ class it_view_lot extends it_view{
 					<div><span  class="pwlv">'.$this->s_type[$se[$i]["s_type"]]["icon"].' </span>'.$se[$i]["product_sku"].','.$se[$i]["barcode"].'</div>
 				</td>
 				<td class="r">'.number_format($se[$i]["cost"],2,'.',',').'</td>
-				<td class="r">'.($se[$i]["n"]*1).'</td>
+				<td class="r">'.($se[$i]["n"]).''.($se[$i]["s_type"]=="p"?"":"×".$se[$i]["n_wlv"]*1).'</td>
 				<td class="r">
 					<div>'.($se[$i]["balance"]*1).'</div>
 					<div>'.$se[$i]["unit_name"].'</div>
@@ -535,10 +549,12 @@ class it_view_lot extends it_view{
 		$sql["product"]="SELECT name FROM product WHERE sku_root=@pd";
 		$sql["it"]="SELECT  * FROM it WHERE sku_root=@sku_root;";
 		$sql["lot"]="SELECT bill_in_list.id,bill_in_list.stroot,
-				IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv) AS n ,
+				IFNULL(bill_in_list.n,1) AS n ,
+				IFNULL(bill_in_list.n_wlv,1) AS n_wlv ,
 				IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv) AS balance,
 				bill_in_list.sum,bill_in_list.product_sku_root,
-				bill_in_list.name AS `product_name`,(bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv)) AS cost,
+				bill_in_list.name AS `product_name`,
+				(bill_in_list.sum/(IFNULL(bill_in_list.n,1)*IFNULL(bill_in_list.n_wlv,1))) AS cost,
 				bill_in.in_type,bill_in.bill,IFNULL(bill_in.note,'')  AS bill_note,
 				bill_in.sku,IFNULL(bill_in.note,'') AS `note`,bill_in.date_reg,
 				product_ref.barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`,

@@ -58,7 +58,7 @@ class product_details extends product{
 			if($dt[$i]["product_sku_root"]==$edd){
 				$ed='<span title="โอเค เรียบร้อย"> 👌 </span>';
 			}
-			$cost=number_format($dt[$i]["sum"]/($dt[$i]["n"]==0?1:$dt[$i]["n"]),2,'.',',');
+			$cost=number_format($dt[$i]["sum"]/($dt[$i]["n"]*$dt[$i]["n_wlv"]==0?1:$dt[$i]["n"]*$dt[$i]["n_wlv"]),2,'.',',');
 			$cm=($s++%2!=0)?" class=\"i2\"":"";
 			$tx="";
 			$c="in";
@@ -92,7 +92,7 @@ class product_details extends product{
 					<div>'.$dt[$i]["date_reg"].'</div>
 					<div class="r"><span>ทุน '.$cost.'/น. </span>  <span>🏘️ <a href="?a=it&amp;b=view&amp;sku_root='.$dt[$i]["stroot"].'&c=lot&pd='.$dt[$i]["product_sku_root"].'&amp;ed='.$key.'">'.htmlspecialchars($dt[$i]["it_name"]).'</a></div>
 				</td>
-				<td class="r">'.($dt[$i]["n"]*1).'</td>
+				<td class="r">'.($dt[$i]["n"]).''.($dt[$i]["s_type"]=="p"?"":"×".$dt[$i]["n_wlv"]*1).'</td>
 				<td class="r">'.($dt[$i]["balance"]*1).'</td>
 			</tr>';
 		}
@@ -154,8 +154,9 @@ class product_details extends product{
 			LEFT JOIN (`group`) 
 			ON (`product`.`group_root` = `group`.`sku_root`) 
 			WHERE product.sku_root=".$sku_root." ORDER BY id DESC ";
-		$sql["stock"]="SELECT bill_in_list.stroot,
-				IFNULL(IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv),0) AS `n` ,
+		$sql["stock"]="SELECT bill_in_list.stroot,bill_in_list.s_type,
+				IFNULL(bill_in_list.n,1) AS `n` ,
+				IFNULL(bill_in_list.n_wlv,1) AS `n_wlv` ,
 				IFNULL(IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv),0) AS `balance`,
 				bill_in_list.sum,bill_in_list.product_sku_root,
 				bill_in.in_type,bill_in.bill,IFNULL(bill_in.note,'') AS `note`,

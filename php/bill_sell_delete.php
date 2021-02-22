@@ -60,7 +60,7 @@ class bill_sell_delete extends bills{
 													lot VARCHAR(25),
 													product_sku_key VARCHAR(25),
 													product_sku_root VARCHAR(25),
-													s_type ICHAR(1),
+													s_type CHAR(1),
 													n INT,
 													n_wlv FLOAT,
 													c INT,
@@ -78,9 +78,11 @@ class bill_sell_delete extends bills{
 			DECLARE __r INT DEFAULT 0;			
 			DECLARE cur1 CURSOR FOR 
 			SELECT bill_sell_list.bill_in_list_id,bill_sell_list.lot	, bill_sell_list.product_sku_key	, bill_sell_list.product_sku_root, 
-					bill_sell_list.s_type,bill_sell_list.n,bill_sell_list.n_wlv	,bill_sell_list.c,
+					product_ref.s_type,IFNULL(bill_sell_list.n,1),IFNULL(bill_sell_list.n_wlv,1)	,bill_sell_list.c,
 					bill_sell_list.u ,bill_sell_list.unit_sku_key ,bill_sell_list.unit_sku_root ,
-					bill_in.sku,bill_in.lot_root,(bill_in_list.sum/bill_in_list.n*(IF(bill_in_list.s_type='p',1,bill_in_list.n_wlv))) AS cost,product_ref.price,
+					bill_in.sku,bill_in.lot_root,
+					(bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv)) AS cost,
+					product_ref.price,
 					bill_in_list.name	,bill_in_list.balance
 				FROM bill_sell_list 
 				LEFT JOIN bill_sell
@@ -106,10 +108,15 @@ class bill_sell_delete extends bills{
 						SET @TEST=CONCAT(@TEST,'-',r.n);
 						IF r.c > 0 THEN 
 							SET n_list=n_list+1;
-							SET sums=sums+(r.price*r.n);
-							INSERT  INTO `bill_in_list`  (`stkey`,`stroot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,`name`,`n`,balance,n._wlv,balance_wlv,`sum`,`unit_sku_key`,`unit_sku_root`) 
-							VALUES(@stkey,'proot',k	,r.product_sku_key	,r.product_sku_root	,r.name	,r.s_type,r.n	,IF(r.s_type='p',r.n,NULL),
-								r.n_wlv,(r.n_wlv*r.n),(r.cost*r.n),r.unit_sku_key	,r.unit_sku_root);
+							SET sums=sums+(r.cost*r.n*r.n_wlv);
+							INSERT  INTO `bill_in_list`  (
+								`stkey`			,`stroot`			,`bill_in_sku`			,`product_sku_key`		,`product_sku_root`,
+								`name`			,`s_type`			,`n`						,balance						,n_wlv,
+								balance_wlv	,`sum`			,`unit_sku_key`	,`unit_sku_root`) 
+							VALUES(
+								@stkey			,'proot'				,k							,r.product_sku_key			,r.product_sku_root	,
+								r.name			,r.s_type			,r.n						,IF(r.s_type='p',r.n,NULL),r.n_wlv,
+								(r.n_wlv*r.n)	,(r.cost*r.n*r.n_wlv)		,r.unit_sku_key		,r.unit_sku_root);
 							SET lastid=(SELECT LAST_INSERT_ID());
 							IF r__=0 THEN 
 								SET r__=lastid;

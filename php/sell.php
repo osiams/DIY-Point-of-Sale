@@ -303,7 +303,7 @@ class sell extends main{
 								SET lastid=(SELECT LAST_INSERT_ID());
 								IF lastid!=0 THEN
 									IF r__=0 THEN 
-										SET r__=lastid;
+										SET r__=(SELECT MAX(id) FROM bill_sell_list LIMIT 1);
 									ELSE
 										SET __r=lastid;
 									END IF;

@@ -508,12 +508,12 @@ class bill58 extends main{
 			$sum=0;
 			for($i=0;$i<count($se["list"]);$i++){
 				$n_list+=1;
-				$sum+=$se["list"][$i]["n"]*$se["list"][$i]["product_price"]*($se["list"][$i]["s_type"]=="p"?1:($se["list"][$i]["n_wlv"]/$se["list"][$i]["n"]));
+				$sum+=$se["list"][$i]["n"]*$se["list"][$i]["product_price"]*($se["list"][$i]["s_type"]=="p"?1:($se["list"][$i]["n_wlv"]));
 				$re["list_".$i]=[
 					["t"=>$se["list"][$i]["n"],"lcr"=>"l"],
-					["t"=>"   ".$se["list"][$i]["product_name"]."".($se["list"][$i]["s_type"]=="p"?"":" ".($se["list"][$i]["n_wlv"]/$se["list"][$i]["n"])." ".$se["list"][$i]["unit_name"]),"lcr"=>"l"],
-					["t"=>"  ฿".number_format($se["list"][$i]["product_price"]*($se["list"][$i]["s_type"]=="p"?1:($se["list"][$i]["n_wlv"]/$se["list"][$i]["n"])),2,'.',',')."","lcr"=>"r"],
-					["t"=>number_format($se["list"][$i]["product_price"]*$se["list"][$i]["n"]*($se["list"][$i]["s_type"]=="p"?1:$se["list"][$i]["n_wlv"]/$se["list"][$i]["n"]),2,'.',','),"lcr"=>"r"]
+					["t"=>"   ".$se["list"][$i]["product_name"]."".($se["list"][$i]["s_type"]=="p"?"":" ".($se["list"][$i]["n_wlv"]*1)." ".$se["list"][$i]["unit_name"]),"lcr"=>"l"],
+					["t"=>"  ฿".number_format($se["list"][$i]["product_price"]*($se["list"][$i]["s_type"]=="p"?1:($se["list"][$i]["n_wlv"])),2,'.',',')."","lcr"=>"r"],
+					["t"=>number_format($se["list"][$i]["product_price"]*$se["list"][$i]["n"]*($se["list"][$i]["s_type"]=="p"?1:$se["list"][$i]["n_wlv"]),2,'.',','),"lcr"=>"r"]
 				];
 			}
 			$re["total"]=[
@@ -796,7 +796,7 @@ class bill58 extends main{
 			$re["move_to"]=[["t"=>$se["head"][0]["st_name"]." >> ".$se["head"][0]["st2_name"],"lcr"=>"l"]];
 			$re["rt"]=[["t"=>"#".$se["head"][0]["sku"]." " ,"lcr"=>"c"]];
 			$re["recv"]=[["t"=>"ใบย้ายสินค้า","lcr"=>"c"]];
-			$re["mnh_list"]=[["t"=>"----------------------------------------","lcr"=>"l"]];
+			$re["mnh_list"]=[["t"=>"--------------------------------------------------------------------------------","lcr"=>"l"]];
 			$n_list=0;
 			$sum=0;
 			for($i=0;$i<count($se["list"]);$i++){
@@ -808,10 +808,10 @@ class bill58 extends main{
 				];
 				$re["mnlist_".$i]=[
 					["t"=>$se["list"][$i]["product_barcode"],"lcr"=>"l"],
-					["t"=>$se["list"][$i]["n"]." ".$se["list"][$i]["unit_name"]."","lcr"=>"r"]
+					["t"=>$se["list"][$i]["n"]."".($se["list"][$i]["s_type"]!="p"?"×".$se["list"][$i]["n_wlv"]*1:"")." ".$se["list"][$i]["unit_name"]."","lcr"=>"r"]
 				];
 				$re["mn_list_".$i]=[
-					["t"=>"----------------------------------------","lcr"=>"l"]
+					["t"=>"--------------------------------------------------------------------------------","lcr"=>"l"]
 				];
 			}
 			$re["total"]=[
@@ -844,6 +844,7 @@ class bill58 extends main{
 			WHERE bill_in.sku=".$sku." 
 		";
 		$sql["list"]="SELECT  `bill_in_list`.`id`,`bill_in_list`.`bill_in_sku`  AS  `sku`,`bill_in_list`.`n`  AS  `n`, 
+				bill_in_list.n_wlv,bill_in_list.s_type,
 				`bill_in_list`.`product_sku_root` ,bill_in_list.name AS `product_name`,
 				product_ref.barcode AS `product_barcode`,`product_ref`.`price` AS `product_price`,
 				unit_ref.name AS `unit_name`

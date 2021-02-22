@@ -81,7 +81,7 @@ class bills_move extends bills{
 						<td class="l"><div>'.$list[$i]["name"].''.$rt.'</div>
 							<div class="l gray555 size12">'.htmlspecialchars($list[$i]["product_barcode"]).'</div>
 						</td>
-						<td><div class="r">'.$list[$i]["n"].'</div>
+						<td><div class="r">'.$list[$i]["n"].''.($list[$i]["s_type"]!="p"?"×".$list[$i]["n_wlv"]*1:"").'</div>
 						<div class="r">'.$list[$i]["unit_name"].'</div>
 						</td>
 						<td>'.$list[$i]["unit_name"].'</td>
@@ -98,7 +98,7 @@ class bills_move extends bills{
 		//$this->stockCut($head["sku"]);
 	}
 	private function xxstockCut(string $sku):void{
-		echo 'ffff<table><caption>การตัดสินค้า</caption>
+		echo '<table><caption>การตัดสินค้า</caption>
 			<tr><th>ที่</th><th>สินค้า</th><th>จำนวน</th><th>งวด</th><th>ตัดได้</th><th>ตัดไม่ได้</th></tr>';
 		$dt=$this->getBillsSellListCut($sku);	
 		//print_r($dt);
@@ -195,6 +195,7 @@ class bills_move extends bills{
 			WHERE bill_in.sku=".$sku." 
 		";
 		$sql["list"]="SELECT  `bill_in_list`.`id`,`bill_in_list`.`bill_in_sku`  AS  `sku`,`bill_in_list`.`n`  AS  `n`, 
+				`bill_in_list`.`n_wlv`  AS  `n_wlv`, `bill_in_list`.`s_type` ,
 				`bill_in_list`.`product_sku_root` ,bill_in_list.name AS `name`,
 				product_ref.barcode AS `product_barcode`,`product_ref`.`price` AS `product_price`,
 				unit_ref.name AS `unit_name`,it_ref.name AS `st2_name`	
