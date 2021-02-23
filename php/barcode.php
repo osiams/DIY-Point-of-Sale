@@ -128,13 +128,12 @@ class barcode extends main{
 	private function setJsDt(string $skuroot):void{
 		if($skuroot!=""){
 			$sql=[];
-			$sql["r"]="SELECT product.name AS name,product.price,product.barcode,unit.name AS unit
+			$sql["r"]="SELECT product.name AS name	,product.price		,product.barcode	,product.s_type	,unit.name AS unit
 				FROM product 
 				LEFT JOIN unit 
 				ON(product.unit=unit.name) 
 				WHERE  product.sku_root='".$skuroot."'";
 			$se=$this->metMnSql($sql,["r"]);
-			//print_r($se);
 			echo "Bc.dt={\n";
 			if(isset($se["data"]["r"][0])){
 				$y=$se["data"]["r"][0];
@@ -146,6 +145,7 @@ class barcode extends main{
 						"for_id"=> "label_".$i,
 						"barcode"=>$y["barcode"],
 						"name"=>$y["name"],
+						"s_type"=>$y["s_type"],
 						"price"=>$y["price"],
 						"sku_root"=>$skuroot,
 						"unit"=>$y["unit"]

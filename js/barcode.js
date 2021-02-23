@@ -306,18 +306,56 @@ class barcode extends main{
 		this.end(ct,[this.cn("👆 เลือกสินค้าใส่")])
 		M.popup(did,ct)*/
 	}
-	productSelect(d,n=null){
-		if(d.sku_root!=undefined){
-			let sku_root=d.sku_root
-			this.setConT(d)
-			this.popupClear("bcselectproduct")
-			/*if(!S.pd.hasOwnProperty(sku_root)){
-				S.getPdFromServer("sku_root",sku_root,n)
+	productSelect(d,n=null,tx=""){M.l(d)
+		if(d.s_type!="p"&&d.s_type!="p_wlv"){
+			let v=prompt(tx+"[สินค้าชั่งตวงวัด]\nโปรดใส่จำนวน เป็น " +d.unit)
+			let patt = /^[0-9]{1,10}.?[0-9]{0,10}$/g;
+			let re = patt.test(v);
+			if(!re){
+				let er="\""+v+"\" ไม่อยู่ในรูปแบบ จำนวน \nเช่น \n1 \n0.1 \n0.66 \n2.5\n\n"
+				this.productSelect(d,null,er)
+			}else if(v*1<=0){
+				let er="\""+v+"\" จำนวนต้องมากว่า 0\n\n"
+				this.productSelect(d,null,er)
 			}else{
-				let bc=S.pd[sku_root].barcode
-				S.insertList(bc,n)
-			}*/
+				d.s_type="p_wlv"
+				d.name=d.name+" "+(v*1)+" "+d.unit
+				d.barcode=this.doBarcode(d.barcode,v)
+				d.price=v*d.price
+				this.productSelect(d,null,"")
+			}
+		}else{
+			if(d.sku_root!=undefined){
+				let sku_root=d.sku_root
+				this.setConT(d)
+				this.popupClear("bcselectproduct")
+				/*if(!S.pd.hasOwnProperty(sku_root)){
+					S.getPdFromServer("sku_root",sku_root,n)
+				}else{
+					let bc=S.pd[sku_root].barcode
+					S.insertList(bc,n)
+				}*/
+			}
 		}
+	}
+	doBarcode(barcode="",float){
+		if(barcode==null){
+			barcode=""
+		}
+		let f=""
+		let q=float.toString().split(".")
+		if(q.length==2){
+			f=barcode+""+q[0]+""+q[1]+""+(q[0].length>9?q[0].length:"0"+q[0].length)+""+(barcode.length>9?barcode.length:"0"+barcode.length)
+			if(f.length%2==1){
+				f=barcode+"0"+q[0]+""+q[1]+""+(q[0].length+1>9?q[0].length+1:"0"+(q[0].length+1))+""+(barcode.length>9?barcode.length:"0"+barcode.length)
+			}	
+		}else{
+			f=barcode+""+q[0]+""+(q[0].length>9?q[0].length:"0"+q[0].length)+""+(barcode.length>9?barcode.length:"0"+barcode.length)
+			if(f.length%2==1){
+				f=barcode+"0"+q[0]+""+(q[0].length+1>9?q[0].length+1:"0"+(q[0].length+1))+""+(barcode.length>9?barcode.length:"0"+barcode.length)
+			}			
+		}
+		return f
 	}
 	setConT(d){
 		let mmppx=(this.pvo.clientWidth/parseInt(this.pvo.style.width))

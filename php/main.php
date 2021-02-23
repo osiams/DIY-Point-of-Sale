@@ -734,7 +734,7 @@ class main{
 			$n_len_tx=strlen($n_tx)<10?"0".strlen($n_tx):strlen($n_tx);
 			if(($bc_len+strlen($n_tx)+strlen($float_tx))%2!=0){
 				$n_tx="0".$b[0];
-				$n_len_tx=strlen($n_tx);
+				$n_len_tx=strlen($n_tx)<10?"0".strlen($n_tx):strlen($n_tx);
 			}
 			$re=$bc."".$n_tx."".$float_tx."".$n_len_tx."".$bc_len_tx;
 		}

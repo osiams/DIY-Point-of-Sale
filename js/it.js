@@ -237,7 +237,7 @@ class it extends main{
 				this.end(cpt,[this.cn("️แตกหน่วยขาย")])
 				let tr2=this.ce("tr",{})
 					let td1=this.ce("td",{"class":"l"})
-					td1.innerHTML=namehtml+" "+barcodehtml
+					td1.innerHTML=namehtml+"<br>"+barcodehtml
 					let td2=this.ce("td",{})
 						let ip2=this.ce("input",{"id":"skuroot_n","type":"number","value":1,"max":this.itm.skuroot_has,"min":1,"class":"it_m_product","onchange":"It.setNM(this)"})
 					this.end(td2,[ip2])
@@ -253,9 +253,11 @@ class it extends main{
 					let tds1=this.ce("td",{"class":"select c","id":"skuroot1","onclick":"It.selectProduct(this,'"+actionid+"')"})
 					this.end(tds1,[this.cn("👆")])
 					let td21=this.ce("td",{"class":"l","data-id":"it_m_product_skuroot1"})
-						let code1=this.ce("code",{"contenteditable":"true"})
-						this.end(code1,[this.cn(data["skuroot1_name"]+" "+data["skuroot1_barcode"])])
-					this.end(td21,[code1])
+						let code1=this.ce("code",{"id":"code_skuroot1_name","contenteditable":"true"})
+						this.end(code1,[this.cn(data["skuroot1_name"])])
+						let code1_barcode=this.ce("code",{"style":"display:block"})
+						this.end(code1_barcode,[this.cn(" "+data["skuroot1_barcode"])])
+					this.end(td21,[code1,code1_barcode])
 					let td22=this.ce("td",{})
 						let ip22=this.ce("input",{"id":"skuroot1_n","type":"number","value":"0","class":"it_m_product","disabled":"disabled","onchange":"It.setN(this)","min":0,"value":data["skuroot1_n"]})
 					this.end(td22,[ip22])
@@ -266,9 +268,11 @@ class it extends main{
 					let tds2=this.ce("td",{"class":"select c","id":"skuroot2","onclick":"It.selectProduct(this,'"+actionid+"')"})
 					this.end(tds2,[this.cn("👆")])
 					let td31=this.ce("td",{"class":"l","data-id":"it_m_product_skuroot2"})
-						let code2=this.ce("code",{"contenteditable":"true"})
+						let code2=this.ce("code",{"id":"code_skuroot2_name","contenteditable":"true"})
 						this.end(code2,[this.cn(data["skuroot2_name"]+" "+data["skuroot2_barcode"])])
-					this.end(td31,[code2])
+						let code2_barcode=this.ce("code",{"style":"display:block"})
+						this.end(code2_barcode,[this.cn(" "+data["skuroot2_barcode"])])
+					this.end(td31,[code2,code2_barcode])
 					let td32=this.ce("td",{})
 						let ip32=this.ce("input",{"id":"skuroot2_n","type":"number","value":"0","class":"it_m_product","disabled":"disabled","onchange":"It.setN(this)","min":0,"value":data["skuroot2_n"]})
 					this.end(td32,[ip32])
@@ -292,6 +296,8 @@ class it extends main{
 		}else if(!this.itm.hasOwnProperty("skuroot1_n")||this.itm.skuroot1_n<=1){
 			alert("จำนวนสินค้าหลัก ต้องมากกว่า 1")
 		}else{
+			this.itm["skuroot1_name"]=this.id("code_skuroot1_name").innerHTML
+			this.itm["skuroot2_name"]=this.id("code_skuroot2_name").innerHTML
 			let itm=JSON.stringify(this.itm)
 			let dt={"data":{"a":"it","b":"mmm","data":itm},"result":It.mmmResult,"error":It.mmmError}
 			this.setFec(dt)
@@ -332,10 +338,10 @@ class it extends main{
 		}
 	}
 	setConT(d){
-		//M.l(d)
 		let ob=this.id(d.for_id)
 		this.itm[d.for_id]=d.sku_root
-		ob.parentNode.cells[1].firstChild.innerHTML=d.name+" "+d.barcode
+		ob.parentNode.cells[1].firstChild.innerHTML=d.name
+		ob.parentNode.cells[1].childNodes[1].innerHTML=" "+d.barcode
 		ob.parentNode.cells[3].innerHTML=d.unit
 		ob.parentNode.cells[2].firstChild.disabled=false
 	}

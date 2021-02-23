@@ -164,11 +164,15 @@ class bill58 extends main{
 		}else if(isset($_POST["b"])&&$_POST["b"]=="print_move"
 			&&(isset($_POST["sku"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["sku"]))){
 			$this->movePrint($_POST["sku"]);
-		}else if(isset($_POST["b"])&&$_POST["b"]=="labelPrint"
+		}else if(isset($_POST["b"])&&($_POST["b"]=="labelPrint"||$_POST["b"]=="labelWLVPrint")
 			&&isset($_POST["sku_root"])&&$this->isSKU($_POST["sku_root"])){
 			require_once("php/class/barcode.php");
 			$this->bc=new barcode($this->font_file2);
-			$this->labelPrint($_POST["sku_root"]);
+			if($_POST["b"]=="labelPrint"){
+				$this->labelPrint($_POST["sku_root"]);
+			}else{
+				$this->labelWLVPrint($_POST["sku_root"]);
+			}
 		}else if(isset($_POST["b"])&&$_POST["b"]=="textPrint"){
 			$this->textPrint($_POST["text"]);
 		}else if(isset($_POST["b"])&&$_POST["b"]=="print_test"){
@@ -637,7 +641,7 @@ class bill58 extends main{
 				
 				for($j=0;$j<count($pg);$j++){
 					if($j==0){
-						$re["listhr_".$i."".$j]=[["t"=>"------------------------------------","lcr"=>"l"]];
+						$re["listhr_".$i."".$j]=[["t"=>"------------------------------------------------------------------------","lcr"=>"l"]];
 					}					
 					$re["list_".$i."".$j]=[["t"=>$pg[$j],"lcr"=>"l"]];
 
@@ -646,7 +650,7 @@ class bill58 extends main{
 					["t"=>"จำนวน ".$se["list"][$i]["n"]." ".$se["list"][$i]["unit_name"],"lcr"=>"r"]
 				];
 			}
-			$re["listhreg_".$i."".$j]=[["t"=>"------------------------------------","lcr"=>"l"]];
+			$re["listhreg_".$i."".$j]=[["t"=>"------------------------------------------------------------------------","lcr"=>"l"]];
 			$re["tail"]=[["t"=>$this->receipt->receipt58->sale->foot,"lcr"=>"c"]];
 			for($i=0;$i<$this->printer->feed;$i++){
 				$re["line_feed_".$i]=[["t"=>" ","lcr"=>"l"]];
@@ -880,7 +884,6 @@ class bill58 extends main{
 		imagedestroy($im);
 	}
 	private function labelPrint(string $sku_root){
-		
 		$re=["result"=>false,"message_error"=>""];
 		try {
 			if($this->checkNP("exists")){
@@ -910,7 +913,7 @@ class bill58 extends main{
 	private function getPd(string $sku_root):array{
 		$re=[];
 		$sql=[];
-		$sql["get"]="SELECT product.name,product.barcode,IFNULL(product.price,'') AS `price`,unit.name  AS `unit_name`
+		$sql["get"]="SELECT product.name,product.s_type,IFNULL(product.barcode,'') AS `barcode`,IFNULL(product.price,'') AS `price`,unit.name  AS `unit_name`
 			FROM product 
 			LEFT JOIN unit ON (product.unit=unit.sku_root) 
 			WHERE product.sku_root='".$sku_root."';";
@@ -919,6 +922,39 @@ class bill58 extends main{
 			$re=$se["data"]["get"][0];
 		}	
 		return $re;
+	}
+	###########################################################
+	private function labelWLVPrint(string $sku_root){
+		$re=["result"=>false,"message_error"=>""];
+		$n_wlv=isset($_POST["n_wlv"])?(float) $_POST["n_wlv"]*1:0;
+		try {
+			if($n_wlv>0){
+				if($this->checkNP("exists")){
+					if($this->checkNP("writable")){
+						$printer = new Printer($this->fnConect());	
+						$foo = new GdEscposImage();
+						$se=$this->getPd($sku_root);
+						$se["n_wlv"]=$n_wlv;
+						$se["barcode"]=$this->createBcWLV(($se["barcode"]===null?"":$se["barcode"]),$n_wlv);
+						$imr=$this->bc->createImgLabelWLV($se,$this->font_size2);
+						$foo -> readImageFromGdResource($imr);
+						$printer->bitImageColumnFormat($foo);
+						$printer -> close();
+						$re["result"]=true;
+					}else{
+						throw new Exception("ไมสามารถเขียนไฟล์ได้ \n".$this->usb." \nโปรดตรวจสอบ\nการตั้งค่าผู้ใช้ในกลุ่มเครื่องพิมพ์");
+					}
+				}else{
+					throw new Exception("ไม่พบที่อยู่ปลายทาง \n".$this->usb." \nโปรดตรวจสอบการเชื่อมต่ออุปกรณ์ \nหรือการตั้งค่าที่อยู่ของเครื่องพิมพ์");
+				}
+			}else{
+					throw new Exception("จำนวน ไม่อยู่ในรูปแบบ หรือ มีค่า = 0");
+			}
+		}catch (Exception $e) {
+			$re["message_error"]=$e->getMessage();
+		}
+		header('Content-type: application/json');
+		echo json_encode($re);
 	}
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	private function textPrint(string $text){

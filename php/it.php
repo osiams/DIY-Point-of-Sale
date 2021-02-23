@@ -125,6 +125,7 @@ class it extends main{
 		return $re;
 	}
 	private function mmm(array $dt):array{
+		//print_r($dt);
 		$re=["result"=>false,"message_error"=>"","confirm"=>0];
 		$user=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$skuroot1_name=$this->getStringSqlSet($dt["skuroot1_name"]);
@@ -143,13 +144,16 @@ class it extends main{
 			@skuroot2:=IF(LENGTH('".$dt["skuroot2"]."')=0,NULL,'".$dt["skuroot2"]."'),
 			@skuroot2_n:=IF(".$dt["skuroot2_n"]."=0,NULL,".$dt["skuroot2_n"]."),
 			@TEST:='',
+			@skuroot_s_type:=(SELECT s_type FROM product WHERE sku_root=@skuroot),
 			@id__skuroot:=(SELECT product_sku_root FROM bill_in_list WHERE id=@billinlistid),
 			@skuroot_cost1:=(SELECT sum/n FROM bill_in_list WHERE id=@billinlistid),
 			@skuroot1_price:=(SELECT price FROM product WHERE sku_root=@skuroot1),
-			@can_n:=(SELECT balance FROM bill_in_list WHERE id=@billinlistid)";
+			@can_n:=(SELECT IF(s_type='p',balance,balance_wlv) FROM bill_in_list WHERE id=@billinlistid)";
 		$sql["check"]="
 			IF IFNULL(@can_n,0)<=0 THEN 
 				SET @message_error=CONCAT('ไม่มีงวดสินค้าที่ส่งมา หรือ สินค้าไม่มีจำนวน');
+			ELSEIF @skuroot_s_type!='p' THEN
+				SET @message_error=CONCAT('สินค้าที่จะแตกหน่วยขาย ใช้ได้กับสินค้าที่มีรูปแบบการขายเป็นอัน,ชิ้น');
 			ELSEIF IFNULL(@id__skuroot,'')!=@skuroot THEN 
 				SET @message_error=CONCAT('ไม่มีสินค้าที่ส่งมา หรือ สินค้าข้อมูลฟอร์มที่ส่งมาไม่ถูกต้อง');
 			ELSEIF @skuroot_n > @can_n THEN
@@ -279,10 +283,10 @@ class it extends main{
 						WHERE  product.sku_root=@skuroot1;
 					
 					INSERT INTO bill_in_list(stkey,stroot,bill_in_sku,product_sku_key,product_sku_root,
-							name,n,balance,sum,unit_sku_key,unit_sku_root)
+							s_type,name,n,n_wlv,balance,sum,unit_sku_key,unit_sku_root)
 						VALUES(r_billinlist.stkey,r_billinlist.stroot,mm_key,
 											r_billinlist1.product_sku_key,r_billinlist1.product_sku_root,
-												@skuroot1_name,@skuroot1_n,@skuroot1_n,(sum_*@skuroot_n),
+												'p',@skuroot1_name,@skuroot1_n,1,@skuroot1_n,(sum_*@skuroot_n),
 												r_billinlist1.unit_sku_key,r_billinlist1.unit_sku_root
 						);
 						
@@ -305,10 +309,10 @@ class it extends main{
 							WHERE  product.sku_root=@skuroot2;
 						
 						INSERT INTO bill_in_list(stkey,stroot,bill_in_sku,product_sku_key,product_sku_root,
-								name,n,balance,sum,unit_sku_key,unit_sku_root)
+								s_type,name,n,n_wlv,balance,sum,unit_sku_key,unit_sku_root)
 							VALUES(r_billinlist.stkey,r_billinlist.stroot,mm_key,
 												r_billinlist2.product_sku_key,r_billinlist2.product_sku_root,
-													@skuroot2_name,@skuroot2_n,@skuroot2_n,0,
+													'p',@skuroot2_name,@skuroot2_n,1,@skuroot2_n,0,
 													r_billinlist2.unit_sku_key,r_billinlist2.unit_sku_root
 							);
 						SET lastid=(SELECT LAST_INSERT_ID());

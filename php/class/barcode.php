@@ -165,6 +165,136 @@ imagealphablending($im,true);
 		imagettftext($im,$fontsize,0,384-$wu,$h+$margintop+$h+65+$h+$margintop, $black,$this->font,$unit);
 		return $im;
 	}
+	public function createImgLabelWLV(array $dt,int $font_size2){
+		$tx_ty="";
+		if($dt["s_type"]=="w"){
+			$tx_ty="น้ำหนัก";
+		}else if($dt["s_type"]=="l"){
+			$tx_ty="ความยาว";
+		}else if($dt["s_type"]=="v"){
+			$tx_ty="ปริมาตร";
+		}
+		$bc_height=60;
+		$name=$dt["name"]." ".$dt["n_wlv"]." ".$dt["unit_name"]."";
+		$width=384;
+		$height=0;
+		$fontsize=$font_size2;
+		$top=0;
+		$n_line=1;
+		$margin_wlv=10;
+		$textarr=$this->cutWord2(0,$fontsize,$this->font,$name,384);
+		if(isset($textarr[1])){
+			$n_line+=1;
+			$textarr2=$this->cutWord2(0,$fontsize,$this->font,$textarr[1],384);
+			if(count($textarr2)>1){
+				$n_line+=1;
+			}
+		}
+		$xy=imagettfbbox($fontsize, 0, $this->font,"1Ayกกีู้");
+		$box_name_height=$xy[1]-$xy[7];
+		$xy=imagettfbbox($fontsize+5, 0, $this->font,"1Ayกกีู้");	
+		$box_float_height=$xy[1]-$xy[7];	
+		$height+=($box_name_height)*$n_line;		
+		$height+=($box_float_height)*3;	
+		$height+=($box_name_height)*3;	
+		$height+=($margin_wlv)*5;
+		$height+=($bc_height);
+		$height+=($box_name_height)*1;	
+		$im=imagecreatetruecolor($width,$height);
+		$white=imagecolorallocate($im, 255, 255, 255);
+		$black=imagecolorallocate($im, 0, 0, 0);		
+		imagefilledrectangle($im, 0, 0,$width, $height, $white);
+		
+		
+		$top+=$box_name_height;
+		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$textarr[0]);
+		if(isset($textarr[1])){
+			$textarr2=$this->cutWord2(0,$fontsize,$this->font,$textarr[1],384);
+			$top+=$box_name_height;
+			imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$textarr2[0]);
+			if(isset($textarr2[1])){
+				$top+=$box_name_height;
+				imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$textarr2[1]);
+			}
+		}
+		$tdash="-----------------------------------------------------------------------";
+		$top+=$box_name_height;
+		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tdash);
+		$xy=imagettfbbox($fontsize+5, 0, $this->font,"1Ayกกีู้");
+		$box_wlv_height=$xy[1]-$xy[7];
+		$top+=$box_wlv_height+$margin_wlv;
+		$tx1=$dt["unit_name"]."ละ";
+		$xy=imagettfbbox($fontsize+5, 0, $this->font,$tx1);
+		$tx1_width=$xy[2]-$xy[0];
+		$tx2="฿".number_format($dt["price"],2,'.',',');
+		$xy=imagettfbbox($fontsize+5, 0, $this->font,$tx2);
+		$tx2_width=$xy[2]-$xy[0];
+		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tx1);
+		imagettftext($im,$fontsize+5,0,384-$tx2_width,$top, $black, $this->font,$tx2);
+
+		$top+=$box_name_height;
+		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tdash);
+		$top+=$box_wlv_height+$margin_wlv;
+		$tx1=$tx_ty." (".$dt["unit_name"].")";	
+		$tx2=$dt["n_wlv"];	
+		$xy=imagettfbbox($fontsize+5, 0, $this->font,$tx2);
+		$tx2_width=$xy[2]-$xy[0];
+		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tx1);
+		imagettftext($im,$fontsize+5,0,384-$tx2_width,$top, $black, $this->font,$tx2);
+	
+		$top+=$box_name_height;
+		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tdash);
+		$top+=$box_wlv_height+$margin_wlv;
+		$tx1="ราคา";	
+		$tx2="฿".number_format($dt["price"]*$dt["n_wlv"],2,'.',',');	
+		$xy=imagettfbbox($fontsize+5, 0, $this->font,$tx2);
+		$tx2_width=$xy[2]-$xy[0];
+		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tx1);
+		imagettftext($im,$fontsize+5,0,384-$tx2_width,$top, $black, $this->font,$tx2);
+		
+		//--รหัสแท่ง
+		$barcodetop=$top+$margin_wlv;
+		$hi=$barcodetop+$bc_height;
+		$br=2.5;
+		$cbr=0;
+		$bc_width=0;
+		if(strlen($dt["barcode"])==13){
+			$bcd=$this->ean13($dt["barcode"]);
+			for($i=0;$i<count($bcd);$i++){
+				$color=($bcd[$i]==1)?$black:$white;
+				imagefilledrectangle($im,$cbr, $barcodetop, $cbr+$br,$hi, $color);
+				$cbr+=$br;
+				
+			}
+		}elseif (1<2){
+			$bcd=$this->itf14($dt["barcode"]);
+			$br=3;
+			
+			for($i=0;$i<count($bcd);$i++){
+				$width=($bcd[$i]==1)?1*2:1*1;
+				$bc_width+=$width;
+				
+			}	
+			if($bc_width*$br>384-$br){
+				$br=2;
+			}
+			$cbr=(384-($bc_width*$br))/2;
+
+			for($i=0;$i<count($bcd);$i++){
+				$color=(($i+1)%2==1)?$black:$white;
+				$width=($bcd[$i]==1)?$br*2:$br*1;
+				imagefilledrectangle($im,$cbr, $barcodetop, $cbr+$width,$hi, $color);
+				$cbr+=$width;
+			}
+		}
+		$bcode=$dt["barcode"];
+		$top+=$bc_height+$box_name_height+$margin_wlv;
+		$xy=imagettfbbox($fontsize, 0, $this->font,$bcode);
+		$tx2_width=$xy[2]-$xy[0];
+		$x_start=(384-$tx2_width)/2;
+		imagettftext($im,$fontsize,0,$x_start,$top, $black, $this->font,$bcode);
+		return $im;
+	}
 	public function cutWord2(int $arrowwidth,int $fontsize,string $fontfile,string $text,int $max):array{
 		$re=[];
 		$xy=imagettfbbox($fontsize, 0, $fontfile,$text);

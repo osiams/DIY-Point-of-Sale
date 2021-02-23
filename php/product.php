@@ -207,8 +207,9 @@ class product extends main{
 				$for_id=(isset($_GET["for_id"]))?$_GET["for_id"]:"";
 				$for_id=$this-> jsD($for_id);
 				$name=$this-> jsD($se[$i]["name"]);
+				$s_type=$this-> jsD($se[$i]["s_type"]);
 				$unit=$this-> jsD($se[$i]["unit_name"]);
-				$dt=json_encode(["sku_root"=>$se[$i]["sku_root"],"barcode"=>$se[$i]["barcode"],"name"=>$name,"price"=>$se[$i]["price"],"unit"=>$unit,"for_id"=>$for_id]);
+				$dt=json_encode(["sku_root"=>$se[$i]["sku_root"],"barcode"=>$se[$i]["barcode"],"name"=>$name,"s_type"=>$s_type,"price"=>$se[$i]["price"],"unit"=>$unit,"for_id"=>$for_id]);
 				$dt=str_replace("\"","&quot;",$dt);
 				$its="Bc";
 				if($for=="itmw"){
@@ -760,7 +761,7 @@ class product extends main{
 				LEFT JOIN (`bill_in_list`) 
 				ON (`product`.`sku_root` = `bill_in_list`.`product_sku_root` 
 					AND  IF(bill_in_list.s_type='p',`bill_in_list`.`balance`,`bill_in_list`.`balance_wlv`)>0 AND bill_in_list.stroot='proot') 
-				".$sh." 
+				".$sh." ".($for=="itmw"?(strlen(trim($sh))==0?" WHERE ":" AND ")." product.s_type='p' ":"")."
 				GROUP BY product.sku_root ORDER BY `product`.`id` DESC  LIMIT 20
 			";
 		}else if($for=="billsin"){

@@ -587,12 +587,32 @@ class sell extends main{
 		this.end(ct,[p,ip,d])		
 		this.bypass_pressInput=[re,nt]		
 		let bts = [
-			{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"')"},
+			{"value":"ยกเลิก","onclick":"S.listen_cm=null,M.dialogClose('"+rid+"')"},
+			{"value":"พิมพิ์","onclick":"S.label('"+re["sku_root"]+"','"+rid_listen+"')"},
 			{"value":"ตกลง","id":"pressbuttoninputok","onclick":"S.pressInputOK('"+rid+"','"+rid_listen+"')"}
 		]
 		M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":"โปรดกรอก "+tt[re["s_type"]],"width":"250"})
 		ip.readOnly = true
 		ip.focus()
+	}
+	label(sku_root,id_listen){
+		let n_wlv=this.id(id_listen).value.split(" ")[0]*1
+		if(n_wlv>0){
+			let dt={"data":{"a":"bill58","b":"labelWLVPrint","sku_root":sku_root,"n_wlv":n_wlv},"result":S.labelResult,"error":S.labelError}
+			this.setFec(dt)
+		}else{
+			alert("รูปแบบ น้ำหนักไม่ถูกต้อง\nหรือน้ำหรักเป็น 0")
+		}
+	}
+	labelResult(re,form,bt){
+		if(!re["result"]){
+			S.labelError(re,form,bt)
+		}else{
+			
+		}
+	}
+	labelError(re,form,bt){
+		alert("❌ พิมพ์ป้ายฉลาก ไม่สำเร็จ\n\n"+re["message_error"])
 	}
 	pressInputOK(id_dialog,id_listen){
 		let re=this.bypass_pressInput[0]
@@ -993,7 +1013,7 @@ class sell extends main{
 					M.id(property).childNodes[2].innerHTML=M.nb(st[property],0)
 					M.id(property).childNodes[3].childNodes[1].childNodes[0].innerHTML=M.nb(st[property],0)
 				}
-			}else if(q.length==2){M.l(888)
+			}else if(q.length==2){
 				if(M.id(property)!=undefined&&st[q[0]]!=undefined){
 					M.id(property).childNodes[2].innerHTML=st[q[0]]*1
 					M.id(property).childNodes[3].childNodes[1].childNodes[0].innerHTML=st[q[0]]*1
