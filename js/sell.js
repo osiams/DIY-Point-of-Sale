@@ -422,9 +422,16 @@ class sell extends main{
 					let dnamebc=this.ce("span",{})
 					this.end(dnamebc,[this.cn(bc)])	
 						let dnameprice=this.ce("span",{})
-						this.end(dnameprice,[this.cn(" ฿"+per)])					
+						this.end(dnameprice,[this.cn(" ฿"+per)])	
+						let wlv_print=this.ce("span",{})
+						if(this.pd[sku_root]["s_type"]!="p"){
+							wlv_print.setAttribute("style","cursor:pointer;")
+							wlv_print.setAttribute("onclick","let y=confirm('คุณต้องการพิมพิ์ฉลาก ติดสินค้า');if(y){S.label('"+sku_root+"',null,"+this.dt[sku_root]["n_wlv"]+");}")
+							wlv_print.setAttribute("title","กดเพื่อพิมพิ์ฉลากติดสินค้า")
+							this.end(wlv_print,[this.cn(" 🖨️ "+wlvt)])
+						}				
 				this.end(dnamenbc,[ dnamest,this.cn(" " ), dnamebc,dnameprice])
-			this.end(dname,[this.cn(name+""+wlvt),dnamenbc])			
+			this.end(dname,[this.cn(name),dnamenbc,wlv_print])			
 			let dn=this.ce("div",{"class":"set_n","onclick":"S.setN(this)"})
 				let gn_group=this.ce("div",{})
 					let dnn=this.ce("div",{})
@@ -595,8 +602,13 @@ class sell extends main{
 		ip.readOnly = true
 		ip.focus()
 	}
-	label(sku_root,id_listen){
-		let n_wlv=this.id(id_listen).value.split(" ")[0]*1
+	label(sku_root,id_listen,n_wlv_float=1){
+		let n_wlv=n_wlv_float
+		if(this.id(id_listen)!=null){
+			n_wlv=this.id(id_listen).value.split(" ")[0]*1
+		}else{
+			sku_root=sku_root.split("_")[0]
+		}
 		if(n_wlv>0){
 			let dt={"data":{"a":"bill58","b":"labelWLVPrint","sku_root":sku_root,"n_wlv":n_wlv},"result":S.labelResult,"error":S.labelError}
 			this.setFec(dt)

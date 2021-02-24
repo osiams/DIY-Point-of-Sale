@@ -176,16 +176,16 @@ imagealphablending($im,true);
 		}
 		$bc_height=60;
 		$name=$dt["name"]." ".$dt["n_wlv"]." ".$dt["unit_name"]."";
-		$width=384;
+		$width=384*(3/2);
 		$height=0;
-		$fontsize=$font_size2;
+		$fontsize=$font_size2+5;
 		$top=0;
 		$n_line=1;
-		$margin_wlv=10;
-		$textarr=$this->cutWord2(0,$fontsize,$this->font,$name,384);
+		$margin_wlv=5;
+		$textarr=$this->cutWord2(0,$fontsize,$this->font,$name,$width);
 		if(isset($textarr[1])){
 			$n_line+=1;
-			$textarr2=$this->cutWord2(0,$fontsize,$this->font,$textarr[1],384);
+			$textarr2=$this->cutWord2(0,$fontsize,$this->font,$textarr[1],$width);
 			if(count($textarr2)>1){
 				$n_line+=1;
 			}
@@ -196,10 +196,12 @@ imagealphablending($im,true);
 		$box_float_height=$xy[1]-$xy[7];	
 		$height+=($box_name_height)*$n_line;		
 		$height+=($box_float_height)*3;	
-		$height+=($box_name_height)*3;	
-		$height+=($margin_wlv)*5;
+		$height+=$box_name_height;//--วันที่พิมพิ์	
+		$height+=($margin_wlv)*3;
+		$height+=($margin_wlv)*3;
 		$height+=($bc_height);
 		$height+=($box_name_height)*1;	
+		$height+=($box_name_height);
 		$im=imagecreatetruecolor($width,$height);
 		$white=imagecolorallocate($im, 255, 255, 255);
 		$black=imagecolorallocate($im, 0, 0, 0);		
@@ -209,7 +211,7 @@ imagealphablending($im,true);
 		$top+=$box_name_height;
 		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$textarr[0]);
 		if(isset($textarr[1])){
-			$textarr2=$this->cutWord2(0,$fontsize,$this->font,$textarr[1],384);
+			$textarr2=$this->cutWord2(0,$fontsize,$this->font,$textarr[1],$width);
 			$top+=$box_name_height;
 			imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$textarr2[0]);
 			if(isset($textarr2[1])){
@@ -217,9 +219,13 @@ imagealphablending($im,true);
 				imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$textarr2[1]);
 			}
 		}
-		$tdash="-----------------------------------------------------------------------";
 		$top+=$box_name_height;
-		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tdash);
+		$dateprint="วันที่พิมพิ์ฉลาก ".date("Y/m/d h:i:s")." น." ;
+		$xy=imagettfbbox($fontsize-5, 0, $this->font,$dateprint);
+		$tx2_width=$xy[2]-$xy[0];
+		$x_start=($width-$tx2_width)/2;
+		imagettftext($im,$fontsize-5,0,$x_start,$top, $black, $this->font,$dateprint);
+		
 		$xy=imagettfbbox($fontsize+5, 0, $this->font,"1Ayกกีู้");
 		$box_wlv_height=$xy[1]-$xy[7];
 		$top+=$box_wlv_height+$margin_wlv;
@@ -230,70 +236,72 @@ imagealphablending($im,true);
 		$xy=imagettfbbox($fontsize+5, 0, $this->font,$tx2);
 		$tx2_width=$xy[2]-$xy[0];
 		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tx1);
-		imagettftext($im,$fontsize+5,0,384-$tx2_width,$top, $black, $this->font,$tx2);
+		imagettftext($im,$fontsize+5,0,$width-$tx2_width,$top, $black, $this->font,$tx2);
 
-		$top+=$box_name_height;
-		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tdash);
 		$top+=$box_wlv_height+$margin_wlv;
-		$tx1=$tx_ty." (".$dt["unit_name"].")";	
+		$tx1=$tx_ty;	
 		$tx2=$dt["n_wlv"];	
-		$xy=imagettfbbox($fontsize+5, 0, $this->font,$tx2);
-		$tx2_width=$xy[2]-$xy[0];
+		$tx3=" ".$dt["unit_name"];	
+		$xy2=imagettfbbox($fontsize+5, 0, $this->font,$tx2);
+		$tx2_width=$xy2[2]-$xy2[0];
+		$xy3=imagettfbbox($fontsize, 0, $this->font,$tx3);
+		$tx3_width=$xy3[2]-$xy3[0];
 		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tx1);
-		imagettftext($im,$fontsize+5,0,384-$tx2_width,$top, $black, $this->font,$tx2);
+		imagettftext($im,$fontsize+5,0,$width-$tx2_width-$tx3_width,$top, $black, $this->font,$tx2);
+		imagettftext($im,$fontsize,0,$width-$tx3_width,$top, $black, $this->font,$tx3);
 	
-		$top+=$box_name_height;
-		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tdash);
 		$top+=$box_wlv_height+$margin_wlv;
-		$tx1="ราคา";	
-		$tx2="฿".number_format($dt["price"]*$dt["n_wlv"],2,'.',',');	
+		imagefilledrectangle($im, 0, $top-$box_wlv_height, $width, $top+$margin_wlv+3, $black);
+		imagefilledrectangle($im, 0+3,$top-$box_wlv_height+3, $width-3-2, $top+$margin_wlv, $white);
+		$tx1=" ราคา";	
+		$tx2="฿".number_format($dt["price"]*$dt["n_wlv"],2,'.',',')."  ";	
 		$xy=imagettfbbox($fontsize+5, 0, $this->font,$tx2);
 		$tx2_width=$xy[2]-$xy[0];
 		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$tx1);
-		imagettftext($im,$fontsize+5,0,384-$tx2_width,$top, $black, $this->font,$tx2);
+		imagettftext($im,$fontsize+5,0,$width-$tx2_width,$top, $black, $this->font,$tx2);
+		
+		
 		
 		//--รหัสแท่ง
-		$barcodetop=$top+$margin_wlv;
+		$barcodetop=$top+(3*$margin_wlv);
 		$hi=$barcodetop+$bc_height;
 		$br=2.5;
 		$cbr=0;
 		$bc_width=0;
-		if(strlen($dt["barcode"])==13){
-			$bcd=$this->ean13($dt["barcode"]);
-			for($i=0;$i<count($bcd);$i++){
-				$color=($bcd[$i]==1)?$black:$white;
-				imagefilledrectangle($im,$cbr, $barcodetop, $cbr+$br,$hi, $color);
-				$cbr+=$br;
-				
-			}
-		}elseif (1<2){
+		if (1<2){
 			$bcd=$this->itf14($dt["barcode"]);
-			$br=3;
+			$br=3*(3/2);
 			
 			for($i=0;$i<count($bcd);$i++){
-				$width=($bcd[$i]==1)?1*2:1*1;
-				$bc_width+=$width;
+				$width_br=($bcd[$i]==1)?1*2:1*1;
+				$bc_width+=$width_br;
 				
 			}	
 			if($bc_width*$br>384-$br){
-				$br=2;
+				$br=2*(3/2);
 			}
-			$cbr=(384-($bc_width*$br))/2;
+			$cbr=($width-($bc_width*$br))/2;
 
 			for($i=0;$i<count($bcd);$i++){
 				$color=(($i+1)%2==1)?$black:$white;
-				$width=($bcd[$i]==1)?$br*2:$br*1;
-				imagefilledrectangle($im,$cbr, $barcodetop, $cbr+$width,$hi, $color);
-				$cbr+=$width;
+				$width_br=($bcd[$i]==1)?$br*2:$br*1;
+				imagefilledrectangle($im,$cbr, $barcodetop, $cbr+$width_br,$hi, $color);
+				$cbr+=$width_br;
 			}
 		}
 		$bcode=$dt["barcode"];
-		$top+=$bc_height+$box_name_height+$margin_wlv;
+		$top=$hi+$box_name_height;
 		$xy=imagettfbbox($fontsize, 0, $this->font,$bcode);
 		$tx2_width=$xy[2]-$xy[0];
-		$x_start=(384-$tx2_width)/2;
+		$x_start=($width-$tx2_width)/2;
 		imagettftext($im,$fontsize,0,$x_start,$top, $black, $this->font,$bcode);
-		return $im;
+		
+		$top+=$box_name_height;
+		$dash="- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ";
+		imagettftext($im,$fontsize,0,0,$top, $black, $this->font,$dash);
+		
+		$imr = imagescale ($im,$width*(2/3),$height,IMG_BILINEAR_FIXED);
+		return $imr;
 	}
 	public function cutWord2(int $arrowwidth,int $fontsize,string $fontfile,string $text,int $max):array{
 		$re=[];

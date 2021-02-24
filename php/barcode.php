@@ -131,7 +131,7 @@ class barcode extends main{
 			$sql["r"]="SELECT product.name AS name	,product.price		,product.barcode	,product.s_type	,unit.name AS unit
 				FROM product 
 				LEFT JOIN unit 
-				ON(product.unit=unit.name) 
+				ON(product.unit=unit.sku_root) 
 				WHERE  product.sku_root='".$skuroot."'";
 			$se=$this->metMnSql($sql,["r"]);
 			echo "Bc.dt={\n";
@@ -150,6 +150,10 @@ class barcode extends main{
 						"sku_root"=>$skuroot,
 						"unit"=>$y["unit"]
 					];
+					if($dt["s_type"]!="p"){
+						$dt["name"]=$dt["name"]." 1 ".$dt["unit"];
+						$dt["barcode"]=$this->createBcWLV($dt["barcode"],1);
+					}
 					echo  "\"label_".$i."\":".json_encode($dt)."\n";
 				}
 			}

@@ -15,6 +15,7 @@ class ws extends main{
 		this.tryConnect()
 	}
 	onMessage(event){//alert("ws---"+event.data)
+		M.l(event.data)
 		let data = JSON.parse(event.data)
 		if(data._oto == this.myoto){
 			eval(this.myoto).onMessage(data)

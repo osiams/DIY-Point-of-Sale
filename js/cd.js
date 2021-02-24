@@ -76,7 +76,7 @@ class cd extends main{
 			
 			let ip_value=localStorage.getItem("cd_ip_value")
 			if( ip_value !== null){
-				this.id("sd_ip").value = ip_value
+				this.id("sd_ip").value =ip_value
 			}
 			this.textBrand()	
 		}
@@ -85,17 +85,16 @@ class cd extends main{
 		
 	}
 	onMessage(data){//alert(JSON.stringify(data))
-		//alert(data.key+"-"+this.ip)
+		//alert(data.ip+"-"+data.key+"-"+this.ip+"-type-="+data.type)
 		if(data.type == "regis"){
 			let data = {"command":"now","type":"message","_oto":"S"}	
 			Ws.send([this.ip],data)
 		}else if(data.type == "system"){
-			if(data.action == "out"){
+			if(data.action == "out"&&data.ip==this.ip){
 				this.empty = 1
 				this.showVDO()
 			}
 		}else if(data.key == this.ip){
-			
 			if(data.command == "now"){
 				data.message.user_name = data.user_name
 				this.setNowLNS(data.message)
@@ -252,7 +251,7 @@ class cd extends main{
 	showDisplay(){	
 		if(Ws.ws.readyState == 1){
 			if(Ws.mykey == ""){
-				this.ip = this.id("sd_ip").value
+				this.ip = this.id("sd_ip").value.trim()
 				localStorage.setItem("cd_ip_value",this.ip)
 				Ws.mykey =Ws.createKey()
 				Ws.myoto = "Cd"
