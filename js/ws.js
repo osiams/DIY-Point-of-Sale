@@ -14,8 +14,7 @@ class ws extends main{
 		this.ws.onerror=(event)=>this.onError(event)	
 		this.tryConnect()
 	}
-	onMessage(event){//alert("ws---"+event.data)
-		M.l(event.data)
+	onMessage(event){
 		let data = JSON.parse(event.data)
 		if(data._oto == this.myoto){
 			eval(this.myoto).onMessage(data)

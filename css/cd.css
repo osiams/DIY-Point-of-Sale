@@ -60,9 +60,9 @@
 }
 @keyframes minus {
 	0%   {background-color:rgba(254, 46, 46, 1);transform:scale(1.0)}
-	20%   {background-color:rgba(254, 46, 46, 1,0.4);transform:scale(1.1)}
-	40%  {background-color:rgba(254, 46, 46, 1,1);transform:scale(1.0)}
-	100%  {background-color:rgba(254, 46, 46, 1,0);transform:scale(1.0)}
+	20%   {background-color:rgba(254, 46, 46,0.4);transform:scale(1.1)}
+	40%  {background-color:rgba(254, 46, 46,1);transform:scale(1.0)}
+	100%  {background-color:rgba(254, 46, 46,0);transform:scale(1.0)}
 }
 
 

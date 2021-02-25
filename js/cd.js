@@ -86,16 +86,16 @@ class cd extends main{
 	}
 	onMessage(data){//alert(JSON.stringify(data))
 		//alert(data.ip+"-"+data.key+"-"+this.ip+"-type-="+data.type)
-		if(data.type == "regis"){
+		if(data.type == "regis" && Ws.mykey==data.key){
 			let data = {"command":"now","type":"message","_oto":"S"}	
 			Ws.send([this.ip],data)
 		}else if(data.type == "system"){
-			if(data.action == "out"&&data.ip==this.ip){
+			if(data.action == "out"&&data.key==this.ip){
 				this.empty = 1
 				this.showVDO()
 			}
 		}else if(data.key == this.ip){
-			if(data.command == "now"){
+			if(data.command == "now" && data._key==Ws.mykey){
 				data.message.user_name = data.user_name
 				this.setNowLNS(data.message)
 			}else if(data.command == "sell"){

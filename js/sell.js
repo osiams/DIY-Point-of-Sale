@@ -36,7 +36,7 @@ class sell extends main{
 		this.scs=0
 		this.sce=1000
 		this.st=null
-		this.sellcon={"n_unit":0,"n_list":0,"sum":0,"skurootlast":null,"n_before":0,"n_now":0,"n_last":0,}
+		this.sellcon={"n_unit":0,"n_wlv":1,"n_list":0,"sum":0,"skurootlast":null,"n_before":0,"n_now":0,"n_last":0,}
 		this.ip=""
 		this.mykey=""
 		this.listen_cm=null
@@ -76,6 +76,7 @@ class sell extends main{
 			dt["_oto"] = "Cd"
 			dt["command"] = "now"
 			dt["type"] = "message"
+			dt["_key"] = data.key
 			this.sellcon.n_unit = this.getNUnit()
 			dt["message"] = this.sellcon
 			Ws.send([],dt)
@@ -99,8 +100,8 @@ class sell extends main{
 			data["command"] = "sell"
 			data_jsn["name"] = (this.pd[k] != undefined)?this.pd[k]["name"]:""
 			data_jsn["barcode"] = (this.pd[k] != undefined)?this.pd[k]["barcode"]:""
-			data_jsn["price"] = (this.pd[k] != undefined)?this.pd[k]["price"]:""
-			data_jsn["unit"] = (this.pd[k] != undefined)?this.pd[k]["unit_name"]:""
+			data_jsn["price"] = (this.pd[k] != undefined)?this.pd[k]["price"]*this.pd[k]["n_wlv"]:""
+			data_jsn["unit"] = (this.pd[k] != undefined)?(this.pd[k]["n_wlv"]*1!=1?this.pd[k]["n_wlv"]+" ":"")+""+this.pd[k]["unit_name"]:""
 			data["message"] = data_jsn
 		}
 		Ws.send([],data)		
@@ -851,6 +852,7 @@ class sell extends main{
 	clearSellCon(){
 		this.sellcon["sn_unit"] = 0
 		this.sellcon["n_list"] = 0
+		this.sellcon["n_wlv"] = 1
 		this.sellcon["skurootlast"] = ""
 		this.sellcon["sum"] = 0
 		this.sellcon["n_before"] = 0

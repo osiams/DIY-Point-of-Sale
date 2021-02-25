@@ -407,7 +407,7 @@ private function createTable(string $table,string $sql):array{
 						SET cost_=(
 							SELECT SUM(
 								IF(bill_in_list.sum IS NOT NULL,
-									(bill_in_list.sum/bill_in_list.n),
+									(bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv*IFNULL(bill_in_list.n,1))),
 									product_ref.cost
 								)*IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u)
 							)
@@ -423,7 +423,7 @@ private function createTable(string $table,string $sql):array{
 						SET costr_=(
 							SELECT SUM(
 								IF(bill_in_list.sum IS NOT NULL,
-									(bill_in_list.sum/bill_in_list.n),
+									(bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv*IFNULL(bill_in_list.n,1))),
 									product_ref.cost
 								)*(bill_sell_list.r)
 							)
