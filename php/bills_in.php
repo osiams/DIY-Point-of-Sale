@@ -124,6 +124,13 @@ class bills_in extends bills{
 								n_wlv=IF(s_type!='p',IFNULL(n_wlv,0)-(IFNULL(n_wlv,0)-JSON_VALUE(@jspd,CONCAT('$[',i,'].n'))),NULL),
 								sum=JSON_VALUE(@jspd,CONCAT('$[',i,'].sum'))
 							WHERE bill_in_list.id>=r.r__ AND bill_in_list.id<=r.__r  AND bill_in_sku=".$sku." AND product_sku_root=JSON_VALUE(@jspd,CONCAT('$[',i,'].sku_root')) LIMIT 1;
+							SET @cost=(SELECT sum/IF(s_type='p',bill_in_list.n,bill_in_list.n_wlv) FROM bill_in_list WHERE bill_in_list.id>=r.r__ AND bill_in_list.id<=r.__r  AND bill_in_sku=".$sku." AND product_sku_root=JSON_VALUE(@jspd,CONCAT('$[',i,'].sku_root')) LIMIT 1);
+							UPDATE bill_in_list SET
+								name=JSON_VALUE(@jspd,CONCAT('$[',i,'].name')),
+								sum=@cost*IFNULL(bill_in_list.n,1)*IFNULL(bill_in_list.n_wlv,1)
+							WHERE bill_in_list.id>=r.r__ 
+								AND lot=".$sku." 
+								AND product_sku_root=JSON_VALUE(@jspd,CONCAT('$[',i,'].sku_root')) ;
 							IF @ischange=0 THEN 
 								SET @ischange=1;
 								SET @ischange_lot=@lot;

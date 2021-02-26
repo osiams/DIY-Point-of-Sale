@@ -90,49 +90,55 @@ echo $mo->format('U')-$reg->format("U");*/
 				$sumr=0;
 				$TEST="<br>";
 				for($i=0;$i<count($list);$i++){
-					if($list[$i]["r"]>0){
-						$nr+=1;
-						if($list[$i]["r"]==$list[$i]["n"]){
-							$nr_list+=1;
+					if($list[$i]["c"]!=0){
+						if($list[$i]["r"]>0){
+							$nr+=1;
+							if($list[$i]["r"]==$list[$i]["n"]){
+								$nr_list+=1;
+							}
 						}
+						$rt="";
+						$cm=($list[$i]["sq"]%2!=1)?" class=\"i2\"":"";
+						if($list[$i]["product_sku_root"]==$edd){
+							$cm=' class="ed"';
+						}
+						if($list[$i]["r"]>0){
+							$rt='<p class="saddlebrown l size12">คืน '.$list[$i]["n_r"].''.($list[$i]["s_type"]!="p"?"×".($list[$i]["n_wlv"]*1):"").' '.$list[$i]["unit_name"].' 📌 '.htmlspecialchars($list[$i]["note"]).'</p>';
+						}
+						$sum_r=($list[$i]["product_price"]*($list[$i]["c"]-$list[$i]["r"])*$list[$i]["n_wlv"]);
+						$TEST.=$sum_r."<br>";
+						if($list[$i]["c"]!=0){
+							$pft=(($list[$i]["product_price"]-$list[$i]["product_lot_cost"]/$list[$i]["c"])*$list[$i]["c"]*$list[$i]["n_wlv"]);
+						}else{
+							$pft=0;
+						}
+						#$pftr=(($list[$i]["product_price"]-$list[$i]["product_lot_cost"]/($list[$i]["n"]))*($list[$i]["n"]-$list[$i]["r"]));
+						$pftr=((($list[$i]["c"])*$list[$i]["product_price"])-$list[$i]["product_lot_cost"])*$list[$i]["n_wlv"]-(($list[$i]["product_price"]*$list[$i]["n_r"])-$list[$i]["product_lot_costr"])*$list[$i]["n_wlv"];
+						$pf+=$pft;
+						$pfr+=$pftr;
+						$sumr+=$sum_r;
+						$barcode=$list[$i]["product_barcode"];
+						
+						if($list[$i]["s_type"]!="p" && $barcode!==null){
+							$barcode=$this->createBcWLV($barcode,$list[$i]["n_wlv"]*1);
+						}
+						echo '<tr'.$cm.'>
+							<td>'.($list[$i]["sq"]).'</td>
+							<td class="l">'.$barcode.'</td>
+							<td><div>'.$list[$i]["product_name"].'
+								'.($list[$i]["s_type"]!="p"?" ".($list[$i]["n_wlv"]*1)." ".$list[$i]["unit_name"]:"").'
+								'.$rt.'</div>
+								<div>'.$list[$i]["product_barcode"].'</div>
+							</td>
+							<td><div class="r">'.$list[$i]["c"].''.($list[$i]["s_type"]!="p"?"×".($list[$i]["n_wlv"]*1):"").'</div>
+								<div>'.$list[$i]["unit_name"].'</div>
+							</td>
+							<td class="l">'.$list[$i]["unit_name"].'</td>
+							<td class="r">'.number_format($list[$i]["product_price"],2,'.',',').'</td>
+							<td class="r">'.number_format(($list[$i]["product_price"]*$list[$i]["c"]*$list[$i]["n_wlv"]),2,'.',',').'</td>
+							<td class="darkgreen r">'.number_format($pft,2,'.',',').'</td>
+						</tr>';
 					}
-					$rt="";
-					$cm=($list[$i]["sq"]%2!=1)?" class=\"i2\"":"";
-					if($list[$i]["product_sku_root"]==$edd){
-						$cm=' class="ed"';
-					}
-					if($list[$i]["r"]>0){
-						$rt='<p class="saddlebrown l size12">คืน '.$list[$i]["n_r"].''.($list[$i]["s_type"]!="p"?"×".($list[$i]["n_wlv"]*1):"").' '.$list[$i]["unit_name"].' 📌 '.htmlspecialchars($list[$i]["note"]).'</p>';
-					}
-					$sum_r=($list[$i]["product_price"]*($list[$i]["c"]-$list[$i]["r"])*$list[$i]["n_wlv"]);
-					$TEST.=$sum_r."<br>";
-					$pft=(($list[$i]["product_price"]-$list[$i]["product_lot_cost"]/$list[$i]["c"])*$list[$i]["c"]*$list[$i]["n_wlv"]);
-					#$pftr=(($list[$i]["product_price"]-$list[$i]["product_lot_cost"]/($list[$i]["n"]))*($list[$i]["n"]-$list[$i]["r"]));
-					$pftr=((($list[$i]["c"])*$list[$i]["product_price"])-$list[$i]["product_lot_cost"])*$list[$i]["n_wlv"]-(($list[$i]["product_price"]*$list[$i]["n_r"])-$list[$i]["product_lot_costr"])*$list[$i]["n_wlv"];
-					$pf+=$pft;
-					$pfr+=$pftr;
-					$sumr+=$sum_r;
-					$barcode=$list[$i]["product_barcode"];
-					
-					if($list[$i]["s_type"]!="p" && $barcode!==null){
-						$barcode=$this->createBcWLV($barcode,$list[$i]["n_wlv"]*1);
-					}
-					echo '<tr'.$cm.'>
-						<td>'.($list[$i]["sq"]).'</td>
-						<td class="l">'.$barcode.'</td>
-						<td><div>'.$list[$i]["product_name"].'
-							'.($list[$i]["s_type"]!="p"?" ".($list[$i]["n_wlv"]*1)." ".$list[$i]["unit_name"]:"").'
-							'.$rt.'</div>
-							<div>'.$list[$i]["product_barcode"].'</div>
-						</td>
-						<td><div class="r">'.$list[$i]["c"].''.($list[$i]["s_type"]!="p"?"×".($list[$i]["n_wlv"]*1):"").'</div>
-							<div>'.$list[$i]["unit_name"].'</div>
-						</td>
-						<td class="l">'.$list[$i]["unit_name"].'</td>
-						<td class="r">'.number_format($list[$i]["product_price"],2,'.',',').'</td>
-						<td class="r">'.number_format(($list[$i]["product_price"]*$list[$i]["c"]*$list[$i]["n_wlv"]),2,'.',',').'</td>
-						<td class="darkgreen r">'.number_format($pft,2,'.',',').'</td>
-					</tr>';
 				}
 		echo '</tr></table>
 					<div class="r">📃 จำนวน : <b>'.count($list).'</b> รายการ

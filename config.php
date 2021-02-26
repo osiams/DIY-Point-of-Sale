@@ -6,7 +6,7 @@ define("CF", [
 	"require" => ["group"=>["prop"],"product"=>["group","prop"]],
 #้ข้อมูลการเชื่อมต่อกับ ฐานข้อมูล MariaDB
 	"server"=>"127.0.0.1",
-	"database"=>"diypos_0.2",
+	"database"=>"diypos_0.3",
 	"user"=>"diypos",		
 	"password"=>"mr12345678",	
 #http port ต้องตรงกับในไฟล์ httpd.conf

@@ -409,7 +409,7 @@ private function createTable(string $table,string $sql):array{
 								IF(bill_in_list.sum IS NOT NULL,
 									(bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv*IFNULL(bill_in_list.n,1))),
 									product_ref.cost
-								)*IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u)
+								)*IF(bill_sell_list.c>0,bill_sell_list.c*bill_sell_list.n_wlv,bill_sell_list.u*bill_sell_list.n_wlv)
 							)
 							FROM bill_sell_list 
 							LEFT JOIN bill_in_list
@@ -425,7 +425,7 @@ private function createTable(string $table,string $sql):array{
 								IF(bill_in_list.sum IS NOT NULL,
 									(bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv*IFNULL(bill_in_list.n,1))),
 									product_ref.cost
-								)*(bill_sell_list.r)
+								)*(bill_sell_list.r*bill_sell_list.n_wlv)
 							)
 							FROM bill_sell_list 
 							LEFT JOIN bill_in_list
@@ -676,6 +676,21 @@ private function createTable(string $table,string $sql):array{
 				SET lotroot_=(SELECT lot_root  from bill_in WHERE sku=lot_);
 				RETURN  lotroot_;
 			END ";
+		$sql["set_get_id_first_sq"]="DROP PROCEDURE IF EXISTS `GetIdFirstSQ_`;";
+		$sql["set_GetIdFirstSQ_"]="CREATE DEFINER=`root`@`localhost` 
+			PROCEDURE `GetIdFirstSQ_`(
+				IN `product_sku_root_` VARCHAR(25),
+				OUT `_id` INT)
+			NO SQL COMMENT 'หางวดแรก'
+			BEGIN
+				SELECT id INTO `_id` FROM bill_in_list 
+				WHERE  product_sku_root=`product_sku_root_` 
+				AND IF(s_type='p',balance,balance_wlv)>0 
+				AND    stroot='proot'  
+				ORDER BY `sq` ASC 
+				LIMIT 1;
+			END;
+		";
 		$se=$this->metMnSql($sql,[]);
 		return $se;
 	}
@@ -772,7 +787,7 @@ private function createTable(string $table,string $sql):array{
 		}
 		$sql["unit_ref"]="INSERT INTO unit_ref 
 			SELECT *
-			FROM unit WHERE id>5";
+			FROM unit WHERE id>=5";
 		$sql["product_ref"]="INSERT INTO product_ref 
 			SELECT *
 			FROM product";

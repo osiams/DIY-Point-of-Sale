@@ -77,7 +77,7 @@ class sell extends main{
 		$jspd=$this->getStringSqlSet($_POST["pd"]);
 		$jspd_wlv=$this->getStringSqlSet(json_encode($this->getUniqPdData($pd)));
 		
-		//print_r($jspd_wlv);exit;
+		//print_r($jspd);exit;
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
 			@message_error:='',
@@ -198,12 +198,14 @@ class sell extends main{
 				DECLARE r__ INT DEFAULT 0;
 				DECLARE __r INT DEFAULT 0;
 				DECLARE addsku CHAR(25) CHARACTER SET ascii DEFAULT '';
+				SET @TEST='';
 				IF @over=0 THEN 
 					SET @bill_sell_save=1;
 					SET pdl=@pd_length;
 					IF @bill_sell_save=1 THEN
 						INSERT INTO `bill_sell`  (sku,n,price,user) 
-						VALUES (@sku,@n,@sums,@user);					
+						VALUES (@sku,@n,@sums,@user);			
+						SET @TEST=CONCAT(@TEST,';pdl=',pdl);		
 						WHILE i < pdl DO
 							SET stn=0;
 							SET stbalance=0;
@@ -219,17 +221,19 @@ class sell extends main{
 							SET pdn=JSON_VALUE(@jspd	,		CONCAT('$.'	,		@pdroot_n_or_wlv		,'.n')			);
 							SET pdn_wlv=JSON_VALUE(@jspd	,		CONCAT('$.'	,		@pdroot_n_or_wlv		,'.n_wlv')			);
 							SET cuts=(pdn-cut);
-							SELECT id,bill_in_sku,IF(s_type='p',n,n_wlv),IF(s_type='p',balance,balance_wlv),sum INTO stid,stsku,stn,stbalance,stsum
+							CALL GetIdFirstSQ_(pdroot,@sq_frist);
+							SELECT id,bill_in_sku,IF(s_type='p',n,n_wlv),IF(s_type='p',balance,balance_wlv),sum  INTO stid,stsku,stn,stbalance,stsum
 								FROM bill_in_list 
-								WHERE IF(s_type='p',balance,balance_wlv)>0 AND  product_sku_root=pdroot AND stroot='proot' 
-								ORDER BY sq ASC,id  ASC LIMIT 1;
+								WHERE id=@sq_frist;
 							SELECT unit.sku_key,unit.sku_root INTO unitkey,unitroot
 								FROM product
 								LEFT JOIN unit
 								ON(product.unit=unit.sku_root)
 								WHERE product.sku_root=pdroot LIMIT 1;
-							#SET @TEST=CONCAT(@TEST,'-',CURTIME(6));
-							SET @TEST=CONCAT(@TEST,'*',pdroot);
+							SET @TEST=CONCAT(@TEST,';@sq_frist=',@sq_frist);
+							SET @TEST=CONCAT(@TEST,';stid=',stid);
+							SET @TEST=CONCAT(@TEST,';stbalance=',stbalance);
+							SET @TEST=CONCAT(@TEST,';pdroot=',pdroot);
 							SET pdkey=(SELECT sku_key  FROM product WHERE sku_root=pdroot LIMIT 1);	
 							IF stn>0 THEN		
 							SET @TEST=CONCAT(@TEST,'-','eeeeeeeeeeeeeeeeeeeeeee','^',cuts,'^',stbalance);
@@ -243,6 +247,7 @@ class sell extends main{
 									END IF;
 								END IF;
 								IF cuts*pdn_wlv<=stbalance THEN
+									SET @TEST=CONCAT(@TEST,'-','44444444444444',cuts*pdn_wlv);
 									SET pdcoat=pdcoat+(stsum/stn)*cuts*pdn_wlv;
 									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,r,`sq`,unit_sku_key,unit_sku_root)
 									VALUE(@sku,stid,stsku,pdkey,pdroot,pdn,pdn_wlv,cuts,0,0,`sq`,unitkey,unitroot);
@@ -250,7 +255,6 @@ class sell extends main{
 										SET balance=(IF(s_type='p',balance-cuts*pdn_wlv,NULL)) ,
 											balance_wlv=(IF(s_type!='p',balance_wlv-(cuts*pdn_wlv),NULL)) 
 									WHERE id=stid ;
-									SET @TEST=CONCAT(@TEST,'-','44444444444444');
 									#################
 									SET `mod`=0;
 									SET `cut_mod`=`cut_mod`+cuts;
@@ -271,6 +275,7 @@ class sell extends main{
 									END IF;
 									##################
 								ELSEIF cuts*pdn_wlv>stbalance THEN
+									SET @TEST=CONCAT(@TEST,'-','555555555555555555');
 									SET pdcoat=pdcoat+(stsum/stn)*stbalance;
 									SET @cut_able=FLOOR(stbalance/pdn_wlv);
 									SET @mod=ABS(@cut_able*pdn_wlv-stbalance);
@@ -310,11 +315,11 @@ class sell extends main{
 								END IF;
 								SET lastid=0;
 							ELSE 
-							SET @TEST=CONCAT(@TEST,'-','wwwwwwwwww');
+							SET @TEST=CONCAT(@TEST,'-','qqqqqqqqqqqqqqqq');
 								SET w='1';
 								SET pdcoat=pdcoat+(SELECT cost FROM product WHERE sku_root=pdroot LIMIT 1)*cuts;
-								INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,`sq`,unit_sku_key,unit_sku_root )
-								VALUE(@sku,NULL,NULL,pdkey,pdroot,pdn,pdn_wlv,0,cuts,`sq`,unitkey,unitroot);
+								##INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,`sq`,unit_sku_key,unit_sku_root )
+								##VALUE(@sku,NULL,NULL,pdkey,pdroot,pdn,pdn_wlv,0,cuts,`sq`,unitkey,unitroot);
 								SET stn=0;
 								SET cuts=0;
 								SET cut=0;

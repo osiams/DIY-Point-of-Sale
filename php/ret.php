@@ -402,7 +402,7 @@ class ret extends main{
 			ON( `bill_sell_list`.`product_sku_key`=`product_ref`.`sku_key`)
 			LEFT JOIN unit_ref
 			ON( bill_sell_list.unit_sku_key=unit_ref.sku_key)
-			WHERE bill_sell_list.sku=".$sku."
+			WHERE bill_sell_list.sku=".$sku." AND bill_sell_list.c>0
 			ORDER BY `bill_sell_list`.`id` ASC";
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@TEST AS `TEST`";
 		$se=$this->metMnSql($sql,["head","ret_head","list","result"]);

@@ -177,6 +177,7 @@ class product_details extends product{
 			LEFT JOIN user_ref
 			ON (bill_sell.user=user_ref.sku_key)
 			WHERE bill_sell_list.product_sku_root=@h
+			GROUP BY bill_sell.sku
 			ORDER BY bill_sell.id DESC LIMIT 10
 		";
 		$se=$this->metMnSql($sql,["product","stock","bill"]);
