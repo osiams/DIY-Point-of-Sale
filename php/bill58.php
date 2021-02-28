@@ -24,15 +24,16 @@ class bill58 extends main{
 	private $pip=["ip"=>null,"port"=>null];
 	public $connector=null;
 	protected $printer=null;
+	protected $printer_label=null;
 	public function __construct(){
 		parent::__construct();
 		$this->receipt=json_decode(file_get_contents("set/receipt.json"));
-		$pt=json_decode(file_get_contents("set/printer.json"));
-		$this->setPrinterNo($pt);
-		$this->font_file=$pt->font_0;
-		$this->font_file2=$pt->font_1;
-		$this->font_size=$pt->font_0_size;
-		$this->font_size2=$pt->font_1_size;
+		$this->pt=json_decode(file_get_contents("set/printer.json"));
+		$this->setPrinterNo($this->pt);
+		$this->font_file=$this->pt->font_0;
+		$this->font_file2=$this->pt->font_1;
+		$this->font_size=$this->pt->font_0_size;
+		$this->font_size2=$this->pt->font_1_size;
 		$this->usb=$this->printer->address;
 		$this->setCNT($this->usb);
 		$this->bc=null;
@@ -54,6 +55,12 @@ class bill58 extends main{
 			}
 		}else{
 			$this->printer=$pt->printer_0;
+		}
+		if(isset($_COOKIE["printer_label_"])&&preg_match("/^[0-9]{1,10000}$/",$_COOKIE["printer_label_"])
+			&&isset($pt->{"printer_".$_COOKIE["printer_label_"]})&&$pt->{"printer_".$_COOKIE["printer_label_"]}->status==1){
+			$this->printer_label=$pt->{"printer_".$_COOKIE["printer_label_"]};
+		}else{
+			$this->printer_label=$pt->printer_0;
 		}
 	}
 	public function run(){
@@ -99,6 +106,9 @@ class bill58 extends main{
 			$ui=explode(":",$uri);
 			$this->pip["ip"]=$ui[0];
 			$this->pip["port"]=$ui[1];
+		}else{
+			$this->cnt="usb";
+			$this->pip=["ip"=>null,"port"=>null];
 		}
 	}
 	protected function checkNP(string $typecheck):bool{
@@ -114,8 +124,7 @@ class bill58 extends main{
 		}
 		return $re;
 	}
-	protected function fnConect():object{
-		
+	protected function fnConect():object{	
 		if($this->cnt=="network"){
 			return (new NetworkPrintConnector($this->pip["ip"],$this->pip["port"]));
 		}else{
@@ -187,6 +196,17 @@ class bill58 extends main{
 	protected function testPrint():void{
 		$re=["result"=>false,"message_error"=>""];
 		try {
+			if(isset($_POST["for"])){
+				if($_POST["for"]=="userprinterlabel"){
+					$this->printer=$this->printer_label;
+					$this->usb=$this->printer_label->address;
+					$this->setCNT($this->usb);									
+				}else if($_POST["for"]==null){
+					$this->printer=$this->pt->{"printer_0"};
+					$this->usb=$this->printer->address;
+					$this->setCNT($this->usb);
+				}
+			}
 			if($this->checkNP("exists")){
 				if($this->checkNP("writable")){
 					if(file_exists($this->font_file)){

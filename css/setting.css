@@ -1,4 +1,4 @@
-#userprinter{border:1px solid #aaaaaa;background-color:#ffffff;cursor:pointer;border-radius: 3px 3px 3px 3px;padding:2px;}
+#userprinter,#userprinterlabel{border:1px solid #aaaaaa;background-color:#ffffff;cursor:pointer;border-radius: 3px 3px 3px 3px;padding:2px;}
 .changePt{font-size:14px;}
 .changePt form p{text-align:left;color:black}
 .terminal{border:1px solid gray;background-color:black;color:white;padding:10px;}

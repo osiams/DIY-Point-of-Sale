@@ -128,11 +128,11 @@ class setting extends main{
 				</tr>
 				<tr><td class="l">เครื่องพิมพ์ ปริยาย</td><td class="l">ชื่อ = '.htmlspecialchars($this->printer->printer_0->name).'
 				<br />,ที่อยู่ = '.htmlspecialchars($this->printer->printer_0->address).' 
-				<br />,ขนาดความกว้าง = '.htmlspecialchars($this->printer->printer_0->width).' มล. 
+				<br />,ขนาดความกว้าง = '.htmlspecialchars($this->printer->printer_0->width).' มม. 
 				<br />,ตัดกระดาษอัตโนมัติ = '.htmlspecialchars($this->printer->printer_0->cut).' 
 				<br />,เปิดลิ้นชัก = '.htmlspecialchars($this->printer->printer_0->pulse).'
 				<br />,บรรทัดว่างชดเชยท้ายใบเสร็จ = '.$this->printer->printer_0->feed.'
-				<br /><a onclick="Stt.printTest(0)">ทดสอบพิมพ์</a>
+				<br /><a onclick="Stt.printTest(null)">ทดสอบพิมพ์</a>
 				</td></tr>	
 			</table>
 			<br />
@@ -157,9 +157,12 @@ class setting extends main{
 				<tr><th>รายละเอียด</th><th>ค่า</th></tr>
 				<tr><td class="l">ซอฟต์แวร์</td><td class="l">'.$_SERVER['HTTP_USER_AGENT'].'</td></tr>
 				<tr><td class="l">IPv4 ของ ผู้ใช้</td><td class="l">'.$this->userIPv4().'</td></tr>
-				<tr><td class="l">เครื่องพิมพ์ที่ใช้<br />(ที่เครื่องแม่ข่าย)</td><td class="l"><div id="userprinter" onclick="M.popup(this,\'Stt.changePt(did)\')"></div>
-					<a onclick="Stt.printTest()">ทดสอบพิมพ์</a>
+				<tr><td class="l">เครื่องพิมพ์ที่ใช้<br />(ที่เครื่องแม่ข่าย)</td><td class="l"><div id="userprinter" onclick="M.popup(this,\'Stt.changePt(did,\\\'userprinter\\\')\')"></div>
+					<a onclick="Stt.printTest(\'userprinter\')">ทดสอบพิมพ์</a>
 				</td></tr>	
+				<tr><td class="l">เครื่องพิมพิ์ฉลาก สินค้า ชั่งตวงวัด</td><td class="l"><div id="userprinterlabel" onclick="M.popup(this,\'Stt.changePt(did,\\\'userprinterlabel\\\')\')"></div>
+					<a onclick="Stt.printTest(\'userprinterlabel\')">ทดสอบพิมพ์</a>
+				</td></tr>
 			</table>
 			<br />
 			<table>
@@ -190,7 +193,7 @@ class setting extends main{
 			</table>
 			</div>
 			<script type="text/javascript">let printerdata='.json_encode($this->printer).'
-			Stt.setPt( printerdata,\'userprinter\')
+			Stt.setPt( printerdata,\'userprinter\');Stt.setPt( printerdata,\'userprinterlabel\')
 			</script>
 			</div>';
 			
@@ -205,19 +208,6 @@ class setting extends main{
 			$tx = dirname($_SERVER['CONTEXT_DOCUMENT_ROOT'],1).'/bin/php -q '.dirname($_SERVER['SCRIPT_FILENAME'],1).''.$socket_file;
 		}
 		return $tx;
-	}
-	private function xxxxxxxxxxxxfindIPv4():string{
-		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-		socket_connect($sock, "8.8.8.8", 53);
-		socket_getsockname($sock, $name);
-		return $name;
-	}
-	private function xxxxxxxxxxxxxxuserIPv4():string{
-		$re=$_SERVER['REMOTE_ADDR'];
-		if($re==$_SERVER["SERVER_ADDR"]){
-			$re=$this->findIPv4();
-		}
-		return $re;
 	}
 }
 ?>

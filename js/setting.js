@@ -18,35 +18,46 @@ class setting extends main{
 	}
 	setPt(printerdata,id){
 		this.printerdata=printerdata
-		let pt=localStorage.getItem('printer_')
+		let name_perfix=this.setNamePf(id)
+		let pt=localStorage.getItem(name_perfix)
 		if(pt==null){
-			localStorage.setItem("printer_",0)
+			localStorage.setItem(name_perfix,0)
 			pt=0
 		}
-		if(!this.printerdata.hasOwnProperty("printer_"+pt)){
+		let name=name_perfix.substr(0,8)
+		if(!this.printerdata.hasOwnProperty(name+""+pt)){
 			pt=0
 		}
-		this.set_cookie("printer_", pt, 60*60*24*30*12*10)
+		this.set_cookie(name_perfix, pt, 60*60*24*30*12*10)
 		this.setInHtml(pt,id)
 	}
-	setInHtml(pt=0){
-		this.id(this.ptint).innerHTML="ชื่อ = "+F.htmlspecialchars(printerdata["printer_"+pt]["name"])
+	setInHtml(pt=0,id){
+		this.id(id).innerHTML="ชื่อ = "+F.htmlspecialchars(printerdata["printer_"+pt]["name"])
 				+"<br />,ที่อยู่ = "+F.htmlspecialchars(printerdata["printer_"+pt]["address"])
-				+"<br />,ขนาดความกว้าง ="+printerdata["printer_"+pt]["width"]+" มล. "
+				+"<br />,ขนาดความกว้าง ="+printerdata["printer_"+pt]["width"]+" มม. "
 				+"<br />,ตัดกระดาษอัตโนมัติ ="+printerdata["printer_"+pt]["cut"]
 				+"<br />,เปิดลิ้นชัก ="+printerdata["printer_"+pt]["pulse"]	
 				+"<br />,บรรทัดว่างชดเชยท้ายใบเสร็จ = "+printerdata["printer_"+pt]["feed"]+""
 	}
-	changePt(did){
-		return this.ctPt()
+	changePt(did,id){
+		return this.ctPt(id)
 	}
-	setPrinter(did){
-		this.set_cookie("printer_", did.value, 60*60*24*30*12*10)
-		localStorage.setItem("printer_", did.value)
-		this.setInHtml( did.value)
+	setNamePf(id){
+		let name_perfix="printer_";
+		if(id=="userprinterlabel"){
+			name_perfix="printer_label_";
+		}
+		return 	name_perfix
 	}
-	ctPt(){
-		let pt=localStorage.getItem("printer_")
+	setPrinter(did,id){
+		let name_perfix=this.setNamePf(id)
+		this.set_cookie(name_perfix, did.value, 60*60*24*30*12*10)
+		localStorage.setItem(name_perfix, did.value)
+		this.setInHtml( did.value,id)
+	}
+	ctPt(id){
+		let name_perfix=this.setNamePf(id)
+		let pt=localStorage.getItem(name_perfix)
 		let ct=this.ce("div",{"class":"changePt"})
 			let p=this.ce("p",{})
 			this.end(p,[this.cn("เลือกเครื่องพิมพ์")])
@@ -58,7 +69,7 @@ class setting extends main{
 					if(this.printerdata[property]["status"]==1){
 						i+=1
 						r["p_"+i]=this.ce("p",{})
-							r["radio_"+i]=this.ce("input",{"type":"radio","id":"radio_"+i,"name":"printer_","value":property.replace("printer_",""),"onclick":"Stt.setPrinter(this)"})
+							r["radio_"+i]=this.ce("input",{"type":"radio","id":"radio_"+i,"name":"printer_","value":property.replace("printer_",""),"onclick":"Stt.setPrinter(this,'"+id+"')"})
 							r["label_"+i]=this.ce("label",{"for":"radio_"+i})
 							if(property.replace("printer_","")==pt){
 								r["radio_"+i].setAttribute("checked","checked")
@@ -74,8 +85,17 @@ class setting extends main{
 		this.end(ct,[p,form])
 		return ct
 	}
-	printTest(no=-1){
-		let dt={"data":{"a":"bill58","b":"print_test","no":no},"result":Stt.printTestResult,"error":Stt.printTestError}
+	printTest(id){
+		if(id==null){
+			id=""
+		}
+		let name_perfix=this.setNamePf(id)
+		let pt=localStorage.getItem(name_perfix)
+		if(pt==null){
+			localStorage.setItem(name_perfix,0)
+			pt=0
+		}
+		let dt={"data":{"a":"bill58","b":"print_test","no":pt,"for":id},"result":Stt.printTestResult,"error":Stt.printTestError}
 		this.setFec(dt)
 	}
 	printTestResult(re,form,bt){
