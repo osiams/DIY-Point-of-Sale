@@ -93,6 +93,36 @@ class main{
 				"primary"=>"sku_key",
 				"index"=>["sku_root"]
 			],
+			"partner"=>[
+				"name"=>"partner",
+				"column"=>["id","sku","sku_key","sku_root",
+					"brand_name","name","pn_type","icon",
+					"no","alley","road","distric","country",
+					"province","post_no",
+					"tel","fax","tax","web","tp_type",
+					"od_type","note","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"unsigned"=>["day_nv"],
+				"primary"=>"sku_root",
+				"not_null"=>["name"],
+				"index"=>["tp_type","pn_type"],
+				"unique"=>["name","sku"]
+			],
+			"partner_ref"=>[
+				"name"=>"partner_ref",
+				"column"=>["id","sku","sku_key","sku_root",
+				"brand_name","name","pn_type","brand_icon","icon",
+				"no","alley","road","distric","country",
+				"province","post_no",
+				"tel","fax","tax","web","tp_type",
+				"od_type","note","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"unsigned"=>["day_nv"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_key",
+				"index"=>["sku_root"]
+			],
 			"user"=>[
 				"name"=>"user",
 				"column"=>["id","sku","sku_key","sku_root","name","lastname","email","password","userceo","modi_date","date_reg"],
@@ -188,6 +218,7 @@ class main{
 		];
 		$this->fills=[
 			"amount"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
+			"alley"=>["name"=>"ซอย","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"barcode"=>["name"=>"รหัสแท่ง","type"=>"CHAR","length_value"=>80],
 			"balance"=>["name"=>"คงเหลือ","type"=>"INT","length_value"=>10],
 			"balance_wlv"=>["name"=>"คงเหลือชั่งตวงวัด","type"=>"FLOAT","length_value"=>[10,4]],
@@ -195,6 +226,8 @@ class main{
 			"bill_in_id"=>["name"=>"ที่นำเขา","type"=>"INT","length_value"=>10],
 			"bill_in_list_id"=>["name"=>"ที่นำเขา","type"=>"INT","length_value"=>10],
 			"bill_in_sku"=>["name"=>"รหัสภายในใบนำเข้าสินค้า","type"=>"CHAR","length_value"=>25],
+			"brand_name"=>["name"=>"ชื่อการค้า","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
+			"brand_icon"=>["name"=>"รูปเครื่องหมายการค้า","type"=>"CHAR","length_value"=>255],
 			//--0=เงินม1=สินค้าตัวเดิม
 			"changto"=>["name"=>"เปลี่ยนเป็น","type"=>"ENUM","length_value"=>["0","1"]],
 			//"barcode1"=>["name"=>"รหัสแท่งย่อยสุด1","type"=>"CHAR","length_value"=>80],
@@ -204,18 +237,22 @@ class main{
 			"cost"=>["name"=>"ต้นทุน","type"=>"FLOAT","length_value"=>[15,4]],
 			"costr"=>["name"=>"ต้นทุนคืน","type"=>"FLOAT","length_value"=>[15,4]],
 			"costa"=>["name"=>"ต้นทุนเฉลี่ย","type"=>"FLOAT","length_value"=>[15,4]],
+			"country"=>["name"=>"เขต/อำเภอ","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"d1"=>["name"=>"ระดับ1","type"=>"CHAR","length_value"=>25],
 			"d2"=>["name"=>"ระดับ2","type"=>"CHAR","length_value"=>25],
 			"d3"=>["name"=>"ระดับ3","type"=>"CHAR","length_value"=>25],
 			"d4"=>["name"=>"ระดับ4","type"=>"CHAR","length_value"=>25],
+			"distric"=>["name"=>"แขวง/ตำบล","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"data_type"=>["name"=>"ชนิดข้อมูล","type"=>"ENUM","length_value"=>["s","n","b","u"]],
 			"disc"=>["name"=>"รายละเอียด","type"=>"VARCHAR","length_value"=>1000,"charset"=>"thai"],
 			"date_reg"=>["name"=>"วันที่สร้าง","type"=>"TIMESTAMP"],
 			"email"=>["name"=>"อีเมล","type"=>"CHAR","length_value"=>30],
+			"fax"=>["name"=>"แฟ็กซ์","type"=>"CHAR","length_value"=>15],
 			"float"=>["name"=>"จำนวน","type"=>"FLOAT","length_value"=>[10,4]],
 			"group_key"=>["name"=>"กลุ่มอ้างอิง","type"=>"CHAR","length_value"=>25],
 			"group_root"=>["name"=>"กลุ่มราก","type"=>"CHAR","length_value"=>25],
 			"h"=>["name"=>"เปลี่ยน","type"=>"INT","length_value"=>10],
+			"icon"=>["name"=>"รูป","type"=>"CHAR","length_value"=>255],
 			"id"=>["name"=>"ที่","type"=>"INT","length_value"=>10],
 			"idkey"=>["name"=>"ที่อ้างอิง","type"=>"INT","length_value"=>10],
 			//--"buy","cancel","return",move,x,delete
@@ -229,25 +266,31 @@ class main{
 			"modi_date"=>["name"=>"วันปรับปรุง","type"=>"TIMESTAMP",],
 			"n"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
 			"n_wlv"=>["name"=>"จำนวนชั่งตวงวัด","type"=>"FLOAT","length_value"=>[10,4]],
+			"no"=>["name"=>"เลขที่","type"=>"CHAR","length_value"=>25],
 			"c"=>["name"=>"จำนวนที่ได้ตัด","type"=>"INT","length_value"=>10],
 			"u"=>["name"=>"จำนวนไมได้ตัด","type"=>"INT","length_value"=>10],
 			"name"=>["name"=>"ชื่อ","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			"note"=>["name"=>"บันทึกย่อ","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
+			"od_type"=>["name"=>"รูปแบบการสั่งซื้อ","type"=>"ENUM","length_value"=>["s","a","o","t"]],
 			//"partner1"=>["name"=>"คู่ค้า1","type"=>"CHAR","length_value"=>255],
 			//"partner2"=>["name"=>"คู่ค้า2","type"=>"CHAR","length_value"=>255],
 			//"partner3"=>["name"=>"คู่ค้า3","type"=>"CHAR","length_value"=>255],
 			"password"=>["name"=>"รหัสผ่าน","type"=>"CHAR","length_value"=>64],
 			//--"b"=>"ใบดำ บัญชีดำ","r"=>หยุดขาย ,"y"=>นำเข้ามาขายแต่ต้องระวังและตรวจสอบเป็นพิเศษ,"c"=>ขายปกติ
 			"pdstat"=>["name"=>"สถานะ","type"=>"ENUM","length_value"=>["b","r","y","c"]],
+			"pn_type"=>["name"=>"ประเภทคู่ค้า","type"=>"ENUM","length_value"=>["s","n"]],
+			"post_no"=>["name"=>"รหัสไปรษณี","type"=>"CHAR","length_value"=>25],
 			"price"=>["name"=>"ราคา","type"=>"FLOAT","length_value"=>[15,2]],
 			"pricer"=>["name"=>"ราคาคืน","type"=>"FLOAT","length_value"=>[15,2]],
 			"product_sku_key"=>["name"=>"รหัสอ้างอิงสินค้า","type"=>"CHAR","length_value"=>25],
 			"product_sku_root"=>["name"=>"รหัสรากสินค้า","type"=>"CHAR","length_value"=>25],
 			"prop"=>["name"=>"คุณสมบัติ","type"=>"VARCHAR","length_value"=>1024],
 			"props"=>["name"=>"คุณสมบัติ.","type"=>"TEXT","length_value"=>65535],
+			"province"=>["name"=>"จังหวัด","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"r"=>["name"=>"คืน","type"=>"INT","length_value"=>10],
 			"r_"=>["name"=>"เริ่ม","type"=>"INT","length_value"=>10],
 			"_r"=>["name"=>"สิ้นสุด","type"=>"INT","length_value"=>10],
+			"road"=>["name"=>"ถนน","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"s_type"=>["name"=>"รูปแบบการขาย","type"=>"ENUM","length_value"=>["p","w","l","v"]],
 			"sq"=>["name"=>"ลำดับ","type"=>"INT","length_value"=>10],
 			"sku"=>["name"=>"รหัสภายใน","type"=>"CHAR","length_value"=>25],
@@ -271,7 +314,10 @@ class main{
 			"stat"=>["name"=>"สถานะ","type"=>"ENUM","length_value"=>["c","w","s","r"]],
 			"stath"=>["name"=>"สถานะเปลียน","type"=>"ENUM","length_value"=>["h"]],
 			"statnote"=>["name"=>"บันทึกย่อ","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
+			"tax"=>["name"=>"เลขที่ภาษี","type"=>"CHAR","length_value"=>15],
+			"tel"=>["name"=>"เบอร์โทีศัพท์","type"=>"CHAR","length_value"=>15],
 			"tms"=>["name"=>"เวลา","type"=>"FLOAT","length_value"=>[12,6]],
+			"tp_type"=>["name"=>"การส่งสินค้า","type"=>"ENUM","length_value"=>["0","1"]],
 			"unit"=>["name"=>"หน่วย","type"=>"CHAR","length_value"=>25],
 			"unit_sku_key"=>["name"=>"รหัสอิงอิงหน่วย","type"=>"CHAR","length_value"=>25],
 			"unit_sku_root"=>["name"=>"รหัสรากหน่วย","type"=>"CHAR","length_value"=>25],
@@ -283,6 +329,7 @@ class main{
 			"w2_n"=>["name"=>"จำนวนสินค้าแถมที่รวม","type"=>"INT","length_value"=>10],
 			"w1"=>["name"=>"สินค้าหลักที่รวม","type"=>"CHAR","length_value"=>25],
 			"w2"=>["name"=>"สินค้าแถมที่รวม","type"=>"CHAR","length_value"=>25],
+			"web"=>["name"=>"เว็บไซต์","type"=>"CHAR","length_value"=>255],
 			
 			"tr"=>["name"=>"ช่วงเวลา","type"=>"INT","length_value"=>10],
 			"bi_c"=>["name"=>"จำนวนแถว bill_in","type"=>"INT","length_value"=>10],
@@ -524,12 +571,14 @@ class main{
 						$re["message_error"]="ข้อมูล \"".$nm."\"  ต้องไม่ว่าง" ;
 						break;
 					}else if(strlen(trim($ry))>0){
-						$name=["name"];
+						$name=["name","brand_name","no","alley","road","distric","country","province"];
 						$sku=["sku","unit"];
+						$tax=["tax","tel","fax","post_no"];
+						$url=["web"];
 						$barcode=["barcode"];
 						$password=["password"];
 						$money=["price","cost"];
-						$enum = ["data_type","s_type"];
+						$enum = ["data_type","s_type","pn_type","od_type","tp_type"];
 						$json_arr = ["prop"];
 						if(in_array($v,$sku)){
 							$pt="/^[0-9a-zA-Z-+\.&\/]{1,25}$/";
@@ -565,11 +614,25 @@ class main{
 								$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ จำนวนเงิน xxxx.xx";
 								break;
 							}
+						}else if(in_array($v,$tax)){
+							$pt="/^[0-9]{1,15}$/";
+							if(!preg_match($pt,$ry)) {
+								$re["result"]=false;
+								$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ ".$this->fills[$v]["name"];
+								break;
+							}
 						}else if(in_array($v,$name)){
 							$max=$this->fills[$v]["length_value"]-4;
 							if(strlen($ry)>$max) {
 								$re["result"]=false;
 								$re["message_error"]=$this->fills[$v]["name"]." ยาวเกิน ".$max." แต่ข้อความคุณยาว ".strlen($ry);
+								break;
+							}
+						}else if(in_array($v,$url)){
+							$pt="/^http(s?):\/\/.*(.){1}.*$/";
+							if(!preg_match($pt,$ry)) {
+								$re["result"]=false;
+								$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ ".$this->fills[$v]["name"];
 								break;
 							}
 						}else if(in_array($v,$json_arr)){

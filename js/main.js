@@ -646,4 +646,87 @@ class F{
 		str = str.replace(/'/g, "&#039;");
 		return str;
 	}
+	static  fileUploadShow(e) {//-https://stackoverflow.com/questions/30902360/resize-image-before-sending-to-base64-without-using-img-element
+		//document.getElementById("im").src=URL.createObjectURL(e.target.files[0]);
+		let canvas_id=M.rid()
+		let img_id=M.rid()
+		let div_id=M.rid()
+		let cv=M.ce("canvas",{"id":canvas_id,"width":"50px","height":"50px","style":"display:none"})
+		let dv =M.ce("div",{"id":div_id,"data-canvas_id":canvas_id,"style":"width:116px;height:116px;display:inline-block;border:1px dashed gray;"})
+		let dvl=M.ce("div",{"style":"background-color:red;color:white;display:block;float:right;width:20px;height:20px;border-radius: 10px 10px 10px 10px;border:1px solid white;line-height:20px;font-size:20px;text-align:center;cursor:pointer","title":"ลบออก","onclick":`F.fileUploadDel('${div_id}','${canvas_id}')`})
+		//let im=SHPOS.ce("img",{"id":img_id,"width":"120px"})
+		e.target.parentNode.childNodes[1].appendChild(cv)
+		e.target.parentNode.childNodes[1].appendChild(dv)
+			dv.appendChild(dvl)
+				dvl.appendChild(M.cn("\u00D7"))
+		let canvas=document.getElementById(canvas_id)
+		let ctx=canvas.getContext("2d")
+		let cw=canvas.width
+		let ch=canvas.height
+		let maxW=1920
+		let maxH=1920
+		let img = new Image()
+		img.onload = function() {
+			let iw=img.width
+			let ih=img.height
+			let scale=Math.min((maxW/iw),(maxH/ih))
+			if(iw<maxW&&ih<maxH){
+				scale=1
+			}
+			let iwScaled=iw*scale
+			let ihScaled=ih*scale
+			canvas.width=iwScaled
+			canvas.height=ihScaled
+			ctx.imageSmoothingEnabled=true;
+			ctx.imageSmoothingQuality="height";
+			ctx.drawImage(img,0,0,iwScaled,ihScaled)
+			//alert(canvas.toDataURL())
+			//alert(canvas)
+			//document.getElementById("im").src=canvas.toDataURL()
+			setTimeout(F.fileUploadPain,0,div_id,canvas_id)
+		}
+		//document.getElementById(img_id).src=URL.createObjectURL(e.target.files[0]);
+		img.src = URL.createObjectURL(e.target.files[0]);	
+		//alert(img.src)
+		//document.getElementById(img_id).src=canvas.toDataURL()
+		//setTimeout(F.fileUploadPain,10,div_id,canvas_id)
+		
+	
+		//img.src = "https://i.ytimg.com/vi/HLt7Ze-JUPM/hqdefault.jpg?sqp=-oaymwEiCNIBEHZIWvKriqkDFQgBFQAAAAAYASUAAMhCPQCAokN4AQ==&rs=AOn4CLCT1cUDWu32RiYDo8r9qKFv03MENw"
+	}
+	static fileUploadDel(div_id,canvas_id){
+		M.id(div_id).parentNode.removeChild(M.id(div_id))
+		M.id(canvas_id).parentNode.removeChild(M.id(canvas_id))
+	}
+	static fileUploadPain(div_id,canvas_id){
+		alert(document.getElementById(canvas_id).toDataURL())
+		//alert(div_id+","+canvas_id)
+		document.getElementById(div_id).style.backgroundImage="url(\""+document.getElementById(canvas_id).toDataURL()+"\")"
+		document.getElementById(div_id).style. backgroundRepeat="no-repeat"
+		document.getElementById(div_id).style.backgroundPosition="center center"
+		
+		let wi=document.getElementById(canvas_id).width
+		let hi=document.getElementById(canvas_id).height
+		let h=0
+		let w=0
+		if((wi==1920||hi==1920)
+			||(wi>=116||hi>=116)){
+			if(wi>=hi){
+				h=116
+				w=(wi/hi)*h
+			}else{
+				w=116
+				h=(hi/wi)*w
+			}
+		}else{
+			if(wi>=hi){
+				h=hi
+				w=(wi/hi)*h
+			}else{
+				w=wi
+				h=(hi/wi)*w
+			}
+		}
+		document.getElementById(div_id).style.backgroundSize=w+"px "+h+"px"
+	}
 }
