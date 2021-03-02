@@ -3,6 +3,10 @@ class partner extends main{
 	private  $d_cols;
 	public function __construct(){
 		parent::__construct();
+		$file = "php/class/image.php";
+		require($file);
+		$dir=dirname(__DIR__)."/img/gallery";
+		$this->img=new image($dir);
 		$this->title = "คู่ค้า";
 		$this->a = "partner";
 		$this->pn_type = ["s"=>"ผู้ผลิต","n"=>"ตัวแทนจำหน่าย"];
@@ -320,9 +324,13 @@ class partner extends main{
 		return json_encode($ar);
 	}
 	protected function regisPartnerPage(string $error):void{
-		print_r($_FILES);
+		if(isset($_POST["icon"])){
+			$se=$this->img->imgCheck("icon");
+			$this->img->imgSave($se,"123456789gdgdfd");
+		}
 		//echo $this->propToFromValue(json_encode($this->group_list[$this->parent]["prop"]));
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
+		$icon=(isset($_POST["icon"]))?htmlspecialchars($_POST["icon"]):"";
 		$brand_name=(isset($_POST["brand_name"]))?htmlspecialchars($_POST["brand_name"]):"";
 		$sku=(isset($_POST["sku"]))?htmlspecialchars($_POST["sku"]):"";
 		$tax=(isset($_POST["tax"]))?htmlspecialchars($_POST["tax"]):"";
@@ -347,8 +355,9 @@ class partner extends main{
 		if($error!=""){
 			echo '<div class="error">'.$error.'</div>';
 		}		
-		echo '		<form name ="add_partner" method="post" enctype="multipart/form-data">
+		echo '		<form name ="add_partner" method="post">
 			<input type="hidden" name="submit" value="clicksubmit" />
+			<input type="hidden" id="icon_id" name="icon" value="'.$icon.'" />
 			<p><label for="partner_name">ชื่อ</label></p>
 			<div><input id="partner_name" class="want" type="text" name="name" value="'.$name.'" autocomplete="off" /></div>
 			<p><label for="partner_brand_name">ชื่อการค้า</label></p>
@@ -403,11 +412,12 @@ class partner extends main{
 			<div><input id="province" type="text" value="'.$province.'"  name="province" autocomplete="off"  /></div>
 			<p><label for="post_no">รหัสไปรษณี</label></p>
 			<div><input id="post_no" type="text" value="'.$post_no.'"  name="post_no" autocomplete="off"  /></div>
-			<div class="fileset">
-				<div style="display:grid;grid-template-columns:auto auto;grid-gap:5px;padding:5px 0px;"></div>
-				<input id="upload_pic" type="file" style="display:none" name="picture" onchange="F.fileUploadShow(event,\'cv\')" />
+			<div>
+				<div id="div_fileuploadpre" class="fileuploadpre1"></div>
+				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg" style="display:none" name="picture" onchange="F.fileUploadShow(event,1,\'icon_id\',1024,160)" />
 				<label for="upload_pic" style="border-radius: 2px 2px 2px 2px;text-align: center;line-height:32px;display:block;background-image: linear-gradient(to bottom right, #bbbbbb, #888888);color:#ffffff;;width:100%;height:32px;">+เลือกรูปภาพ</label>
 			</div>	
+			<script type="text/javascript">F.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')</script>
 		';			
 		echo '</table>
 					<br />

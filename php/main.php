@@ -22,6 +22,12 @@ class main{
 			"v"=>["icon"=>"🧊","desc"=>"ขายเป็นปริมาตร","opg"=>"ปริมาตร"]
 		];
 		$this->tb=[
+			"gallery"=>[
+				"name"=>"gallery",
+				"column"=>["id","sku_key","name","a_type","mime_type","md5","user","size","width","height","date_reg"],
+				"primary"=>"sku_key",
+				"index"=>["a_type","mime_type","size","width","height"]
+			],
 			"product"=>[
 				"name"=>"product",
 				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type",
@@ -217,6 +223,7 @@ class main{
 			]
 		];
 		$this->fills=[
+			"a_type"=>["name"=>"สำหรับแอป","type"=>"ENUM","length_value"=>["partner","billin"]],
 			"amount"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
 			"alley"=>["name"=>"ซอย","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"barcode"=>["name"=>"รหัสแท่ง","type"=>"CHAR","length_value"=>80],
@@ -252,6 +259,7 @@ class main{
 			"group_key"=>["name"=>"กลุ่มอ้างอิง","type"=>"CHAR","length_value"=>25],
 			"group_root"=>["name"=>"กลุ่มราก","type"=>"CHAR","length_value"=>25],
 			"h"=>["name"=>"เปลี่ยน","type"=>"INT","length_value"=>10],
+			"height"=>["name"=>"กว้าง","type"=>"INT","length_value"=>6],
 			"icon"=>["name"=>"รูป","type"=>"CHAR","length_value"=>255],
 			"id"=>["name"=>"ที่","type"=>"INT","length_value"=>10],
 			"idkey"=>["name"=>"ที่อ้างอิง","type"=>"INT","length_value"=>10],
@@ -263,6 +271,8 @@ class main{
 			"lot_root"=>["name"=>"งวดราก","type"=>"CHAR","length_value"=>25],
 			"m"=>["name"=>"สินค้ารากที่แตก","type"=>"CHAR","length_value"=>25],
 			"m_n"=>["name"=>"จำนวนสินค้ารากที่แตก","type"=>"INT","length_value"=>10],
+			"md5"=>["name"=>"md5","type"=>"CHAR","length_value"=>32],
+			"mime_type"=>["name"=>"ประเภทไฟล์","type"=>"ENUM","length_value"=>["image/png","image/gif","image/jpeg"]],
 			"modi_date"=>["name"=>"วันปรับปรุง","type"=>"TIMESTAMP",],
 			"n"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
 			"n_wlv"=>["name"=>"จำนวนชั่งตวงวัด","type"=>"FLOAT","length_value"=>[10,4]],
@@ -305,6 +315,7 @@ class main{
 			"skuroot_n"=>["name"=>"รหัสราก","type"=>"CHAR","length_value"=>25],
 			"skuroot1_n"=>["name"=>"จำนวน1","type"=>"INT","length_value"=>10],
 			"skuroot2_n"=>["name"=>"จำนวน2","type"=>"INT","length_value"=>10],
+			"size"=>["name"=>"ขนาด","type"=>"INT","length_value"=>10],
 			"stkey"=>["name"=>"คลังสินค้าอ้างอิง","type"=>"CHAR","length_value"=>25],
 			"stroot"=>["name"=>"คลังสินค้าราก","type"=>"CHAR","length_value"=>25],
 			"stkey_"=>["name"=>"คลังอ้างอิง_","type"=>"CHAR","length_value"=>25],
@@ -330,6 +341,7 @@ class main{
 			"w1"=>["name"=>"สินค้าหลักที่รวม","type"=>"CHAR","length_value"=>25],
 			"w2"=>["name"=>"สินค้าแถมที่รวม","type"=>"CHAR","length_value"=>25],
 			"web"=>["name"=>"เว็บไซต์","type"=>"CHAR","length_value"=>255],
+			"width"=>["name"=>"กว้าง","type"=>"INT","length_value"=>6],
 			
 			"tr"=>["name"=>"ช่วงเวลา","type"=>"INT","length_value"=>10],
 			"bi_c"=>["name"=>"จำนวนแถว bill_in","type"=>"INT","length_value"=>10],

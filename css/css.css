@@ -198,3 +198,7 @@ div.page{margin:2px auto;}
 
 /**/
 .pwlv{font-size:1.5em;}
+
+.fileuploadpre1{display:grid;grid-template-columns:100%;grid-gap:0px;padding:5px 5px;margin:10px auto;height:160px;width:160px;background-image:url('../img/pos/64x64_null.png')}
+.fileuploadpre1 > div {display:inline-block;border:1px dashed gray;}
+.fileuploadpre1 > div >div{background-color:red;color:white;display:block;float:right;width:20px;height:20px;border-radius: 10px 10px 10px 10px;border:1px solid white;line-height:20px;font-size:20px;text-align:center;cursor:pointer}

@@ -646,25 +646,40 @@ class F{
 		str = str.replace(/'/g, "&#039;");
 		return str;
 	}
-	static  fileUploadShow(e) {//-https://stackoverflow.com/questions/30902360/resize-image-before-sending-to-base64-without-using-img-element
+	static  fileUploadShow(e,n,icon_id,max=1920,maxdisplay=116,type="",divuploadpre="") {//-https://stackoverflow.com/questions/30902360/resize-image-before-sending-to-base64-without-using-img-element
 		//document.getElementById("im").src=URL.createObjectURL(e.target.files[0]);
+		let ic=M.id(icon_id)
 		let canvas_id=M.rid()
 		let img_id=M.rid()
 		let div_id=M.rid()
 		let cv=M.ce("canvas",{"id":canvas_id,"width":"50px","height":"50px","style":"display:none"})
-		let dv =M.ce("div",{"id":div_id,"data-canvas_id":canvas_id,"style":"width:116px;height:116px;display:inline-block;border:1px dashed gray;"})
-		let dvl=M.ce("div",{"style":"background-color:red;color:white;display:block;float:right;width:20px;height:20px;border-radius: 10px 10px 10px 10px;border:1px solid white;line-height:20px;font-size:20px;text-align:center;cursor:pointer","title":"ลบออก","onclick":`F.fileUploadDel('${div_id}','${canvas_id}')`})
+		let dv =M.ce("div",{"id":div_id,"data-canvas_id":canvas_id})
+		let dvl=M.ce("div",{"title":"ลบออก","onclick":`F.fileUploadDel(this,'${div_id}','${icon_id}','${canvas_id}')`})
 		//let im=SHPOS.ce("img",{"id":img_id,"width":"120px"})
-		e.target.parentNode.childNodes[1].appendChild(cv)
-		e.target.parentNode.childNodes[1].appendChild(dv)
-			dv.appendChild(dvl)
-				dvl.appendChild(M.cn("\u00D7"))
+		if(e!=null){
+			if(e.target.files[0].type!="image/png"){
+				alert("ไฟล์ที่เลือก ไม่รองรับ สำหรับการเลือก\nไฟล์คุณ "+ e.target.files[0].type)
+				return false
+			}
+			if(n==1){
+				M.rmc_all(e.target.parentNode.childNodes[1])
+			}
+			e.target.parentNode.childNodes[1].appendChild(cv)
+			e.target.parentNode.childNodes[1].appendChild(dv)
+				dv.appendChild(dvl)
+					dvl.appendChild(M.cn("\u00D7"))
+		}else if(type=="load"&&divuploadpre!=""&&M.id(divuploadpre)!=undefined&&ic.value!=""){
+			M.id(divuploadpre).appendChild(cv)
+			M.id(divuploadpre).appendChild(dv)
+				dv.appendChild(dvl)
+					dvl.appendChild(M.cn("\u00D7"))
+		}
 		let canvas=document.getElementById(canvas_id)
 		let ctx=canvas.getContext("2d")
 		let cw=canvas.width
 		let ch=canvas.height
-		let maxW=1920
-		let maxH=1920
+		let maxW=max//1920
+		let maxH=max//1920
 		let img = new Image()
 		img.onload = function() {
 			let iw=img.width
@@ -680,13 +695,18 @@ class F{
 			ctx.imageSmoothingEnabled=true;
 			ctx.imageSmoothingQuality="height";
 			ctx.drawImage(img,0,0,iwScaled,ihScaled)
+			ic.value=canvas.toDataURL()
 			//alert(canvas.toDataURL())
 			//alert(canvas)
 			//document.getElementById("im").src=canvas.toDataURL()
-			setTimeout(F.fileUploadPain,0,div_id,canvas_id)
+			setTimeout(F.fileUploadPain,0,div_id,n,canvas_id,max,maxdisplay)
 		}
-		//document.getElementById(img_id).src=URL.createObjectURL(e.target.files[0]);
-		img.src = URL.createObjectURL(e.target.files[0]);	
+		if(e!=null){
+			//document.getElementById(img_id).src=URL.createObjectURL(e.target.files[0]);
+			img.src = URL.createObjectURL(e.target.files[0]);	
+		}else if(type=="load" && ic.value!=""){
+			img.src = ic.value
+		}
 		//alert(img.src)
 		//document.getElementById(img_id).src=canvas.toDataURL()
 		//setTimeout(F.fileUploadPain,10,div_id,canvas_id)
@@ -694,12 +714,14 @@ class F{
 	
 		//img.src = "https://i.ytimg.com/vi/HLt7Ze-JUPM/hqdefault.jpg?sqp=-oaymwEiCNIBEHZIWvKriqkDFQgBFQAAAAAYASUAAMhCPQCAokN4AQ==&rs=AOn4CLCT1cUDWu32RiYDo8r9qKFv03MENw"
 	}
-	static fileUploadDel(div_id,canvas_id){
+	static fileUploadDel(did,div_id,icon_id,canvas_id){
+		let ic=M.id(icon_id)
+		ic.value=""
 		M.id(div_id).parentNode.removeChild(M.id(div_id))
 		M.id(canvas_id).parentNode.removeChild(M.id(canvas_id))
 	}
-	static fileUploadPain(div_id,canvas_id){
-		alert(document.getElementById(canvas_id).toDataURL())
+	static fileUploadPain(div_id,n,canvas_id,max,maxdisplay){
+		//alert(document.getElementById(canvas_id).toDataURL())
 		//alert(div_id+","+canvas_id)
 		document.getElementById(div_id).style.backgroundImage="url(\""+document.getElementById(canvas_id).toDataURL()+"\")"
 		document.getElementById(div_id).style. backgroundRepeat="no-repeat"
@@ -709,13 +731,13 @@ class F{
 		let hi=document.getElementById(canvas_id).height
 		let h=0
 		let w=0
-		if((wi==1920||hi==1920)
-			||(wi>=116||hi>=116)){
+		if((wi==max||hi==max)
+			||(wi>=maxdisplay||hi>=maxdisplay)){
 			if(wi>=hi){
-				h=116
+				h=maxdisplay
 				w=(wi/hi)*h
 			}else{
-				w=116
+				w=maxdisplay
 				h=(hi/wi)*w
 			}
 		}else{
