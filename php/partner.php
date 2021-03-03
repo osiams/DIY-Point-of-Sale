@@ -232,61 +232,74 @@ class partner extends main{
 	}
 	protected function regisPartner():void{
 		$error="";
+		$img=["result"=>false];
+		$mime="";
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
-			//$_POST["tell"]="6";
-			$se=$this->checkSet("partner",["post"=>["name","brand_name","sku","tax","pn_type","od_type","tp_type","tel","fax","web","no","alley","road","distric","country","province","post_no"]],"post");
-			//print_r($se);
+			$se=$this->checkSet("partner",["post"=>["name","brand_name","sku","tax","pn_type","od_type","tp_type","tel","fax","web","no","alley","road","distric","country","province","post_no","note"]],"post");
+			if(isset($_POST["icon"])&&$_POST["icon"]!=""){
+				$img=$this->img->imgCheck("icon");
+				if($img["result"]==false&&$se["result"]){
+					$se["result"]=false;
+					$se["message_error"]=$img["message_error"];
+				}
+				if($img["result"]){
+					$a=explode("/",$img["mime"]);
+					$mime=$a[1];
+				}
+				//$this->img->imgSave($se,"123456789gdgdfd");
+			}
 			if(!$se["result"]){
 				$error=$se["message_error"];
-			}/*else{
-				 $qe=$this->regisPartnerInsert();
+			}else{
+				$key=$this->key("key",7);
+				 $qe=$this->regisPartnerInsert($key,$mime);
 				if(!$qe["result"]){
 					$error=$qe["message_error"];
 				}else if($qe["data"]["result"][0]["result"]==0){
 					$error=$qe["data"]["result"][0]["message_error"];
 				}else if($qe["data"]["result"][0]["result"]==1){
-					 //print_r($qe);
-					header('Location:?a='.$this->a.'&d='.$this->group_deep.'&parent='.$this->parent.'&ed='.$qe["data"]["result"][0]["sku_root"]);
+					if($img["result"]){
+						$this->img->imgSave($img,$key);
+					}
+					header('Location:?a='.$this->a.'&ed='.$key);
 				}
 			}
 			if($error!=""){
 				$this->regisPartnerPage($error);
-			}*/
-			$this->regisPartnerPage($error);
+			}
 		}else{
 			$this->regisPartnerPage($error);
 		}
 	}
-	private function xxxxxxxxxxxxxxxxxxregisGroupInsert():array{
+	private function regisPartnerInsert(string $keyi,string $mime=""):array{
 		//print_r($this->dn_value);exit;
 		$name=$this->getStringSqlSet($_POST["name"]);
+		$brand_name=$this->getStringSqlSet($_POST["brand_name"]);
+		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
 		$sku=$this->getStringSqlSet($_POST["sku"]);
-		$prop = $this->getStringSqlSet($this->setPropR($_POST["prop"]));
-		$skuk=$this->key("key",7);
-		$sku_root=$this->getStringSqlSet($skuk);
+		$tax=$this->getStringSqlSet($_POST["tax"]);
+		$tel=$this->getStringSqlSet($_POST["tel"]);
+		$fax=$this->getStringSqlSet($_POST["fax"]);
+		$web=$this->getStringSqlSet($_POST["web"]);
+		$pn_type = $this->getStringSqlSet($_POST["pn_type"]);
+		$tp_type = $this->getStringSqlSet($_POST["tp_type"]);
+		$od_type = $this->getStringSqlSet($_POST["od_type"]);
+		$no=$this->getStringSqlSet($_POST["no"]);
+		$alley=$this->getStringSqlSet($_POST["alley"]);
+		$road=$this->getStringSqlSet($_POST["road"]);
+		$distric=$this->getStringSqlSet($_POST["distric"]);
+		$country=$this->getStringSqlSet($_POST["country"]);
+		$province=$this->getStringSqlSet($_POST["province"]);
+		$post_no=$this->getStringSqlSet($_POST["post_no"]);
+		$note=$this->getStringSqlSet($_POST["note"]);
+		$key=$keyi;
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
 			@message_error:='',
-			@sku_root:=".$sku_root.",";
-			for($i=1;$i<=count($this->dn_value);$i++){
-				if($this->dn_value["d".$i] !== NULL){
-					$sql["set"].="@d".$i.":=\"".$this->dn_value["d".$i]."\",";
-				}else{
-					if($i == $this->group_deep){
-						$sql["set"].="@d".$i.":=".$sku_root.",";
-					}else{
-						$sql["set"].="@d".$i.":=NULL,";
-					}
-				}
-			}
-			$wc_tx = " `d".($this->group_deep-1)."` = \"".$this->parent."\" AND `d".($this->group_deep)."` IS NOT NULL AND `d".($this->group_deep+1)."` IS  NULL AND ";
-			if($this->group_deep == 1){
-				$wc_tx="`d2` IS NULL AND ";
-			}else if($this->group_deep >=$this->d_cols ){
-				$wc_tx = " `d".($this->group_deep-1)."` = \"".$this->parent."\" AND `d".($this->group_deep)."` IS NOT NULL AND ";
-			}
-			$sql["set"].="@count_name:=(SELECT COUNT(`id`)  FROM `group` WHERE ".$wc_tx." `name`=".$name." AND `sku_root` !=".$sku_root."),
-			@count_sku:=(SELECT COUNT(`id`)   FROM `group` WHERE `sku`=".$sku.");
+			@sku_key:='".$key."',
+			@icon:=".($icon!=""?"'".$key."".($mime!=""?".".$mime:"")."'":"NULL").",
+			@count_name:=(SELECT COUNT(`id`)  FROM `partner` WHERE `name`=".$name."),
+			@count_sku:=(SELECT COUNT(`id`)   FROM `partner` WHERE `sku`=".$sku.");
 		";
 		$sql["check"]="
 			IF @count_name > 0 THEN 
@@ -295,24 +308,28 @@ class partner extends main{
 				SET @message_error='เกิดขอผิดพลาด รหัสภายในที่ส่งมา มีแล้ว โปรดลอง รหัสภายในอื่น';
 			END IF;			
 		";
-		$d_tx = "";
-		$w_tx = "";
-		for($i=1;$i<=count($this->dn_value);$i++){
-			$d_tx.=",`d".$i."`";
-			$w_tx.=",@d".$i."";
-		}
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
-				INSERT INTO `group`  (`sku`,`sku_key`,`sku_root`".$d_tx.",`name`,`prop`) 
-				VALUES (".$sku.",".$sku_root.",".$sku_root."".$w_tx.",".$name.",".$prop.");
+				INSERT INTO `partner`  (
+					`sku`			,`sku_key`		,`sku_root`		,`brand_name`		,`name`,
+					`pn_type`		,`icon`				,`no`				,`alley`					,`road`,
+					`distric`		,`country`			,`province`		,`post_no`			,`tel`,
+					`fax`			,`tax`				,`web`				,`tp_type`				,`od_type`,
+					`note`
+				) VALUES (
+					".$sku."			,@sku_key			,@sku_key			,".$brand_name."	,".$name.",
+					".$pn_type."	,@icon				,".$no."				,".$alley."				,".$road.",
+					".$distric."		,".$country."		,".$province."		,".$post_no."			,".$tel.",
+					".$fax."			,".$tax."			,".$web."			,".$tp_type."			,".$od_type.",
+					".$note."
+				);
 				SET @result=1;
 			END IF;
 		";
-		//print_r($sql);exit;
-		$sql["ref"]=$this->ref("group","sku_key",$skuk);
-		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@sku_root AS `sku_root`";
+		$sql["ref"]=$this->ref("partner","sku_key",$key);
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`";
 		$se=$this->metMnSql($sql,["result"]);
-		
+		print_r($sql);
 		return $se;
 	}
 	protected function xxxxxxxxxxxxxxxxsetPropR(string $prop):string{
@@ -330,7 +347,7 @@ class partner extends main{
 		}
 		//echo $this->propToFromValue(json_encode($this->group_list[$this->parent]["prop"]));
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
-		$icon=(isset($_POST["icon"]))?htmlspecialchars($_POST["icon"]):"";
+		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
 		$brand_name=(isset($_POST["brand_name"]))?htmlspecialchars($_POST["brand_name"]):"";
 		$sku=(isset($_POST["sku"]))?htmlspecialchars($_POST["sku"]):"";
 		$tax=(isset($_POST["tax"]))?htmlspecialchars($_POST["tax"]):"";
@@ -347,6 +364,7 @@ class partner extends main{
 		$country=(isset($_POST["country"]))?htmlspecialchars($_POST["country"]):"";
 		$province=(isset($_POST["province"]))?htmlspecialchars($_POST["province"]):"";
 		$post_no=(isset($_POST["post_no"]))?htmlspecialchars($_POST["post_no"]):"";
+		$note=(isset($_POST["note"]))?htmlspecialchars($_POST["note"]):"";
 		$this->addDir("","เพิ่มคู่ค้า");
 		$this->pageHead(["title"=>"เพิ่มคู่ค้า DIYPOS","js"=>["partner","Pn"],"run"=>["Pn"],"css"=>["partner"]]);
 		echo '<div class="content">
@@ -412,6 +430,8 @@ class partner extends main{
 			<div><input id="province" type="text" value="'.$province.'"  name="province" autocomplete="off"  /></div>
 			<p><label for="post_no">รหัสไปรษณี</label></p>
 			<div><input id="post_no" type="text" value="'.$post_no.'"  name="post_no" autocomplete="off"  /></div>
+			<p><label for="note">รายละเอียดย่อ</label></p>
+			<div><input id="note" type="text" value="'.$note.'"  name="note" autocomplete="off"  /></div>
 			<div>
 				<div id="div_fileuploadpre" class="fileuploadpre1"></div>
 				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg" style="display:none" name="picture" onchange="F.fileUploadShow(event,1,\'icon_id\',1024,160)" />
@@ -470,12 +490,12 @@ class partner extends main{
 			}
 			$cm=($i%2!=0)?" class=\"i2\"":"";
 			echo '<tr'.$cm.'><td class="r">'.($i+1).'.</td>
+				<td class="l"><img src="img/gallery/64x64_'.$se[$i]["icon"].'"  width="48" onerror="M.le(event)" /></td>
 				<td class="l">'.$se[$i]["sku"].'</td>
-				<td class="l"><a href="?a='.$this->a.'&amp;d='.($this->group_deep+1).'&amp;parent='.$se[$i]["sku_root"].'">'.htmlspecialchars($se[$i]["name"]).'</a></td>
-				<td class="l">'.$this->getNamePropList($se[$i]["prop"]).'</td>
+				<td class="l"><a href="?a='.$this->a.'">'.htmlspecialchars($se[$i]["name"]).'</a></td>
 				<td class="action">
-					<a onclick="Gp.edit(\''.$se[$i]["sku_root"].'\','.($this->group_deep+1).',\''.$this->parent.'\')" title="แก้ไข">📝</a>
-					<a onclick="Gp.delete(\''.$se[$i]["sku_root"].'\',\''.htmlspecialchars($se[$i]["name"]).'\','.($this->group_deep+1).',\''.$this->parent.'\')" title="ทิ้ง">🗑</a>
+					<a onclick="Pn.edit(\''.$se[$i]["sku_root"].'\')" title="แก้ไข">📝</a>
+					<a onclick="Pn.delete(\''.$se[$i]["sku_root"].'\',\''.htmlspecialchars($se[$i]["name"]).'\')" title="ทิ้ง">🗑</a>
 					'.$ed.'
 					</td>
 				</tr>';

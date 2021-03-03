@@ -118,7 +118,7 @@ class main{
 			"partner_ref"=>[
 				"name"=>"partner_ref",
 				"column"=>["id","sku","sku_key","sku_root",
-				"brand_name","name","pn_type","brand_icon","icon",
+				"brand_name","name","pn_type","icon",
 				"no","alley","road","distric","country",
 				"province","post_no",
 				"tel","fax","tax","web","tp_type",
@@ -234,7 +234,6 @@ class main{
 			"bill_in_list_id"=>["name"=>"ที่นำเขา","type"=>"INT","length_value"=>10],
 			"bill_in_sku"=>["name"=>"รหัสภายในใบนำเข้าสินค้า","type"=>"CHAR","length_value"=>25],
 			"brand_name"=>["name"=>"ชื่อการค้า","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
-			"brand_icon"=>["name"=>"รูปเครื่องหมายการค้า","type"=>"CHAR","length_value"=>255],
 			//--0=เงินม1=สินค้าตัวเดิม
 			"changto"=>["name"=>"เปลี่ยนเป็น","type"=>"ENUM","length_value"=>["0","1"]],
 			//"barcode1"=>["name"=>"รหัสแท่งย่อยสุด1","type"=>"CHAR","length_value"=>80],
@@ -583,7 +582,7 @@ class main{
 						$re["message_error"]="ข้อมูล \"".$nm."\"  ต้องไม่ว่าง" ;
 						break;
 					}else if(strlen(trim($ry))>0){
-						$name=["name","brand_name","no","alley","road","distric","country","province"];
+						$name=["name","brand_name","no","alley","road","distric","country","province","note"];
 						$sku=["sku","unit"];
 						$tax=["tax","tel","fax","post_no"];
 						$url=["web"];

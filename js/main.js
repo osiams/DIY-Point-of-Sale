@@ -16,6 +16,9 @@ class main{
 	run(){
 		this.cookie_set_data()
 	}
+	le(e,square=64){
+		e.target.src="img/pos/"+square+"x"+square+"_null.png"
+	}
 	l(a){console.log(a)}
 	id(a){if(a){return document.getElementById(a)}}
 	ce(tagName,attribute){let a=document.createElement(tagName);for (let key in attribute){a.setAttribute(key,attribute[key])}return a}

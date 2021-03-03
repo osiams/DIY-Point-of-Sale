@@ -22,24 +22,28 @@ class image{
 			"result"=>false
 		);
 		$a=explode(";",$_POST[$icon_name]);
-		$b=explode(",",$a[1]);
+		$b=[];
+		if(isset($a[1])){
+			$b=explode(",",$a[1]);
+		}
 		if(isset($b[1])){
 			$re["size"]=(int) (strlen(rtrim($b[1], '=')) * 3 / 4);
+			$p=getimagesize($_POST[$icon_name]);
+			$re["width"]=$p[0];
+			$re["height"]=$p[1];
+			$re["mime"]=$p["mime"];
+			$re["file"]=$_POST[$icon_name];
+			if($re["width"]>0&&$re["height"]>0){
+				if($re["mime"]=="image/png"||$re["mime"]=="image/gif"||$re["mime"]=="image/jpeg"){
+					$re["result"]=true;
+				}else{
+					$re["message_error"]="เกิดข้อผิดพลาดเกี่ยวกับ ข้อมูล รูป";
+				}
+			}			
 		}else{
 			$re["message_error"]="เกิดข้อผิดพลาดเกี่ยวกับ ข้อมูล รูป";
 		}
-		$p=getimagesize($_POST[$icon_name]);
-		$re["width"]=$p[0];
-		$re["height"]=$p[1];
-		$re["mime"]=$p["mime"];
-		$re["file"]=$_POST[$icon_name];
-		if($re["width"]>0&&$re["height"]>0){
-			if($re["mime"]=="image/png"||$re["mime"]=="image/gif"||$re["mime"]=="image/jpeg"){
-				$re["result"]=true;
-			}else{
-				$re["message_error"]="เกิดข้อผิดพลาดเกี่ยวกับ ข้อมูล รูป";
-			}
-		}
+
 		return $re;
 	}
 	public function imgSave(array $dt,string $sku_key):array{
