@@ -7,6 +7,7 @@ class main{
 		$this->cf=["server"=>CF["server"],"database"=>CF["database"],"user"=>CF["user"],"password"=>CF["password"],"userceo"=>CF["userceo"]];
 		$this->pem=PEM;
 		$this->user_ceo=isset($_SESSION["userceo"])?$_SESSION["userceo"]:-1;
+		$this->gallery_dir=dirname(__DIR__)."/img/gallery";
 		$this->re=[
 			"connect"=>false,
 			"connect_error"=>"",

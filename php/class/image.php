@@ -43,7 +43,6 @@ class image{
 		}else{
 			$re["message_error"]="เกิดข้อผิดพลาดเกี่ยวกับ ข้อมูล รูป";
 		}
-
 		return $re;
 	}
 	public function imgSave(array $dt,string $sku_key):array{
@@ -51,15 +50,22 @@ class image{
 			"result"=>false
 		);
 		if($dt["result"]){
+			//print_r($dt);exit;
 			//--รูปที่ปรับขนาดรูป
 			$original=null;
 			if($dt["mime"]=="image/png"){
 				$original = imagecreatefrompng($dt["file"]);
+				$target_file=$this->dir."/".$sku_key.".".$this->dot[$dt["mime"]];
+				imagesavealpha($original, true);
+				imagepng($original, $target_file,9);
 			}else if($dt["type"]==3){
+				
 				$original = imagecreatefromjpeg($dt["tmp_name"]);
+				
 			}else if($dt["type"]==1){
 				$original = imagecreatefromgif($dt["tmp_name"]);
-			}			
+			}	
+					
 			for($i=0;$i<count($dt["squar"]);$i++){
 				$target_file=$this->dir."/".$dt["squar"][$i]."x".$dt["squar"][$i]."_".$sku_key.".".$this->dot[$dt["mime"]];
 				//echo $target_file;

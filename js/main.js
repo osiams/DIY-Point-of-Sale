@@ -649,18 +649,21 @@ class F{
 		str = str.replace(/'/g, "&#039;");
 		return str;
 	}
-	static  fileUploadShow(e,n,icon_id,max=1920,maxdisplay=116,type="",divuploadpre="") {//-https://stackoverflow.com/questions/30902360/resize-image-before-sending-to-base64-without-using-img-element
+	static  fileUploadShow(e,n,icon_id,max=1920,maxdisplay=116,type="",divuploadpre="",icon_load_id=null) {//-https://stackoverflow.com/questions/30902360/resize-image-before-sending-to-base64-without-using-img-element
 		//document.getElementById("im").src=URL.createObjectURL(e.target.files[0]);
 		let ic=M.id(icon_id)
+		if(icon_load_id!=null){
+			ic=M.id(icon_load_id)
+		}
 		let canvas_id=M.rid()
 		let img_id=M.rid()
 		let div_id=M.rid()
 		let cv=M.ce("canvas",{"id":canvas_id,"width":"50px","height":"50px","style":"display:none"})
 		let dv =M.ce("div",{"id":div_id,"data-canvas_id":canvas_id})
-		let dvl=M.ce("div",{"title":"ลบออก","onclick":`F.fileUploadDel(this,'${div_id}','${icon_id}','${canvas_id}')`})
+		let dvl=M.ce("div",{"title":"ลบออก","onclick":`F.fileUploadDel(this,'${div_id}','${ic.id}','${canvas_id}')`})
 		//let im=SHPOS.ce("img",{"id":img_id,"width":"120px"})
 		if(e!=null){
-			if(e.target.files[0].type!="image/png"){
+			if(e.target.files[0].type!="image/png"&&e.target.files[0].type!="image/jpeg"&&e.target.files[0].type!="image/gif"&&e.target.files[0].type!="image/webp"){
 				alert("ไฟล์ที่เลือก ไม่รองรับ สำหรับการเลือก\nไฟล์คุณ "+ e.target.files[0].type)
 				return false
 			}
@@ -677,6 +680,7 @@ class F{
 				dv.appendChild(dvl)
 					dvl.appendChild(M.cn("\u00D7"))
 		}
+		//alert(ic.value)
 		let canvas=document.getElementById(canvas_id)
 		let ctx=canvas.getContext("2d")
 		let cw=canvas.width
