@@ -3,9 +3,7 @@ class partner extends main{
 	private  $d_cols;
 	public function __construct(){
 		parent::__construct();
-		$file = "php/class/image.php";
-		require($file);
-		$this->img=new image($this->gallery_dir);
+		$this->img=null;
 		$this->title = "คู่ค้า";
 		$this->a = "partner";
 		$this->pn_type = ["s"=>"ผู้ผลิต","n"=>"ตัวแทนจำหน่าย"];
@@ -15,8 +13,11 @@ class partner extends main{
 		$this->page=1;
 	}
 	public function run(){
+		$file = "php/class/image.php";
+		require($file);		
+		$this->img=new image($this->gallery_dir);		
 		$this->page=$this->setPageR();
-		$q=["regis","edit","delete"];
+		$q=["regis","edit","delete","details"];
 		$this->addDir("?a=".$this->a,$this->title);
 		if(isset($_GET["b"])&&in_array($_GET["b"],$q)){
 			$t=$_GET["b"];
@@ -26,6 +27,13 @@ class partner extends main{
 				$this->editPartner();
 			}else if($t=="delete"){
 				$this->deletePartner();
+			}else if($t=="details"){
+				if(isset($_GET["sku_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku_root"])){
+					require("php/partner_details.php");
+					(new partner_details($_GET["sku_root"]))->run();
+				}else{
+					$this->pagePartner();
+				}
 			}
 		}else{
 			$this->pagePartner();
@@ -330,14 +338,6 @@ class partner extends main{
 		}
 		return [];
 	}
-	private function img2Base64(string $file):string{
-		$re="";
-		$imagedata = file_get_contents($file);
-		if(strlen(trim($file))>0){
-			$re = "data: ".mime_content_type($file).";base64,".base64_encode($imagedata);
-		}
-		return $re;
-	}
 	private function editPartnerSetCurent(string $sku_root):void{
 		$od=$this->editPartnerOldData($sku_root);
 		$fl=["sku","name","brand_name","pn_type","icon_load",
@@ -637,9 +637,9 @@ class partner extends main{
 			$cm=($i%2!=0)?" class=\"i2\"":"";
 			$sn=strlen(trim($se[$i]["sku"]))>0?substr(trim($se[$i]["sku"]),0,15):(mb_substr(trim($se[$i]["name"]),0,15));
 			echo '<tr'.$cm.'><td class="r">'.($se[$i]["id"]).'</td>
-				<td class="l"><div class="img48"><img src="img/gallery/64x64_'.$se[$i]["icon"].'"  alt="'.$sn.'" onerror="/*M.le(event)*/" /></div></td>
+				<td class="l"><div class="img48"><img src="img/gallery/64x64_'.$se[$i]["icon"].'"  alt="'.$sn.'" /></div></td>
 				<td class="l">'.$se[$i]["sku"].'</td>
-				<td class="l"><a href="?a='.$this->a.'">'.htmlspecialchars($se[$i]["name"]).'</a></td>
+				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.htmlspecialchars($se[$i]["name"]).'</a></td>
 				<td class="action">
 					<a onclick="Pn.edit(\''.$se[$i]["sku_root"].'\')" title="แก้ไข">📝</a>
 					<a onclick="Pn.delete(\''.$se[$i]["sku_root"].'\',\''.htmlspecialchars($se[$i]["name"]).'\')" title="ทิ้ง">🗑</a>

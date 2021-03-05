@@ -66,11 +66,12 @@ form >  fieldset  >  div{direction:ltr;text-align:left;}
 .blue{color:blue;}
 .darkgoldenrod{color:DarkGoldenRod}
 .saddlebrown{color:SaddleBrown;}
-.img48{width:48px;height:48px;display:grid;align-content:center;justify-content;text-align:center;font-size:1em;word-break: break-all;}
+.img48{width:48px;height:48px;display:grid;align-content:center;justify-content:center;font-size:1em;word-break: break-all;}
 .img48 > img{max-height:48px;max-width:48px;}
 .size11{font-size:11px}
 .size12{font-size:12px}
 .size14{font-size:14px}
+.radius3{border-radius: 3px 3px 3px 3px;}
 
 .ti20{text-indent: 20px;}
 

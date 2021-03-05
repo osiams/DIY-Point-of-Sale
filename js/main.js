@@ -728,8 +728,6 @@ class F{
 		M.id(canvas_id).parentNode.removeChild(M.id(canvas_id))
 	}
 	static fileUploadPain(div_id,n,canvas_id,max,maxdisplay){
-		//alert(document.getElementById(canvas_id).toDataURL())
-		//alert(div_id+","+canvas_id)
 		document.getElementById(div_id).style.backgroundImage="url(\""+document.getElementById(canvas_id).toDataURL()+"\")"
 		document.getElementById(div_id).style. backgroundRepeat="no-repeat"
 		document.getElementById(div_id).style.backgroundPosition="center center"

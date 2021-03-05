@@ -815,5 +815,16 @@ class main{
 		}
 		return $re;
 	}
+	protected function img2Base64(string $file):string{
+		$re="";
+		if(!file_exists($file)){
+			$file="img/pos/64x64_null.png";
+		}
+		$imagedata = file_get_contents($file);
+		if(strlen(trim($file))>0){
+			$re = "data: ".mime_content_type($file).";base64,".base64_encode($imagedata);
+		}
+		return $re;
+	}
 }
 ?>

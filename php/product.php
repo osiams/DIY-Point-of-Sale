@@ -15,6 +15,8 @@ class product extends main{
 		$this->fl="";
 		$this->lid=0;
 		$this->sh="";
+		
+		$this->form_pn=null;
 	}
 	public function run(){
 		$this->page=$this->setPageR();
@@ -24,6 +26,11 @@ class product extends main{
 			$t=$_GET["b"];
 			if($t == "regis" ||$t == "edit"){
 				$this->loadGroupAndProp();				
+			}
+			if($t=="regis"||$t=="edit"){
+				$file = "php/class/form_selects.php";
+				require($file);		
+				$this->form_pn=new form_selects("partner","คู่ค้า",$this->key("key",7));		
 			}
 			if($t=="regis"){
 				$this->regisProduct();
@@ -362,6 +369,12 @@ class product extends main{
 							<div><select id="product_regis_unit" name="unit">';
 							$this->writeSelectOption("unit",$unit,$s_type);
 			echo '</select></div>';		
+			
+			echo '<p><label for="product_regis_cost">คู่ค้า</label></p>
+				<div>';
+			$this->form_pn->writeForm();
+			echo '</div>';
+			
 			echo '<p><label for="product_regis_unit">กลุ่ม</label></p>
 							<div>';
 							$this->group_->writeSelectGroup($group);
@@ -549,6 +562,12 @@ class product extends main{
 							<div><select id="product_regis_unit" name="unit">';
 							$this->writeSelectOption("unit",$unit,$s_type);
 			echo '</select></div>';	
+			
+			echo '<p><label for="product_regis_cost">คู่ค้า</label></p>
+				<div>';
+			$this->form_pn->writeForm();
+			echo '</div>';
+			
 			echo '<p><label for="product_regis_unit">กลุ่ม</label></p>
 							<div>';
 							$this->group_->writeSelectGroup($group);
