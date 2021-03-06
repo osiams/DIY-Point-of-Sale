@@ -687,7 +687,7 @@ class partner extends main{
 		}
 		return $t;
 	}
-	private function getAllPartner():array{
+	public function getAllPartner():array{
 		$re=[];
 		$sql=[];
 		$sql["count"]="SELECT COUNT(*) AS `count`  FROM `partner`";

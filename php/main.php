@@ -516,7 +516,12 @@ class main{
 		$re="";
 		if(isset($data["js"])){
 			for($i=0;$i<count($data["js"]);$i+=2){
-				$re.="let ".$data["js"][$i+1]."=new ".$data["js"][$i]."();";
+				$job=$data["js"][$i];
+				$a=explode("/",$data["js"][$i]);
+				if(count($a)>1){
+					$job=$a[count($a)-1];
+				}
+				$re.="let ".$data["js"][$i+1]."=new ".$job."(M);";
 			}
 		}
 		$re.="M.run();";

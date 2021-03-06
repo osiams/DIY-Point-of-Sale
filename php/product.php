@@ -28,9 +28,8 @@ class product extends main{
 				$this->loadGroupAndProp();				
 			}
 			if($t=="regis"||$t=="edit"){
-				$file = "php/class/form_selects.php";
-				require($file);		
-				$this->form_pn=new form_selects("partner","คู่ค้า",$this->key("key",7));		
+				$file = "php/form_selects.php";
+				require($file);			
 			}
 			if($t=="regis"){
 				$this->regisProduct();
@@ -538,15 +537,16 @@ class product extends main{
 			}
 		}
 		$this->addDir("?a=product&amp;b=regis","ลงทะเบียนสินค้า");
-		$this->pageHead(["title"=>"ลงทะเบียนสินค้า DIYPOS","js"=>["product","Pd"]]);
+		$this->pageHead(["title"=>"ลงทะเบียนสินค้า DIYPOS","js"=>["product","Pd","form_selects","Fsl"],"css"=>["form_selects"]]);
 			echo '<div class="content">
 				<div class="form">
 					<h1 class="c">ลงทะเบียนสินค้า</h1>';
 		if($error!=""){
 			echo '<div class="error">'.$error.'</div>';
 		}		
-		echo '			<form  id="product_regisq" method="post" action="">
+		echo '			<form  id="product_regisq" name="regis_product" method="post" action="">
 						<input type="hidden" name="submitt" value="clicksubmit" />
+						<input type="hidden" name="partner_list" value="" />
 						<p><label for="product_regis_name">ชื่อสินค้า</label></p>
 						<div><input id="product_regis_name" type="text" name="name" value="'.$name.'" class="want" /></div>
 						<p><label for="product_regis_barcode">รหัสแท่ง</label></p>
@@ -565,7 +565,8 @@ class product extends main{
 			
 			echo '<p><label for="product_regis_cost">คู่ค้า</label></p>
 				<div>';
-			$this->form_pn->writeForm();
+			$this->form_pn=new form_selects("partner","คู่ค้า","regis_product",$this->key("key",7));	
+			$this->form_pn->writeForm("regis_product");
 			echo '</div>';
 			
 			echo '<p><label for="product_regis_unit">กลุ่ม</label></p>
