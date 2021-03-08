@@ -537,7 +537,7 @@ class product extends main{
 			}
 		}
 		$this->addDir("?a=product&amp;b=regis","ลงทะเบียนสินค้า");
-		$this->pageHead(["title"=>"ลงทะเบียนสินค้า DIYPOS","js"=>["product","Pd","form_selects","Fsl"],"css"=>["form_selects"]]);
+		$this->pageHead(["title"=>"ลงทะเบียนสินค้า DIYPOS","js"=>["product","Pd","form_selects","Fsl"],"run"=>["Fsl"],"css"=>["form_selects"]]);
 			echo '<div class="content">
 				<div class="form">
 					<h1 class="c">ลงทะเบียนสินค้า</h1>';

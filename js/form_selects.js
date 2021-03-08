@@ -4,6 +4,9 @@ class form_selects{
 		this.main=main
 		this.partner={}
 	}
+	run(){
+
+	}
 	ctAddPartner(form_name,display_id){
 		this.partner[display_id]={}
 		let partner_list=document.forms[form_name]["partner_list"].value
@@ -59,8 +62,7 @@ class form_selects{
 			let ct1 = this.main.ce("div",{"id":"ct1_partner_"+display_id})
 		this.main.end(ct,[ct0,ct1])	
 		let bts = [
-			{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"')"},
-			{"value":"⬅ เลือกเพิ่ม","style":"display:none","id":"bt_back_select_"+display_id,"onclick":"Fsl.backSelectPartner(this,'"+display_id+"')"},
+			{"value":"⬅ เลือกเพิ่ม","style":"visibility:hidden","id":"bt_back_select_"+display_id,"onclick":"Fsl.backSelectPartner(this,'"+display_id+"')"},
 			{"value":"ดูที่เลือก (0)","id":"bt_select_n_"+display_id,"onclick":"Fsl.viewSlectedPartner(this,'"+display_id+"')"}
 		]
 		M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":"เลือกคู่ค้า","width":"250"})
@@ -87,15 +89,80 @@ class form_selects{
 	}
 	viewSlectedPartner(did,display_id){
 		this.main.id("ct0_partner_"+display_id).style.display="none"
-		this.main.id("bt_back_select_"+display_id).style.display="inline-block"
+		this.main.id("ct1_partner_"+display_id).style.display="block"
+		this.viewPartnerSlected(did,display_id)
+		this.main.id("bt_back_select_"+display_id).style.visibility="visible"
 		did.value="ยืนยันที่เลือก"
 		did.parentNode.parentNode.click()
 	}
 	backSelectPartner(did,display_id){
 		this.main.id("ct0_partner_"+display_id).style.display="block"
 		this.main.id("ct1_partner_"+display_id).style.display="none"
-		did.style.display="none"
+		did.style.visibility="hidden"
 		let count=Object.keys(this.partner[display_id]).length
 		this.main.id("bt_select_n_"+display_id).value="ดูที่เลือก ("+count+")"
+	}
+	viewPartnerSlected(did,display_id){
+		let ct=this.main.id("ct1_partner_"+display_id)
+		this.main.rmc_all(ct)
+		let i=-1
+		for (let prop in this.partner[display_id]) {
+			i=i+1
+			let d1 = this.main.ce("div",{"class":"selected_list_partner"})
+				let d2 = this.main.ce("div",{"data-sku_root":prop,"id":"select_at_"+i,"class":"i"+((i%2)+1)})
+					let div_at=this.main.ce("div",{})
+					this.main.end(div_at,[this.main.cn(i+1)])	
+					let div_img=this.main.ce("div",{"class":"img32"})
+						let img=this.main.ce("img",{"src":"img/gallery/32x32_"+this.partner[display_id][prop]["icon"],"alt":this.partner[display_id][prop]["name"],"onerror":"this.src='img/pos/64x64_null.png'"})	
+					this.main.end(div_img,[img])	
+					let div_name=this.main.ce("div",{})
+					this.main.end(div_name,[this.main.cn(this.partner[display_id][prop]["name"])])	
+					let div_move=this.main.ce("div",{"onclick":"Fsl.selectPartnerMove(this,'"+display_id+"',"+i+")"})
+					this.main.end(div_move,[this.main.cn("⇅")])
+					let div_del=this.main.ce("div",{"title":"ลบออก"})
+					this.main.end(div_del,[this.main.cn("×")])	
+				this.main.end(d2,[div_at,div_img,div_name,div_move,div_del])	
+			this.main.end(d1,[d2])	
+			this.main.end(ct,[d1])	
+		}
+	}
+	selectPartnerMove(did,display_id,index){
+		let a=this.main.id("ct1_partner_"+display_id)
+		for(let i=0;i<a.childNodes.length;i++){
+			let b=a.childNodes[i].childNodes[0].childNodes[3]
+			if(i!=index){
+				b.innerHTML="🚩"
+				b.style.backgroundColor="LightGreen"
+				b.setAttribute("onclick","Fsl.selectPartnerMoveSet(this,'"+display_id+"',"+index+","+i+")")
+				b.onmouseover=()=>{}
+				b.onmouseout=()=>{}
+			}
+		}
+	}
+	selectPartnerMoveSet(did,display_id,index_from,index_to){
+		let no={}//Object.assign({}, this.partner[display_id])
+		
+		let a=this.main.id("ct1_partner_"+display_id)
+		let newnode=a.childNodes[index_from].cloneNode(true);
+		a.insertBefore(newnode, a.childNodes[index_to])
+		if(index_to<index_from){
+			a.removeChild(a.childNodes[index_from+1])
+		}else{
+			a.removeChild(a.childNodes[index_from])
+		}		
+		for(let i=0;i<a.childNodes.length;i++){
+			let k=a.childNodes[i].childNodes[0].getAttribute("data-sku_root")
+			console.log(k)
+			no[k]=this.partner[display_id][k]
+			let b=a.childNodes[i].childNodes[0].childNodes[3]
+			a.childNodes[i].childNodes[0].childNodes[0].innerHTML=i+1
+			b.innerHTML="⇅"
+			b.style.backgroundColor="gray"
+			b.setAttribute("onclick","Fsl.selectPartnerMove(this,'"+display_id+"',"+i+")")
+			b.onmouseover=()=>{b.style.backgroundColor="orange"}
+			b.onmouseout=()=>{b.style.backgroundColor="gray"}
+		}
+		this.partner[display_id]=no
+
 	}
 }

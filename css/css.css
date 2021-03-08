@@ -169,7 +169,10 @@ div.page{margin:2px auto;}
 /*dialog*/
 .dialog{display:grid;grid-template-rows:30px auto 46px;position:absolute;border:1px solid gray;background-color:#eeeeee;
 	border-radius: 8px 8px 0px 8px;box-shadow:10px 10px 10px 0px rgba(0,0,0,0.5);resize: both;overflow: hidden;transition-duration:0.3s}
-.dialog > div:nth-child(1){display:grid;align-content: center;justify-content: start;height:100%;padding:0px 3px;font-weight:bold;white-space: nowrap;background-color:#dddddd;}
+.dialog > div:nth-child(1){display:grid;grid-template-columns:auto 30px;background-color:#dddddd;}
+.dialog > div:nth-child(1) >div:nth-child(1){display:grid;align-content: center;justify-content: start;height:100%;padding:0px 3px;font-weight:bold;white-space: nowrap;}
+.dialog > div:nth-child(1) >div:nth-child(2){display:grid;align-content: center;justify-content: center;font-weight:bold;cursor:pointer;border-radius: 12px 12px 12px 12px;width:24px;height:24px;margin:3px;}
+.dialog > div:nth-child(1) >div:nth-child(2):hover{background-color:red;color:white;}
 .dialog > div:nth-child(2){padding:3px;overflow:auto;}
 .dialog > div:nth-child(3){text-align:right;height:100%;padding:8px 3px 0px 3px;background-color:#eeeeee;}
 .dialog > div:nth-child(3) > div{display:inline-block;text-align:right;height:100%;padding:0px;white-space: nowrap;}

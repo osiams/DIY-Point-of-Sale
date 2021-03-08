@@ -4,3 +4,12 @@
 .selects_list_partner > div > div:nth-child(2){text-align:center;width:48px;overflow:hidden;}
 .selects_list_partner > div > label:nth-child(3){text-align:left;cursor:pointer}
 .selects_list_partner > div > div:nth-child(4){display:grid;align-content: center;justify-content: center;height:30px;width:30px;background-color:gray;color:white;cursor:pointer;border-radius: 15px 15px 15px 15px;margin:0 auto;}
+.selects_list_partner > div > div:nth-child(4):hover{background-color:green;}
+.selected_list_partner{width:100%;user-select:none;}
+.selected_list_partner > div{display:grid;grid-template-columns:20px 48px auto 38px 38px;grid-gap:0px;padding:5px 5px;border-bottom:1px solid gray;}
+.selected_list_partner > div > div:nth-child(3){cursor:move;}
+.selected_list_partner > div > div:nth-child(4){display:grid;align-content: center;justify-content: center;height:30px;width:30px;background-color:gray;color:white;cursor:pointer;border-radius: 15px 15px 15px 15px;margin:0 auto;}
+.selected_list_partner > div > div:nth-child(4):hover{background-color:orange;}
+.selected_list_partner > div > div:nth-child(5){display:grid;align-content: center;justify-content: center;height:30px;width:30px;background-color:gray;color:white;cursor:pointer;border-radius: 15px 15px 15px 15px;margin:0 auto;}
+.selected_list_partner > div > div:nth-child(5):hover{background-color:red;}
+
