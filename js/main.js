@@ -289,6 +289,9 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 							if(data.bts[i].style!=undefined){
 								bt.setAttribute("style",data.bts[i].style)
 							}
+							if(data.bts[i].rid_close!=undefined){
+								bt.setAttribute("data-rid_close",data.bts[i].rid_close)
+							}
 							this.end(sta_in,[bt])	
 						}	
 				this.end(sta,[sta_in])	

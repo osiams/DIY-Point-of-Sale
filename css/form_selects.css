@@ -1,3 +1,8 @@
+.table_select_partner{width:100%;border-radius: 3px 3px 3px 3px;border-spacing:0px;border:1px solid gray}
+.table_select_partner td{border-bottom:1px solid Gainsboro}
+.table_select_partner td:nth-child(1){width:20px;}
+.table_select_partner td:nth-child(2){width:32px;}
+.table_select_partner td:nth-child(3){text-align:left}
 .selects_list_partner{width:100%;}
 .selects_list_partner > div{display:grid;grid-template-columns:20px 48px auto 38px;grid-gap:0px;padding:5px 5px;border-bottom:1px solid gray;}
 .selects_list_partner > div:hover{background-color:LightGreen}
@@ -7,7 +12,7 @@
 .selects_list_partner > div > div:nth-child(4):hover{background-color:green;}
 .selected_list_partner{width:100%;user-select:none;}
 .selected_list_partner > div{display:grid;grid-template-columns:20px 48px auto 38px 38px;grid-gap:0px;padding:5px 5px;border-bottom:1px solid gray;}
-.selected_list_partner > div > div:nth-child(3){cursor:move;}
+.selected_list_partner > div > div:nth-child(3){cursor:default;}
 .selected_list_partner > div > div:nth-child(4){display:grid;align-content: center;justify-content: center;height:30px;width:30px;background-color:gray;color:white;cursor:pointer;border-radius: 15px 15px 15px 15px;margin:0 auto;}
 .selected_list_partner > div > div:nth-child(4):hover{background-color:orange;}
 .selected_list_partner > div > div:nth-child(5){display:grid;align-content: center;justify-content: center;height:30px;width:30px;background-color:gray;color:white;cursor:pointer;border-radius: 15px 15px 15px 15px;margin:0 auto;}

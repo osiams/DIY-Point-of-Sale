@@ -543,10 +543,11 @@ class product extends main{
 					<h1 class="c">ลงทะเบียนสินค้า</h1>';
 		if($error!=""){
 			echo '<div class="error">'.$error.'</div>';
-		}		
+		}	
+		$partner_list_id=$this->key("key",7);
 		echo '			<form  id="product_regisq" name="regis_product" method="post" action="">
 						<input type="hidden" name="submitt" value="clicksubmit" />
-						<input type="hidden" name="partner_list" value="" />
+						<input type="hidden" id="'.$partner_list_id.'" name="partner_list" value="" />
 						<p><label for="product_regis_name">ชื่อสินค้า</label></p>
 						<div><input id="product_regis_name" type="text" name="name" value="'.$name.'" class="want" /></div>
 						<p><label for="product_regis_barcode">รหัสแท่ง</label></p>
@@ -565,7 +566,7 @@ class product extends main{
 			
 			echo '<p><label for="product_regis_cost">คู่ค้า</label></p>
 				<div>';
-			$this->form_pn=new form_selects("partner","คู่ค้า","regis_product",$this->key("key",7));	
+			$this->form_pn=new form_selects("partner","คู่ค้า","regis_product",$this->key("key",7),$partner_list_id);	
 			$this->form_pn->writeForm("regis_product");
 			echo '</div>';
 			
