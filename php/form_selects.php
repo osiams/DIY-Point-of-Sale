@@ -12,7 +12,13 @@ class form_selects extends main{
 	public function fetch(){
 		if($this->a=="partner"){
 			require_once("php/partner.php");
+			if(!isset($_POST["page"])){
+				$_GET["page"]=1;
+			}else{
+				$_GET["page"]=$_POST["page"];
+			}
 			$this->partner= new partner();
+			$this->partner->page=$this->setPageR();
 			$this->fetchPartnerSelectPage();
 		}
 	}
@@ -26,7 +32,7 @@ class form_selects extends main{
 	}
 	public function writeForm(){
 		echo '<table id="'.$this->id.'" class="table_select_partner">
-			<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\''.$this->form_name.'\',\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
+			<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
 		</table>';
 	}
 	private function partnerGetData():array{

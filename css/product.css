@@ -1,5 +1,5 @@
 
-.product_page_search{padding:2px 30px;}
+.product_page_search{padding:2px 30px;line-height:3em;}
 #product{position: relative;}
 #product  th{position: sticky;top: 0px;}
 #product td{vertical-align: middle;}

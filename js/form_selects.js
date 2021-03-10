@@ -3,17 +3,18 @@ class form_selects{
 	constructor(main){
 		this.main=main
 		this.partner={}
+		
 	}
 	run(){
 
 	}
-	ctAddPartner(form_name,display_id,partner_list_id){
+	ctAddPartner(form_name,dialog_id=null,display_id,partner_list_id,get_type="new",page=1){
 		if(this.partner[display_id]==undefined){
 			this.partner[display_id]={}
 		}
-		
+		dialog_id=(dialog_id==null)?this.main.rid():dialog_id
 		let partner_list=document.forms[form_name][partner_list_id].value
-		let dt={"data":{"a":"form_selects","b":"partner","display_id":display_id,"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id},"result":Fsl.getListPartnerResult,"error":Fsl.getListPartnerError}
+		let dt={"data":{"a":"form_selects","b":"partner","dialog_id":dialog_id,"display_id":display_id,"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"get_type":get_type,"page":page},"result":Fsl.getListPartnerResult,"error":Fsl.getListPartnerError}
 		this.main.setFec(dt)
 	}
 	getListPartnerResult(re,form,bt){
@@ -28,14 +29,28 @@ class form_selects{
 		//Gp.ctSelectProp(re,form,bt)
 	}
 	ctSelectPartner(re,form,bt){
-		let rid = this.main.rid()
+		let rid = form.get("dialog_id")
 		let arr = re.data["get"]
 
 		let display_id = form.get("display_id")
+		let dialog_id = form.get("dialog_id")
 		let partner_list_id = form.get("partner_list_id")
 		let form_name = form.get("from_name")
+		let get_type=form.get("get_type")
 		
 		let partner_list = form.get("partner_list")
+		let tsh={"name":"ชื่อ","brand_name":"ชื่อการค้า","sku":"รหัสภายใน"}
+		let cpn=this.main.ce("div",{"class":"selected_list_partner_search"})
+			let pn_sh=this.main.ce("select",{})
+				for (let prop in tsh) {
+					let op_sh=this.main.ce("option",{"value":prop})
+					let op_tx=this.main.cn(tsh[prop])
+					this.main.end(op_sh,[op_tx])
+					this.main.end(pn_sh,[op_sh])
+				}
+			let its=this.main.ce("input",{"type":"text"})
+			let ibs=this.main.ce("input",{"type":"button","value":"🔍"})		
+		this.main.end(cpn,[pn_sh,its,ibs])
 		let ct=this.main.ce("div",{})
 			let ct0 = this.main.ce("div",{"id":"ct0_partner_"+display_id})
 			let fron = this.main.ce("form",{"name":rid,"style":"width:100%;text-align:center;"})
@@ -47,7 +62,7 @@ class form_selects{
 					let div1=this.main.ce("div",{"class":"i"+((i%2)+1)})
 						let ck = this.main.ce("input",{"type":"checkbox","id":ckrid,"name":"checkbox_"+rid,"data-icon":arr[i]["icon"],"data-name":arr[i]["name"],"value":arr[i]["sku_root"],"onchange":"Fsl.selectCkPartner(this,'"+display_id+"')"})
 				
-						if(partner_has.includes(arr[i]["sku_root"])){
+						if(partner_has.includes(arr[i]["sku_root"]) || this.partner[display_id].hasOwnProperty(arr[i]["sku_root"]) ){
 							ck.checked = true
 						}	
 						let div_img=this.main.ce("div",{"class":"img32"})
@@ -62,7 +77,7 @@ class form_selects{
 					this.main.end(d1,[div1])
 				}
 			this.main.end(fron,[d1])
-			let div_page=this.ctPage(re)
+			let div_page=this.ctPage(re,form_name,dialog_id,display_id,partner_list_id)
 			this.main.end(ct0,[fron,div_page])	
 			let ct1 = this.main.ce("div",{"id":"ct1_partner_"+display_id})
 		this.main.end(ct,[ct0,ct1])	
@@ -71,24 +86,37 @@ class form_selects{
 			{"value":"⬅ เลือกเพิ่ม","style":"visibility:hidden","id":"bt_back_select_"+display_id,"onclick":"Fsl.backSelectPartner(this,'"+display_id+"','"+partner_list_id+"')"},
 			{"value":"ดูที่เลือก ("+count+")","rid_close":rid,"id":"bt_select_n_"+display_id,"onclick":"Fsl.viewSlectedPartner(this,'"+display_id+"','"+partner_list_id+"')"}
 		]
-		
-		M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":"เลือกคู่ค้า","width":"250"})
+		if(get_type=="new"){
+			
+			M.dialog({"rid":rid,"display":1,"pn":cpn,"ct":ct,"bts":bts,"title":"เลือกคู่ค้า","width":"250"})
+		}else if(get_type=="update"){
+			this.main.rmc_all(this.main.id("ct0_partner_"+display_id))
+			this.main.end(this.main.id("ct0_partner_"+display_id),[fron,div_page])	
+			//this.main.id("ct0_partner_"+display_id).appenChild()
+		}
 	}
-	ctPage(re){
+	ctPage(re,form_name,dialog_id,display_id,partner_list_id){
 		let per=re.data.page["per"]
 		let page=re.data.page["page"]
 		let count=re.data.count[0]["count"]*1
 		let n_page=Math.ceil(count/per)
 		let ct=this.main.ce("div",{"class":"c"})
-			let sl=this.main.ce("select",{})
+			let sl=this.main.ce("select",{"onchange":"Fsl.partnerGoPage(this,'"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"')"})
 				for(let i=1;i<=n_page;i++){
 					let op =this.main.ce("option",{})
 						let t=this.main.cn(i)
+						if(page==i){
+							
+						}
 					this.main.end(op,[t])
 					this.main.end(sl,[op])
 				}
+				sl.selectedIndex=(page-1)
 		this.main.end(ct,[this.main.cn("หน้า : "),sl])
 		return ct
+	}
+	partnerGoPage(did,form_name,dialog_id,display_id,partner_list_id){
+		this.ctAddPartner(form_name,dialog_id,display_id,partner_list_id,"update",did.value)
 	}
 	selectCkPartner(did,display_id){
 		let sku_root=did.value

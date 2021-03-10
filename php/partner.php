@@ -9,8 +9,12 @@ class partner extends main{
 		$this->pn_type = ["s"=>"ผู้ผลิต","n"=>"ตัวแทนจำหน่าย"];
 		$this->tp_type = ["0"=>"ต้องไปรับสินค้าเอง","1"=>"ส่งสินค้าถึงร้าน"];
 		$this->od_type = ["s"=>"มีคนมาจด","a"=>"โทรศัพท์มาถาม","o"=>"ออกไปซื้อเอง","t"=>"โทรสั่งซื้อ"];
-		$this->per=3;
+		$this->per=2;
 		$this->page=1;
+		$this->txsearch="";
+		$this->fl="";
+		$this->lid=0;
+		$this->sh="";
 	}
 	public function run(){
 		$file = "php/class/image.php";
@@ -593,14 +597,91 @@ class partner extends main{
 		$this->pageFoot();
 	}
 	protected function pagePartner(){
+		$this->defaultPageSearch();
 		$this->pageHead(["title"=>$this->title." DIYPOS","css"=>["partner"],"js"=>["partner","Pn"],"run"=>["Pn"]]);
 			echo '<div class="content">
 				<div class="form">
-				<h1 class="c">'.$this->title.'</h1>';
+				<h1 class="c">'.$this->title.'</h1>
+				<div class="pn_search">
+					<form class="form100" name="pd_search" action="" method="get">
+						<input type="hidden" name="a" value="partner" />
+						<input type="hidden" name="lid" value="0" />
+						<label><select id="product_search_fl" name="fl">
+							<option value="name"'.(($this->fl=="name")?" selected":"").'>ชื่อ</option>
+							<option value="brand_name"'.(($this->fl=="brand_nam")?" selected":"").'>ชื่อการค้า</option>
+							<option value="sku"'.(($this->fl=="sku")?" selected":"").'>รหัสภายใน</option>
+						</select>
+						 <input id="product_search_tx" type="text" name="tx" value="'.str_replace("\\","",htmlspecialchars($this->txsearch)).'" />
+						 <input  type="submit" value="🔍" /> </label></form>
+				</div>';
 		$this->writeContentPartner();		
 		echo '<br /><p class="c"><input type="button" value="เพิ่มคู่ค้า" onclick="location.href=\'?a='.$this->a.'&b=regis\'" /></p>';
 		echo '</div></div>';
 		$this->pageFoot();
+	}
+	private function defaultSearch():string{
+		$fla=["sku","brand_name","name"];
+		$fl="name";
+		$tx="";
+		$se="";
+		if(isset($_GET["fl"])){
+			if(in_array($_GET["fl"],$fla)){
+				if(($_GET["fl"]=="sku")
+				&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["tx"])){
+					$fl=$_GET["fl"];
+				}	
+			}
+		}
+		$this->fl=$fl;
+		if(isset($_GET["tx"])&&strlen(trim($_GET["tx"]))>0){
+			$tx=$this->getStringSqlSet($_GET["tx"]);
+		}
+		if($tx!=""){
+			$tx=substr($tx,1,-1);
+			$this->txsearch=$tx;
+			$se=" WHERE `partner`.`".$fl."` LIKE  \"%".$tx."%\"  ";
+		}
+		return $se;
+	}
+	private function defaultPageSearch():void{
+		$fla=["brand_name","sku","name"];
+		$fl="name";
+		$tx="";
+		$se="";
+		if(isset($_GET["fl"])){
+			if(in_array($_GET["fl"],$fla)){
+				if(($_GET["fl"]=="sku")
+					&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["tx"])){
+					$fl=$_GET["fl"];
+				}
+			}
+		}
+		$this->fl=$fl;
+		if(isset($_GET["tx"])&&strlen(trim($_GET["tx"]))>0){
+			$tx=$this->getStringSqlSet($_GET["tx"]);
+		}
+		if(isset($_GET["lid"])&&preg_match("/^[0-9]{1,12}$/",$_GET["lid"])){
+			$this->lid=$_GET["lid"];
+		}
+		if($tx!=""){
+			$tx=substr($tx,1,-1);
+			$this->txsearch=$tx;
+			$idsearch=">=".$this->lid." ";
+			if($this->lid>0){
+				$idsearch="<=".$this->lid." ";
+			}
+			$this->sh=" WHERE `partner`.`id`".$idsearch." AND `partner`.`".$fl."` LIKE  \"%".$tx."%\""  ;
+		}
+	}
+	protected function pageSearch(int $row):void{
+		$href='?a=partner&amp;fl='.$this->fl.'&amp;tx='.$this->txsearch.'&amp;page=';
+		if($this->page>1){
+			echo '<a onclick="history.back()">⬅️ก่อนหน้า</a>';
+		}
+		echo '<span class="partner_page_search">หน้า '.$this->page.'</span>';
+		if($row>$this->per){
+			echo '<a href="'.$href.''.($this->page+1).'&amp;lid='.$this->lid.'">ถัดไป➡️</a>';
+		}
 	}
 	private function xxxxxxxxxxxxxxxxxdirTopBar():string{
 		$group_name = "กลุ่มสินค้าหลัก";
@@ -635,22 +716,41 @@ class partner extends main{
 				$ed='<span title="โอเค เรียบร้อย"> 👌 </span>';
 			}
 			$cm=($i%2!=0)?" class=\"i2\"":"";
+			$name=htmlspecialchars($se[$i]["name"]);
+			$brand_name=$se[$i]["brand_name"];
+			$sku=$se[$i]["sku"];
+			if($this->txsearch!=""){
+				$ts=htmlspecialchars(str_replace("\\","",$this->txsearch));
+				if($this->fl=="name"){
+					$name=str_replace($ts,'<span class="bgyl">'.$ts.'</span>',$name);
+				}else if($this->fl=="brand_name"){
+					$brand_name=str_replace($ts,'<span class="bgyl">'.$ts.'</span>',brand_name);
+				}else if($this->fl=="sku"){
+					$sku=str_replace($ts,'<span class="bgyl">'.$ts.'</span>',$sku);
+				}
+				
+			}
 			$sn=strlen(trim($se[$i]["sku"]))>0?substr(trim($se[$i]["sku"]),0,15):(mb_substr(trim($se[$i]["name"]),0,15));
 			echo '<tr'.$cm.'><td class="r">'.($se[$i]["id"]).'</td>
 				<td class="l"><div class="img48"><img src="img/gallery/64x64_'.$se[$i]["icon"].'"  alt="'.$sn.'" /></div></td>
-				<td class="l">'.$se[$i]["sku"].'</td>
-				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.htmlspecialchars($se[$i]["name"]).'</a></td>
+				<td class="l">'.$sku.'</td>
+				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a></td>
 				<td class="action">
 					<a onclick="Pn.edit(\''.$se[$i]["sku_root"].'\')" title="แก้ไข">📝</a>
 					<a onclick="Pn.delete(\''.$se[$i]["sku_root"].'\',\''.htmlspecialchars($se[$i]["name"]).'\')" title="ทิ้ง">🗑</a>
 					'.$ed.'
 					</td>
 				</tr>';
+				$this->lid=$se[$i]["id"];
 		}
 		echo '</table></form>';
 		//print_r($dt);
 		$count=(isset($dt["count"][0]["count"]))?$dt["count"][0]["count"]:0;
-		$this->page($count,$this->per,$this->page,"?a=partner&amp;page=");
+		if($this->txsearch==""){
+			$this->page($count,$this->per,$this->page,"?a=partner&amp;page=");
+		}else{
+			$this->pageSearch(count($se));
+		}
 	}
 	private function xxxxxxxxxxxxxxxxxxwriteThisProp():void{
 		$this_sku_root = "";
@@ -688,10 +788,18 @@ class partner extends main{
 		return $t;
 	}
 	public function getAllPartner():array{
+		$sh=$this->defaultSearch();
 		$re=[];
 		$sql=[];
+		$limit_page=(($this->page-1)*$this->per).",".($this->per+1);
+		if($this->txsearch!=""){
+				$limit_page=$this->per+1;
+		}
 		$sql["count"]="SELECT COUNT(*) AS `count`  FROM `partner`";
-		$sql["get"]="SELECT `id`,`name`,`icon`,`sku`,`sku_root` FROM `partner` ORDER BY `id` DESC LIMIT ".(($this->page-1)*$this->per).",".$this->per."";
+		$sql["get"]="SELECT `id`,`name`,`brand_name`,`icon`,`sku`,`sku_root` 
+			FROM `partner` 
+			".$this->sh." 
+			ORDER BY `id` DESC LIMIT ".$limit_page."";
 		$se=$this->metMnSql($sql,["count","get"]);
 		if($se["result"]){
 			$re=$se["data"];//["get"];

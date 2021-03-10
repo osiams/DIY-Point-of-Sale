@@ -277,8 +277,12 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 					let barclose= this.ce("div",{"title":"กดเพื่อปิด","onclick":"M.dialogClose('"+rid+"')"})
 					this.end(barclose,[this.cn("×")])
 				this.end(bar,[barname,barclose])
+				let pn=this.ce("div",{})
+				if(data.pn!=undefined){
+					pn=data.pn
+				}
 				let con = this.ce("div",{})
-				this.end(con,[data.ct])
+				this.end(con,[pn,data.ct])
 				let sta = this.ce("div",{})
 					let sta_in = this.ce("div",{})
 						for(let i=0;i<data.bts.length;i++){
