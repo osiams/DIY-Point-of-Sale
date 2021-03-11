@@ -31,6 +31,7 @@ class fetch extends main{
 				}
 			}else if($_POST["a"]=="form_selects"){
 				$b=["partner"];
+				
 				if(isset($_POST["b"])&&in_array($_POST["b"],$b)){
 					eval("(new form_selects(\"".$_POST["b"]."\"))->fetch();");
 				}

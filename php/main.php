@@ -31,7 +31,7 @@ class main{
 			],
 			"product"=>[
 				"name"=>"product",
-				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type",
+				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type","partner",
 					"unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pdstat"=>"c","s_type"=>"p"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
@@ -42,7 +42,7 @@ class main{
 			],
 			"product_ref"=>[
 				"name"=>"product_ref",
-				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type",
+				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type","partner",
 					"unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
 				"not_null"=>["name","sku_root"],
@@ -285,6 +285,7 @@ class main{
 			//"partner1"=>["name"=>"คู่ค้า1","type"=>"CHAR","length_value"=>255],
 			//"partner2"=>["name"=>"คู่ค้า2","type"=>"CHAR","length_value"=>255],
 			//"partner3"=>["name"=>"คู่ค้า3","type"=>"CHAR","length_value"=>255],
+			"partner"=>["name"=>"คู่ค้า","type"=>"TEXT","length_value"=>65535],
 			"password"=>["name"=>"รหัสผ่าน","type"=>"CHAR","length_value"=>64],
 			//--"b"=>"ใบดำ บัญชีดำ","r"=>หยุดขาย ,"y"=>นำเข้ามาขายแต่ต้องระวังและตรวจสอบเป็นพิเศษ,"c"=>ขายปกติ
 			"pdstat"=>["name"=>"สถานะ","type"=>"ENUM","length_value"=>["b","r","y","c"]],
@@ -596,7 +597,7 @@ class main{
 						$password=["password"];
 						$money=["price","cost"];
 						$enum = ["data_type","s_type","pn_type","od_type","tp_type"];
-						$json_arr = ["prop"];
+						$json_arr = ["prop","partner"];
 						if(in_array($v,$sku)){
 							$pt="/^[0-9a-zA-Z-+\.&\/]{1,25}$/";
 							if(!preg_match($pt,$ry)) {
@@ -657,11 +658,12 @@ class main{
 								$prop =trim($ry);
 								$d = explode(",,",substr($prop,1,-1));
 								$len = 25;
-								$check = true;
+								//$check = true;
 								$pt="/^[0-9a-zA-Z-+\.&\/]{1,25}$/";
 								for($i = 0;$i<count($d);$i++){
 									if(!preg_match($pt,$d[$i])){
-										$check = false;
+										//$check = false;
+										$re["result"]=false;
 										echo "---".$d[$i]."--";
 										$re["message_error"]="ค่า key_root ของ ".$this->fills[$v]["name"]." บางตัว ไม่อยู่ในรูปแบบ 0-9a-zA-Z-+.&/ 1-25 ตัว";
 										break;

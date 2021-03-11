@@ -388,8 +388,9 @@ class product extends main{
 	private function regisProduct():void{
 		$error="";
 		if(isset($_POST["submitt"])&&$_POST["submitt"]=="clicksubmit"){
-			$se=$this->checkSet("product",["post"=>["barcode","sku","name","price","cost","unit","group_root"]],"post");
-			//print_r($se);
+			$_POST["partner"]=isset($_POST["partner_list"])?$_POST["partner_list"]:"";
+			$se=$this->checkSet("product",["post"=>["barcode","sku","name","price","cost","unit","group_root","partner"]],"post");
+			//print_r($se);exit;
 			$ckp = $this->checkValidateProp();
 			if(!$se["result"]){
 				$error=$se["message_error"];
@@ -509,12 +510,14 @@ class product extends main{
 		return [];
 	}
 	private function regisProductPage($error){
+		$_POST["partner"]=",1614832914JSo91vq,,1614833089Xiir69p,,1614750911CPOeH4Y,,1614820290k7vNQSU,";
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
 		$sku=(isset($_POST["sku"]))?htmlspecialchars($_POST["sku"]):"";
 		$barcode=(isset($_POST["barcode"]))?htmlspecialchars($_POST["barcode"]):"";
 		$price=(isset($_POST["price"]))?htmlspecialchars($_POST["price"]):"";
 		$cost=(isset($_POST["cost"]))?htmlspecialchars($_POST["cost"]):"";
 		$unit=(isset($_POST["unit"]))?htmlspecialchars($_POST["unit"]):"";
+		$partner=(isset($_POST["partner"]))?htmlspecialchars($_POST["partner"]):"";
 		$s_type=(isset($_POST["s_type"]))?$_POST["s_type"]:"p";
 		$group = "defaultroot";
 		if(isset($_POST["group_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["group_root"])){
@@ -547,7 +550,7 @@ class product extends main{
 		$partner_list_id=$this->key("key",7);
 		echo '			<form  id="product_regisq" name="regis_product" method="post" action="">
 						<input type="hidden" name="submitt" value="clicksubmit" />
-						<input type="hidden" id="'.$partner_list_id.'" name="partner_list" value="" />
+						<input type="hidden" id="'.$partner_list_id.'" name="partner_list" value="'.$partner.'" />
 						<p><label for="product_regis_name">ชื่อสินค้า</label></p>
 						<div><input id="product_regis_name" type="text" name="name" value="'.$name.'" class="want" /></div>
 						<p><label for="product_regis_barcode">รหัสแท่ง</label></p>

@@ -3,18 +3,23 @@ class form_selects{
 	constructor(main){
 		this.main=main
 		this.partner={}
-		
+		this.search={}
 	}
 	run(){
 
 	}
-	ctAddPartner(form_name,dialog_id=null,display_id,partner_list_id,get_type="new",page=1){
+	ctAddPartner(form_name,dialog_id=null,display_id,partner_list_id,get_type="new",page=1,oshid=null,ipshid=null,lid=0,fl="name",tx=""){
 		if(this.partner[display_id]==undefined){
 			this.partner[display_id]={}
+			this.search[display_id]={}
 		}
 		dialog_id=(dialog_id==null)?this.main.rid():dialog_id
+		
 		let partner_list=document.forms[form_name][partner_list_id].value
-		let dt={"data":{"a":"form_selects","b":"partner","dialog_id":dialog_id,"display_id":display_id,"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"get_type":get_type,"page":page},"result":Fsl.getListPartnerResult,"error":Fsl.getListPartnerError}
+		
+		let dt={"data":{"a":"form_selects","b":"partner","dialog_id":dialog_id,"display_id":display_id,
+				"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"get_type":get_type,"page":page,
+				"oshid":oshid,"ipshid":ipshid,"lid":lid,"fl":fl,"tx":tx},"result":Fsl.getListPartnerResult,"error":Fsl.getListPartnerError}		
 		this.main.setFec(dt)
 	}
 	getListPartnerResult(re,form,bt){
@@ -40,22 +45,26 @@ class form_selects{
 		
 		let partner_list = form.get("partner_list")
 		let tsh={"name":"ชื่อ","brand_name":"ชื่อการค้า","sku":"รหัสภายใน"}
-		let cpn=this.main.ce("div",{"class":"selected_list_partner_search"})
-			let pn_sh=this.main.ce("select",{})
+		let cpn=this.main.ce("div",{"id":"cpn0_partner_"+display_id,"class":"selected_list_partner_search"})
+			let oshid="option_search_partner_id_"+display_id
+			let pn_sh=this.main.ce("select",{"id":oshid})
 				for (let prop in tsh) {
 					let op_sh=this.main.ce("option",{"value":prop})
 					let op_tx=this.main.cn(tsh[prop])
 					this.main.end(op_sh,[op_tx])
 					this.main.end(pn_sh,[op_sh])
 				}
-			let its=this.main.ce("input",{"type":"text"})
-			let ibs=this.main.ce("input",{"type":"button","value":"🔍"})		
+			let ipshid="input_search_partner_id_"+display_id
+			let its=this.main.ce("input",{"id":ipshid,"type":"text"})
+			let ibs=this.main.ce("input",{"type":"button","value":"🔍","onclick":"Fsl.selectPartnerSearch('"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"')"})		
 		this.main.end(cpn,[pn_sh,its,ibs])
 		let ct=this.main.ce("div",{})
 			let ct0 = this.main.ce("div",{"id":"ct0_partner_"+display_id})
 			let fron = this.main.ce("form",{"name":rid,"style":"width:100%;text-align:center;"})
 			let d1 = this.main.ce("div",{"class":"selects_list_partner"})
 
+			let lid=form.get("lid")
+			
 			let partner_has = partner_list.substring(1, partner_list.length-1).split(",,")
 				for(let i=0;i<arr.length;i++){
 					let ckrid = "checkboxid_"+arr[i]["sku_root"]
@@ -75,9 +84,10 @@ class form_selects{
 						this.main.end(s,[this.main.cn("⬆")])
 					this.main.end(div1,[ck,div_img,boc,s])
 					this.main.end(d1,[div1])
+					lid=arr[i]["id"]
 				}
 			this.main.end(fron,[d1])
-			let div_page=this.ctPage(re,form_name,dialog_id,display_id,partner_list_id)
+			let div_page=this.ctPage(re,form,form_name,dialog_id,display_id,partner_list_id,lid)
 			this.main.end(ct0,[fron,div_page])	
 			let ct1 = this.main.ce("div",{"id":"ct1_partner_"+display_id})
 		this.main.end(ct,[ct0,ct1])	
@@ -95,24 +105,61 @@ class form_selects{
 			//this.main.id("ct0_partner_"+display_id).appenChild()
 		}
 	}
-	ctPage(re,form_name,dialog_id,display_id,partner_list_id){
+	selectPartnerSearch(option_search_id,input_search_id,form_name,dialog_id,display_id,partner_list_id,page=1,lid=0){
+		let fl=this.main.id(option_search_id).value
+		let tx=this.main.id(input_search_id).value
+		this.ctAddPartner(form_name,dialog_id,display_id,partner_list_id,"update",page,option_search_id,input_search_id,(lid),fl,tx,)
+	}
+	ctPage(re,form,form_name,dialog_id,display_id,partner_list_id,lid=0){
 		let per=re.data.page["per"]
 		let page=re.data.page["page"]
 		let count=re.data.count[0]["count"]*1
 		let n_page=Math.ceil(count/per)
+		let tx= form.get("tx")
 		let ct=this.main.ce("div",{"class":"c"})
-			let sl=this.main.ce("select",{"onchange":"Fsl.partnerGoPage(this,'"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"')"})
-				for(let i=1;i<=n_page;i++){
-					let op =this.main.ce("option",{})
-						let t=this.main.cn(i)
-						if(page==i){
-							
-						}
-					this.main.end(op,[t])
-					this.main.end(sl,[op])
+			if(tx.trim()==""){
+				let sl=this.main.ce("select",{"onchange":"Fsl.partnerGoPage(this,'"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"')"})
+					for(let i=1;i<=n_page;i++){
+						let op =this.main.ce("option",{})
+							let t=this.main.cn(i)
+							if(page==i){
+								
+							}
+						this.main.end(op,[t])
+						this.main.end(sl,[op])
+					}
+					sl.selectedIndex=(page-1)
+				this.main.end(ct,[this.main.cn("หน้า : "),sl])
+			}else{
+				count=re.data["get"].length
+				lid=lid
+				let sp=this.main.ce("span",{"class":"fsl_page_search"})
+				let oshid=form.get("oshid")
+				let ipshid=form.get("ipshid")
+				
+				if(page>1){
+					let lid_ref=(this.search[display_id][page-1]!=undefined)?this.search[display_id][page-1]:0
+					let nex_tx="Fsl.selectPartnerSearch('"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"',"+(page-1)+","+lid_ref+")"
+						let a=this.main.ce("a",{"onclick":nex_tx})
+						this.main.end(a,[this.main.cn("⬅️ก่อนหน้า️")])
+						this.main.end(ct,[a])
+				}				
+				
+				this.main.end(sp,[this.main.cn("หน้า : "+page)])
+				this.main.end(ct,[sp])
+				
+
+				if(page==1){
+					if(count>per){
+						this.search[display_id][page]=0
+						let nex_tx="Fsl.selectPartnerSearch('"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"',"+(page+1)+","+lid+")"
+						alert("page="+page+";"+nex_tx)
+						let a=this.main.ce("a",{"onclick":nex_tx})
+						this.main.end(a,[this.main.cn("ถัดไป➡️")])
+						this.main.end(ct,[a])
+					}
 				}
-				sl.selectedIndex=(page-1)
-		this.main.end(ct,[this.main.cn("หน้า : "),sl])
+			}
 		return ct
 	}
 	partnerGoPage(did,form_name,dialog_id,display_id,partner_list_id){
@@ -140,6 +187,7 @@ class form_selects{
 	}
 	viewSlectedPartner(did,display_id,partner_list_id){
 		this.main.id("ct0_partner_"+display_id).style.display="none"
+		this.main.id("cpn0_partner_"+display_id).style.display="none"
 		this.main.id("ct1_partner_"+display_id).style.display="block"
 		this.viewPartnerSlected(did,display_id)
 		this.main.id("bt_back_select_"+display_id).style.visibility="visible"
@@ -149,6 +197,7 @@ class form_selects{
 	}
 	backSelectPartner(did,display_id,partner_list_id){
 		this.main.id("ct0_partner_"+display_id).style.display="block"
+		this.main.id("cpn0_partner_"+display_id).style.display="grid"
 		this.main.id("ct1_partner_"+display_id).style.display="none"
 		did.style.visibility="hidden"
 		let count=Object.keys(this.partner[display_id]).length
@@ -275,5 +324,30 @@ class form_selects{
 		if(this.main.id("checkboxid_"+sku_root)!=undefined){
 			this.main.id("checkboxid_"+sku_root).checked=false
 		}
+	}
+	setLoadPartner(form_name,dialog_id=null,display_id,partner_list_id){
+		if(this.partner[display_id]==undefined){
+			this.partner[display_id]={}
+			this.search[display_id]={}
+		}
+		dialog_id=(dialog_id==null)?this.main.rid():dialog_id
+		let partner_list=document.forms[form_name][partner_list_id].value
+		let dt={"data":{"a":"form_selects","b":"partner","c":"partner_get","dialog_id":dialog_id,"display_id":display_id,
+			"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id},
+			"result":Fsl.getListPartnerLoadResult,"error":Fsl.getListPartnerLoadError
+		}
+		alert(77)
+		this.main.setFec(dt)
+	}
+	getListPartnerLoadResult(re,form,bt){
+		if(re["result"]){
+			Fsl.ctSelectLoadPartner(re,form,bt)
+		}else{
+			Fsl.getListPartnerLoadError(re,form,bt)
+		}
+	}
+	getListPartnerLoadError(re,form,bt){
+		//alert("error")
+		//Gp.ctSelectProp(re,form,bt)
 	}
 }

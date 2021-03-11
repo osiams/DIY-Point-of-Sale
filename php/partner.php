@@ -643,7 +643,7 @@ class partner extends main{
 		}
 		return $se;
 	}
-	private function defaultPageSearch():void{
+	public function defaultPageSearch():void{
 		$fla=["brand_name","sku","name"];
 		$fl="name";
 		$tx="";

@@ -11,15 +11,39 @@ class form_selects extends main{
 	}
 	public function fetch(){
 		if($this->a=="partner"){
-			require_once("php/partner.php");
-			if(!isset($_POST["page"])){
-				$_GET["page"]=1;
+			if(isset($_POST["c"])&&$_POST["c"]=="partner_get"){
+				$pn_list=(isset($_POST["partner_list"]))?$_POST["partner_list"]:"";
+				$tin=$this->setPropR($pn_list);
+				$tin=substr($tin,1,-1);
+				$se=$this->partnerGetData($tin);
+				print_r($se);
 			}else{
-				$_GET["page"]=$_POST["page"];
+				require_once("php/partner.php");
+				if(!isset($_POST["page"])){
+					$_GET["page"]=1;
+				}else{
+					$_GET["page"]=$_POST["page"];
+				}
+				if(!isset($_POST["tx"])){
+					$_GET["tx"]="";
+				}else{
+					$_GET["tx"]=$_POST["tx"];
+				}
+				if(!isset($_POST["fl"])){
+					$_GET["fl"]="name";
+				}else{
+					$_GET["fl"]=$_POST["fl"];
+				}
+				if(!isset($_POST["lid"])){
+					$_GET["lid"]=0;
+				}else{
+					$_GET["lid"]=$_POST["lid"];
+				}
+				$this->partner= new partner();
+				$this->partner->page=$this->setPageR();
+				$this->partner->defaultPageSearch();
+				$this->fetchPartnerSelectPage();
 			}
-			$this->partner= new partner();
-			$this->partner->page=$this->setPageR();
-			$this->fetchPartnerSelectPage();
 		}
 	}
 	private function fetchPartnerSelectPage():void{
@@ -34,8 +58,27 @@ class form_selects extends main{
 		echo '<table id="'.$this->id.'" class="table_select_partner">
 			<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
 		</table>';
+		echo '<script type="text/javascript">Fsl.setLoadPartner(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')</script>';
 	}
-	private function partnerGetData():array{
-		
+	private function partnerGetData(string $tin):array{
+		$re=[];
+		$sql=[];
+		$sql["get"]="SELECT `id`,`name`,`brand_name`,`icon`,`sku`,`sku_root` 
+			FROM `partner` 
+			WHERE `sku_root` IN(".$tin.")
+			ORDER BY `id` DESC ";
+		$se=$this->metMnSql($sql,["get"]);
+		if($se["result"]){
+			$re=$se["data"]["get"];
+		}
+		return $re;
+	}
+	protected function setPropR(string $prop):string{
+		$ar = [];
+		if(strlen(trim($prop))>2){
+			$prop =trim($prop);
+			$ar = explode(",,",substr($prop,1,-1));
+		}
+		return json_encode($ar);
 	}
 }
