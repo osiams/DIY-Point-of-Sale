@@ -253,6 +253,7 @@ class product extends main{
 	private function editProduct():void{
 		$error="";
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
+			$_POST["partner"]=isset($_POST["partner_list"])?$_POST["partner_list"]:"";
 			$se=$this->checkSet("product",["post"=>["name","sku","barcode","price","cost","unit","group_root"]],"post");
 			$ckp = $this->checkValidateProp();
 			if(!$se["result"]){
@@ -292,6 +293,8 @@ class product extends main{
 		$sku_key=$this->getStringSqlSet($skuk);
 		$sku_root=$this->getStringSqlSet($_POST["sku_root"]);
 		$props = $this->getStringSqlSet($this->setPropR());
+		$pn=$this->setPartnerR($_POST["partner"]);
+		$partner = $this->getStringSqlSet($pn);
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
 			@message_error:='',
@@ -317,7 +320,8 @@ class product extends main{
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
 				UPDATE `product` SET  `sku`=".$sku.",`sku_key`=".$sku_key.",  `name`= ".$name." ,  `barcode`=".$barcode.", `price`=".$price.",`s_type`=".$s_type.",
-					 `cost`=".$cost.", `unit`=".$unit." ,`group_key` = @group_key,`group_root` = @group_root,`props` = JSON_MERGE_PATCH(`props`,@props)
+					 `cost`=".$cost.", `unit`=".$unit." ,`group_key` = @group_key,`group_root` = @group_root,`props` = JSON_MERGE_PATCH(`props`,@props),
+					 `partner`=".$partner." 
 				WHERE `sku_root`=".$sku_root.";
 				SET @result=1;
 			END IF;
@@ -329,12 +333,14 @@ class product extends main{
 		return $se;
 	}
 	private function editProductPage($error){
+		$sku_root=(isset($_POST["sku_root"]))?$_POST["sku_root"]:"";
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
 		$sku=(isset($_POST["sku"]))?htmlspecialchars($_POST["sku"]):"";
 		$barcode=(isset($_POST["barcode"]))?htmlspecialchars($_POST["barcode"]):"";
 		$price=(isset($_POST["price"]))?htmlspecialchars($_POST["price"]):"";
 		$cost=(isset($_POST["cost"]))?htmlspecialchars($_POST["cost"]):"";
 		$unit=(isset($_POST["unit"]))?htmlspecialchars($_POST["unit"]):"";
+		$partner=(isset($_POST["partner"]))?htmlspecialchars($_POST["partner"]):"";
 		$s_type=(isset($_POST["s_type"]))?$_POST["s_type"]:"p";
 		$group = "defaultroot";
 		//echo $_POST["group_root"];
@@ -343,16 +349,18 @@ class product extends main{
 		}
 		$sku_root=(isset($_POST["sku_root"]))?htmlspecialchars($_POST["sku_root"]):"";
 		$this->addDir("","แก้ไข สินค้า ".$name);
-		$this->pageHead(["title"=>"แก้ไขสินค้า DIYPOS","js"=>["product","Pd"]]);
+		$this->pageHead(["title"=>"แก้ไขสินค้า DIYPOS","js"=>["product","Pd","form_selects","Fsl"],"run"=>["Fsl"],"css"=>["form_selects"]]);
 			echo '<div class="content">
 				<div class="form">
 					<h1 class="c">แก้ไขสินค้า</h1>';
 		if($error!=""){
 			echo '<div class="error">'.$error.'</div>';
 		}		
-		echo '			<form method="post">
+		$partner_list_id=$this->key("key",7);
+		echo '			<form  name="edit_product" method="post">
 						<input type="hidden" name="submit" value="clicksubmit" />
 						<input type="hidden" name="sku_root" value="'.$sku_root.'" />
+						<input type="hidden" id="'.$partner_list_id.'" name="partner_list" value="'.$partner.'" />
 						<p><label for="product_regis_name">ชื่อสินค้า</label></p>
 						<div><input id="product_regis_name" type="text" name="name" value="'.$name.'" class="want" /></div>
 						<p><label for="product_regis_barcode">รหัสแท่ง</label></p>
@@ -371,7 +379,8 @@ class product extends main{
 			
 			echo '<p><label for="product_regis_cost">คู่ค้า</label></p>
 				<div>';
-			$this->form_pn->writeForm();
+			$this->form_pn=new form_selects("partner","คู่ค้า","edit_product",$this->key("key",7),$partner_list_id);	
+			$this->form_pn->writeForm("edit_product");
 			echo '</div>';
 			
 			echo '<p><label for="product_regis_unit">กลุ่ม</label></p>
@@ -429,6 +438,7 @@ class product extends main{
 		return $re;
 	}
 	private function regisProductInsert():array{
+		
 		$name=$this->getStringSqlSet($_POST["name"]);
 		$sku=$this->getStringSqlSet($_POST["sku"]);
 		$barcode=$this->getStringSqlSet($_POST["barcode"]);
@@ -440,6 +450,8 @@ class product extends main{
 		$skuk=$this->key("key",7);
 		$sku_root=$this->getStringSqlSet($skuk);
 		$props = $this->getStringSqlSet($this->setPropR());
+		$pn=$this->setPartnerR($_POST["partner"]);
+		$partner = $this->getStringSqlSet($pn);
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
 			@message_error:='',
@@ -465,8 +477,8 @@ class product extends main{
 		";
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
-				INSERT INTO `product`  (`sku`,`sku_key`,`sku_root`,`barcode`,`name`,`price`,`cost`,`unit`,`group_key`,`group_root`,`props`,`s_type`) 
-				VALUES (".$sku.",".$sku_root.",".$sku_root.",".$barcode.",".$name.",".$price.",".$cost.",".$unit.",@group_key,@group_root,@props,".$s_type."); 
+				INSERT INTO `product`  (`sku`,`sku_key`,`sku_root`,`barcode`,`name`,`price`,`cost`,`unit`,`group_key`,`group_root`,`props`,`s_type`,`partner`) 
+				VALUES (".$sku.",".$sku_root.",".$sku_root.",".$barcode.",".$name.",".$price.",".$cost.",".$unit.",@group_key,@group_root,@props,".$s_type.",".$partner."); 
 				SET @result=1;
 			END IF;
 		";
@@ -478,12 +490,14 @@ class product extends main{
 	}
 	private function editProductSetCurent(string $sku_root):void{
 		$od=$this->editProductOldData($sku_root);
-		$fl=["sku","barcode","name","price","cost","unit","group_root","s_type"];
+		$fl=["sku","barcode","name","price","cost","unit","group_root","s_type","partner"];
 		foreach($fl as $v){
 			if(isset($od[$v])){
 				$_POST[$v]=$od[$v];
 			}
 		}
+		$_POST["partner"]=$this->propToFromValue($_POST["partner"]);
+		
 		if(!isset($od["props"])){
 			$od["props"]="[]";
 		}
@@ -498,7 +512,8 @@ class product extends main{
 	private function editProductOldData(string $sku_root):array{
 		$sku_root=$this->getStringSqlSet($sku_root);
 		$sql=[];
-		$sql["result"]="SELECT `name`,`sku`,`barcode` ,`price`,`cost`,`unit`,IFNULL(`group_root`,\"defaultroot\") AS `group_root`,IFNULL(`props`,\"[]\") AS `props` ,`s_type`
+		$sql["result"]="SELECT `name`,`sku`,`barcode` ,`price`,`cost`,`unit`,IFNULL(`group_root`,\"defaultroot\") AS `group_root`,
+			IFNULL(`props`,\"[]\") AS `props` ,`s_type`,IFNULL(`partner`,\"[]\") AS `partner`
 			FROM `product` 
 			WHERE `sku_root`=".$sku_root."";
 		$re=$this->metMnSql($sql,["result"]);
@@ -510,7 +525,7 @@ class product extends main{
 		return [];
 	}
 	private function regisProductPage($error){
-		$_POST["partner"]=",1614832914JSo91vq,,1614833089Xiir69p,,1614750911CPOeH4Y,,1614820290k7vNQSU,";
+		//$_POST["partner"]=",1614832914JSo91vq,,1614833089Xiir69p,,1614750911CPOeH4Y,,1614820290k7vNQSU,";
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
 		$sku=(isset($_POST["sku"]))?htmlspecialchars($_POST["sku"]):"";
 		$barcode=(isset($_POST["barcode"]))?htmlspecialchars($_POST["barcode"]):"";
@@ -911,8 +926,21 @@ class product extends main{
 				$re[$kr] = $val;
 			}
 		}
-		
 		return json_encode($re,JSON_FORCE_OBJECT);
+	}
+	protected function setPartnerR(string $prop):string{
+		$ar = [];
+		if(strlen(trim($prop))>2){
+			$prop =trim($prop);
+			$ar = explode(",,",substr($prop,1,-1));
+		}
+		return json_encode($ar);
+	}
+	private function propToFromValue(string $prop):string{
+		$t = str_replace("\",\"",",,",substr($prop,1,-1));
+		$t = str_replace("\"",",",$t);
+		//echo $t;
+		return $t;
 	}
 }
 ?>

@@ -12,11 +12,7 @@ class form_selects extends main{
 	public function fetch(){
 		if($this->a=="partner"){
 			if(isset($_POST["c"])&&$_POST["c"]=="partner_get"){
-				$pn_list=(isset($_POST["partner_list"]))?$_POST["partner_list"]:"";
-				$tin=$this->setPropR($pn_list);
-				$tin=substr($tin,1,-1);
-				$se=$this->partnerGetData($tin);
-				print_r($se);
+				$this->fetchPartnerGetPage();
 			}else{
 				require_once("php/partner.php");
 				if(!isset($_POST["page"])){
@@ -54,6 +50,17 @@ class form_selects extends main{
 		header('Content-type: application/json');
 		echo json_encode($this->re);
 	}
+	private function fetchPartnerGetPage():void{
+		$pn_list=(isset($_POST["partner_list"]))?$_POST["partner_list"]:"";
+		$tin=$this->setPropR($pn_list);
+		$tin=substr($tin,1,-1);
+		$se=$this->partnerGetData($tin);
+		$this->re["result"]=true;
+		$this->re["message_error"]="";
+		$this->re["data"]=$se;
+		header('Content-type: application/json');
+		echo json_encode($this->re);
+	}
 	public function writeForm(){
 		echo '<table id="'.$this->id.'" class="table_select_partner">
 			<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
@@ -63,7 +70,7 @@ class form_selects extends main{
 	private function partnerGetData(string $tin):array{
 		$re=[];
 		$sql=[];
-		$sql["get"]="SELECT `id`,`name`,`brand_name`,`icon`,`sku`,`sku_root` 
+		$sql["get"]="SELECT `id`,`name`,`icon`,`sku`,`sku_root` 
 			FROM `partner` 
 			WHERE `sku_root` IN(".$tin.")
 			ORDER BY `id` DESC ";

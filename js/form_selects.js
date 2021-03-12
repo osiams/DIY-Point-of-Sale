@@ -30,7 +30,6 @@ class form_selects{
 		}
 	}
 	getListPartnerError(re,form,bt){
-		alert("error")
 		//Gp.ctSelectProp(re,form,bt)
 	}
 	ctSelectPartner(re,form,bt){
@@ -176,7 +175,6 @@ class form_selects{
 					"name":name
 				}
 			}
-			
 		}else{
 			if(this.partner[display_id].hasOwnProperty(sku_root)){
 				delete this.partner[display_id][sku_root]
@@ -268,10 +266,16 @@ class form_selects{
 	}
 	selectPartnerOK(did,display_id,partner_list_id){
 		this.setEmptyTable(display_id)
-		let t=this.main.id(display_id)
 		let rid_close=did.getAttribute("data-rid_close")
-		let i=-1
 		
+		this.selectPartnerOKAppend(display_id)
+
+		this.selectPartnerListValue(display_id,partner_list_id)
+		M.dialogClose(rid_close)
+	}
+	selectPartnerOKAppend(display_id){
+		let t=this.main.id(display_id)
+		let i=-1
 		for (let prop in this.partner[display_id]) {
 			i=i+1
 			let r=t.insertRow(i);
@@ -284,9 +288,7 @@ class form_selects{
 			cell0.innerHTML=i+1+"."
 			this.main.end(cell1,[div_img])
 			cell2.innerHTML=this.partner[display_id][prop]["name"]
-		}
-		this.selectPartnerListValue(display_id,partner_list_id)
-		M.dialogClose(rid_close)
+		}		
 	}
 	setEmptyTable(display_id){
 		let t=this.main.id(display_id)
@@ -336,18 +338,27 @@ class form_selects{
 			"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id},
 			"result":Fsl.getListPartnerLoadResult,"error":Fsl.getListPartnerLoadError
 		}
-		alert(77)
 		this.main.setFec(dt)
 	}
 	getListPartnerLoadResult(re,form,bt){
 		if(re["result"]){
-			Fsl.ctSelectLoadPartner(re,form,bt)
+			Fsl.loadSetPartner(re,form,bt)
 		}else{
 			Fsl.getListPartnerLoadError(re,form,bt)
 		}
 	}
 	getListPartnerLoadError(re,form,bt){
-		//alert("error")
-		//Gp.ctSelectProp(re,form,bt)
+
+	}
+	loadSetPartner(re,form,bt){
+		let display_id = form.get("display_id")
+		let dt=re["data"]
+		for (let i=0;i<dt.length;i++) {
+			this.partner[display_id][dt[i]["sku_root"]]={
+				"icon":dt[i]["icon"],
+				"name":dt[i]["name"]
+			}
+		}	
+		this.selectPartnerOKAppend(display_id)	
 	}
 }
