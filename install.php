@@ -691,6 +691,32 @@ private function createTable(string $table,string $sql):array{
 				LIMIT 1;
 			END;
 		";
+		$sql["set_get_pn_list"]="CREATE OR REPLACE FUNCTION `GetListPartner_`(
+				json_sku_root_ TEXT CHARACTER SET 'ascii'
+			) RETURNS TEXT CHARACTER SET 'utf8' COLLATE 'utf8_bin'
+			BEGIN
+				DECLARE re TEXT CHARACTER SET 'utf8' DEFAULT '{}';
+				DECLARE r ROW (
+					icon VARCHAR(255) CHARACTER SET 'ascii',
+					name VARCHAR(255) CHARACTER SET 'utf8',
+					sku_root VARCHAR(25) CHARACTER SET 'ascii'
+				);
+				DECLARE len INT(10);
+				SET len=JSON_LENGTH(json_sku_root_);
+				FOR i IN 0..(len-1) DO
+					SELECT `icon`,`name`,`sku_root` INTO r
+					FROM `partner` 
+					WHERE `sku_root`=JSON_VALUE(json_sku_root_,	CONCAT('$[',i,']')	);
+					SET re=JSON_INSERT(
+						re, 
+						CONCAT('$.',r.sku_root),
+						#CONCAT(r.name)
+						JSON_OBJECT(\"name\",r.name,\"icon\",r.icon)
+					);
+				END FOR;	
+			RETURN re;
+			END ;
+		";
 		$se=$this->metMnSql($sql,[]);
 		return $se;
 	}
