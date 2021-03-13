@@ -949,6 +949,8 @@ class bill58 extends main{
 		$n_wlv=isset($_POST["n_wlv"])?(float) $_POST["n_wlv"]*1:0;
 		try {
 			if($n_wlv>0){
+				$this->usb=$this->printer_label->address;
+				$this->setCNT($this->usb);
 				if($this->checkNP("exists")){
 					if($this->checkNP("writable")){
 						$printer = new Printer($this->fnConect());	

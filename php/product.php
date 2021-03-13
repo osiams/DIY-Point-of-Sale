@@ -733,7 +733,10 @@ class product extends main{
 				<td class="l">
 					<div><a href="?a=product&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a>'.$stat.'</div>
 					<div>'.$sku.','.$barcode.'</div>
-					<div>'.$this->writeDirGroup($se[$i]["group_root"],[$se[$i]["d1"],$se[$i]["d2"],$se[$i]["d3"],$se[$i]["d4"]]).'</div>
+					<div>';
+			$pn_arr=json_decode($se[$i]["partner"],true);	
+			$this->writePartnerList($pn_arr);		
+			echo $this->writeDirGroup($se[$i]["group_root"],[$se[$i]["d1"],$se[$i]["d2"],$se[$i]["d3"],$se[$i]["d4"]]).'</div>
 				</td>
 				<td class="r">
 					<div>'.number_format($se[$i]["price"],2,'.',',').'</div>
@@ -765,6 +768,14 @@ class product extends main{
 			$this->page($count,$this->per,$this->page,"?a=product&amp;page=");
 		}else{
 			$this->pageSearch(count($se));
+		}
+	}
+	private function writePartnerList(array $pn):void{
+		foreach($pn as $k=>$v){
+			echo '<div style="display:inline-block;padding:0px 2px;cursor:pointer">
+				<div class="img24" title="'.htmlspecialchars($v["name"]).'" onclick="location.href=\'?a=partner&b=details&sku_root='.$k.'\'">
+					<img src="img/gallery/32x32_'.$v["icon"].'" onerror="this.src=\'img/pos/64x64_null.png\'" alt="'.htmlspecialchars($v["name"]).'" />
+			</div></div>';
 		}
 	}
 	protected function writeDirGroup(string $sku_root,array $d):string{
@@ -826,7 +837,7 @@ class product extends main{
 			//print_r($sh);
 			$sql["get"]="SELECT 
 				`product`.`id`, `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
-				`product`.`name`, `product`.`price`, `product`.`cost`, `product`.`s_type`,
+				`product`.`name`, `product`.`price`, `product`.`cost`, `product`.`s_type`, GetListPartner_(IFNULL(`product`.`partner`,'[]')) AS `partner`,
 				`product`.`unit` AS `unit_sku_root`,product.pdstat, IFNULL(`product`.`group_root`,\"defaultroot\") AS `group_root`,`unit`.`name` AS `unit_name`,
 				`group`.`d1` AS `d1`,`group`.`d2` AS `d2`,`group`.`d3` AS `d3`,`group`.`d4` AS `d4`,
 				SUM(IF(bill_in_list.stroot='proot',IF(`bill_in_list`.`s_type`='p',`bill_in_list`.`balance`,`bill_in_list`.`balance_wlv`),0)) AS balance

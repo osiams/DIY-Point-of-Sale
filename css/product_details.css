@@ -3,4 +3,8 @@ table.productdetails td{vertical-align: middle;}
 table.productdetails tr > td:nth-child(2) > div:nth-child(2){font-size:12px;color:gray555;text-align:right;padding-right:2px;}
 table.productdetails tr > td:nth-child(3) > div:nth-child(2){font-size:12px;color:gray555;text-align:right;padding-right:2px;}
 table.productdetails tr > td:nth-child(2) > div:nth-child(3) > span{font-size:12px;color:DarkGreen;}
+table.productdetails tr  .partner_list{border-spacing:0px;width:100%;}
+table.productdetails tr  .partner_list tr{background-color:transparent}
+table.productdetails tr  .partner_list tr > td:nth-child(1){width:20px;}
+table.productdetails tr  .partner_list_img{width:32px;text-align:center}
 table.bill  tr >  td:nth-child(2){max-width:100px;}

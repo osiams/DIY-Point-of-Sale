@@ -9,7 +9,7 @@ class partner extends main{
 		$this->pn_type = ["s"=>"ผู้ผลิต","n"=>"ตัวแทนจำหน่าย"];
 		$this->tp_type = ["0"=>"ต้องไปรับสินค้าเอง","1"=>"ส่งสินค้าถึงร้าน"];
 		$this->od_type = ["s"=>"มีคนมาจด","a"=>"โทรศัพท์มาถาม","o"=>"ออกไปซื้อเอง","t"=>"โทรสั่งซื้อ"];
-		$this->per=2;
+		$this->per=10;
 		$this->page=1;
 		$this->txsearch="";
 		$this->fl="";
@@ -42,32 +42,6 @@ class partner extends main{
 		}else{
 			$this->pagePartner();
 		}
-	}
-	public function xxxxxxxxxxget(string $cm):array{
-		$se = [];
-		if($cm == "all_list_key_value"){
-			$se = $this->getGroupList();
-		}
-		return $se;
-	}
-	protected function xxxxxxxxxxxxxxgetGroupList():array{
-		$se = [];
-		$sql=[];
-		$dn = "";
-		for($i=1;$i<=$this->d_cols;$i++){
-			$dn.=",`d".$i."`";
-		}
-		$sql["get"]="SELECT `sku`,`sku_root`,`name`".$dn.",`prop` FROM `group` ORDER BY name ASC";
-		$re=$this->metMnSql($sql,["get"]);
-		//print_r($re);
-		if($re["result"] && $re  ["message_error"] == ""){
-			for($i=0;$i<count($re["data"]["get"]);$i++){
-				$re["data"]["get"][$i]["prop"] = json_decode($re["data"]["get"][$i]["prop"]);
-				$re["data"]["get"][$i]["prop"] = ($re["data"]["get"][$i]["prop"]  === NULL)?[]:$re["data"]["get"][$i]["prop"] ;
-				$se[$re["data"]["get"][$i]["sku_root"]] = $re["data"]["get"][$i];
-			}
-		}
-		return $se;
 	}
 	private function deletePartner():void{
 		if(isset($_POST["sku_root"])){
@@ -486,14 +460,6 @@ class partner extends main{
 		print_r($sql);
 		return $se;
 	}
-	protected function xxxxxxxxxxxxxxxxsetPropR(string $prop):string{
-		$ar = [];
-		if(strlen(trim($prop))>2){
-			$prop =trim($prop);
-			$ar = explode(",,",substr($prop,1,-1));
-		}
-		return json_encode($ar);
-	}
 	protected function regisPartnerPage(string $error):void{
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
 		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
@@ -683,20 +649,6 @@ class partner extends main{
 			echo '<a href="'.$href.''.($this->page+1).'&amp;lid='.$this->lid.'">ถัดไป➡️</a>';
 		}
 	}
-	private function xxxxxxxxxxxxxxxxxdirTopBar():string{
-		$group_name = "กลุ่มสินค้าหลัก";
-		if($this->parent !== NULL && isset($this->group_list[$this->parent])){
-			//$group_name =htmlspecialchars($this->group_list[$this->parent]["name"] );
-			//$this->addDir("?a=group&amp;d=".$this->group_deep."&amp;parent=".$this->parent,$group_name);
-			for($i=1;$i<$this->group_deep;$i++){
-				if(isset($this->dn_value["d".$i]) && $this->dn_value["d".$i] !== NULL){
-					$group_name =htmlspecialchars($this->group_list[$this->dn_value["d".$i]]["name"] );
-					$this->addDir("?a=group&amp;d=".($i+1)."&amp;parent=".$this->dn_value["d".$i],$group_name);
-				}
-			}
-		}
-		return $group_name;
-	}
 	private function writeContentPartner():void{
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
 		$dt=$this->getAllPartner();
@@ -752,41 +704,6 @@ class partner extends main{
 			$this->pageSearch(count($se));
 		}
 	}
-	private function xxxxxxxxxxxxxxxxxxwriteThisProp():void{
-		$this_sku_root = "";
-		for($i=1;$i<=count($this->dn_value);$i++){
-			if($this->dn_value["d".$i] !== NULL){
-				$this_sku_root = $this->dn_value["d".$i];
-			}else{
-				break;
-			}
-		}
-		if($this->group_deep>1){
-			$group_name = $this->group_list[$this_sku_root ]["name"];
-			echo '<div class="group_this_prop">คุณสมบัติกลุ่ม :  <b>'.$group_name.'</b><br /> '.$this->getNamePropList(json_encode($this->group_list[$this_sku_root ]["prop"])).'</div>';
-		}
-	}
-	private function xxxxxxxxxxxxxxxxxnoteColorDataType():string{
-		return '<br><div>
-			<div class="prop_data_type data_type_s"></div> = ข้อความ
-			, <div class="prop_data_type data_type_n"> </div> = จำนวน
-			, <div class="prop_data_type data_type_b"> </div> = จริงเท็จ
-		</div>';
-	}
-	private function xxxxxxxxxxxxxxxxxxgetNamePropList(string $json_arr):string{
-		$t = "";
-		$arr = json_decode($json_arr);
-		//$arr = (gettype($arr) === NULL)?[]:$arr;
-		$s = 0;
-		for($i=0;$i<count($arr);$i++){
-			if(isset($this->prop_list[$arr[$i]])){
-				$s+=1;
-				$cm = ($s>1)?"":"";
-				$t.=$cm."<span class=\"prop_data_type data_type_".$this->prop_list[$arr[$i]]["data_type"]."\">".$this->prop_list[$arr[$i]]["name"]."</span>";
-			}
-		}
-		return $t;
-	}
 	public function getAllPartner():array{
 		$sh=$this->defaultSearch();
 		$re=[];
@@ -805,147 +722,5 @@ class partner extends main{
 			$re=$se["data"];//["get"];
 		}
 		return $re;
-	}
-	private function xxxxxxxxxxxxxxxxgetDnValue():array{
-		$re = [];
-		for($i=1;$i<=$this->d_cols;$i++){
-			$re["d".$i] = null;
-		}
-		if(isset($this->group_list[$this->parent])){
-			for($i=1;$i<=$this->d_cols;$i++){
-				$dn = $this->group_list[$this->parent]["d".$i];
-				if($dn !== NULL){
-					$re["d".$i] = $dn;
-				}
-			}
-		}
-		return $re;
-	}
-	private function xxxxxxxxxxxxxxxxxxxpropToFromValue(string $prop):string{
-		$t = str_replace("\",\"",",,",substr($prop,1,-1));
-		$t = str_replace("\"",",",$t);
-		//echo $t;
-		return $t;
-	}
-	private function xxxxxxxxxxxxxxxxxwriteDirGroup(int $deep = 0):void{
-		echo '<div class="group_dir"><a href="?a=group">📁</a> /';
-		for($i=1;$i<count($this->dir) + $deep;$i++){
-			echo $this->dir[$i]."/";
-		}
-		echo '</div>';
-	}
-	public function xxxxxxxxxxxxxxxxwriteSelectGroup(string $value = "defaultroot"):void{
-		#วนให้เท่ากับ $this->d_cols
-		$this->group_list = $this->get("all_list_key_value");
-		$value  = (isset($this->group_list[$value]))?$value:"defaultroot";
-		$dt = [];
-		$skuroot =[];
-		$g = $this->group_list;
-		for($o=1;$o<=$this->d_cols;$o++){
-			foreach($g as $k=>$v){
-				if($this->d_cols == 1){
-					# $this->d_cols >1
-				}else{
-					if($o == 1){
-						if(!isset($dt["$k"]) && $v["d".($o+1)] === null){
-							$dt[$k] = [];
-							unset($g[$k]);
-						}
-					}else if($o == 2){//echo $k;
-						if(!isset($dt[$v["d".($o-1)]][$v["d".($o)]]) && $v["d".($o)] !== null && $v["d".($o+1)] === null){
-							$dt[$v["d".($o-1)]][$v["d".($o)]]= [];
-							unset($g[$v["d".($o-1)]][$v["d".($o)]]);
-						}
-					}else if($o == 3){
-						if(!isset($dt[$v["d".($o-2)]][$v["d".($o-1)]][$v["d".($o)]]) && $v["d".($o)] !== null && $v["d".($o+1)] === null){
-							$dt[$v["d".($o-2)]][$v["d".($o-1)]][$v["d".($o)]]= [];
-							unset($g[$v["d".($o-2)]][$v["d".($o-1)]][$v["d".($o)]]);
-						}
-					//--อันสุดท้าย
-					}else if($o == 4){
-						if(!isset($dt[$v["d".($o-3)]][$v["d".($o-2)]][$v["d".($o-1)]][$v["d".($o)]]) && $v["d".($o)] !== null ){
-							$dt[$v["d".($o-3)]][$v["d".($o-2)]][$v["d".($o-1)]][$v["d".($o)]]= [];
-						}
-					}
-				}
-			}
-		}
-		$nbr ="\n";
-		echo '<script type="text/javascript">Pd.prop_list = '.json_encode($this->prop_list).'
-			Pd.group_list = '.json_encode($this->group_list).'
-			//let prop_post = '.$this->propCurentPostAsJs().'
-			Pd.prop_b4edit = '.$this->propCurentPostAsJs().'
-			Pd.group_b4edit = "'.$value.'"
-		</script>';
-		echo '<select name="group_root" onchange="Pd.setProp(this,\'table_product_group_prop\',\'\')">';
-		foreach($dt as $a=>$b){
-			$n1 = '/'.$this->group_list[$a]["name"].'/';
-			echo $nbr.'<option value="'.$a.'"'.($value==$a?" selected =\"selected\"":"").'>'.$n1.'</option>';
-			foreach($b as $c=>$d){
-				$n2 = $n1.''.$this->group_list[$c]["name"].'/';
-				echo $nbr.'<option value="'.$c.'"'.($value==$c?" selected =\"selected\"":"").'>'.$n2.'</option>';
-				foreach($d as $e=>$f){
-					$n3 = $n2.''.$this->group_list[$e]["name"].'/';
-					echo $nbr.'<option value="'.$e.'"'.($value==$e?" selected =\"selected\"":"").'>'.$n3.'</option>';
-					foreach($f as $g=>$h){
-						$n4 = $n3.''.$this->group_list[$g]["name"].'/';
-						echo $nbr.'<option value="'.$g.'"'.($value==$g?" selected =\"selected\"":"").'>'.$n4.'</option>';
-					}
-				}
-			}
-		}
-		echo '</select>';
-		$this->writePropValue($value);
-		//print_r($dt);
-	}
-	protected function xxxxxxxxxxxxxxxxxpropCurentPostAsJs():string{
-		//print_r($_POST);echo "****";
-		$re=[];
-		foreach($_POST as $k=>$v){
-			if(substr($k,0,5) == "prop_"){
-				$kr = substr($k,5);
-				$val = trim($_POST["prop_".$kr]);
-				if(isset($this->prop_list[$kr]["data_type"]) && $this->prop_list[$kr]["data_type"] == "n"){
-
-				}
-				$re[$kr] = $val;
-			}
-		}
-		return json_encode($re,JSON_NUMERIC_CHECK);
-	}
-	private function xxxxxxxxxxxxxxxxxxxxxwritePropValue(string $sku_root):void{
-		//print_r($_POST);
-		//echo $sku_root;
-		//print_r($this->prop_list);
-		//print_r($this->group_list[$sku_root]["prop"]);
-		echo '<table id="table_product_group_prop" style="width:100%;margin:5px 0;">
-			<caption>คุณสมบัติกลุ่ม</caption>
-			<tr><th>รายละเอียด</th><th>ค่า</th></tr>';
-		for($i=0;$i<count($this->group_list[$sku_root]["prop"]);$i++){
-			$prop = $this->prop_list[$this->group_list[$sku_root]["prop"][$i]];
-			$name = htmlspecialchars($prop["name"]);
-			$lr = ($prop["data_type"] == "n")?"r":"l";
-			$tr = ($i%2 == 1)?"2":"1";
-			echo '<tr class="i'.$tr.'">
-				<td class="l">'.$name .'</td>
-				<td>';
-			if($prop["data_type"] == "n" || $prop["data_type"] == "s"){
-				$vlt =(isset($_POST["prop_".$prop["sku_root"]]))?htmlspecialchars($_POST["prop_".$prop["sku_root"]]):"";
-				echo '	<input name="prop_'.$prop["sku_root"].'" type="text"  style="width:calc(100% - 8px);" class="'.$lr.'" value="'.$vlt.'" />';
-			}else if($prop["data_type"] == "b"){
-				$vlt =(isset($_POST["prop_".$prop["sku_root"]])
-					&&($_POST["prop_".$prop["sku_root"]] == "-1"
-					|| $_POST["prop_".$prop["sku_root"]] =="1"))?htmlspecialchars($_POST["prop_".$prop["sku_root"]]):"0";
-				echo '<select name="prop_'.$prop["sku_root"].'" style="width:100%;appearance: none;background-color:white;">
-					<option value="0"'.($vlt == "0"?" selected=\"selected\"":"").'>❔</option>
-					<option value="1"'.($vlt == "1"?" selected=\"selected\"":"").'>✔️</option>
-					<option value="-1"'.($vlt == "-1"?" selected=\"selected\"":"").'>❌</option>
-				</select>';
-			}
-			echo '	</td>
-			</tr>';
-		}	
-		echo '</table>';
-		//echo "prop_".$prop["sku_root"];
 	}
 }

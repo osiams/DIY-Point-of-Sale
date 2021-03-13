@@ -131,9 +131,26 @@ class product_details extends product{
 		}else{
 			echo '<tr><td>สถานะสินค้า </td><td>สินค้าปกติ</td></tr>';
 		}
+		$pn_arr=json_decode($dt["partner"],true);
 		echo '	<tr class="i2"><td>วันที่ลงทะเบียน</td><td>'.$dt["date_reg"].'</td></tr>
 			<tr class="i1"><td>กลุ่ม</td><td>'.$this->writeDirGroup($dt["group_root"],[$dt["d1"],$dt["d2"],$dt["d3"],$dt["d4"]]).'</td></tr>
+			<tr class="i2"><td>คู่ค้า</td><td class="l">';
+			$this->writePartnerList($pn_arr);
+		echo '</td></tr>
 			</table></main>';
+	}
+	private function writePartnerList(array $pn):void{
+		$i=0;
+		echo '<table class="partner_list">';
+		foreach($pn as $k=>$v){
+			$i=$i+1;
+			echo '<tr>
+				<td class="l">'.$i.'.</td>
+				<td class="partner_list_img"><div class="img32"><img src="img/gallery/32x32_'.$v["icon"].'" onerror="this.src=\'img/pos/64x64_null.png\'" /></div></td>
+				<td class="l"><a href="?a=partner&b=details&sku_root='.$k.'">'.htmlspecialchars($v["name"]).'</a></td>
+			</tr>';
+		}
+		echo '</table>';
 	}
 	private function getData(string $sku_root):array{
 		$re=["product"=>[],"stock"=>[]];
@@ -146,6 +163,7 @@ class product_details extends product{
 				product.barcode AS barcode,product.name AS name,
 				product.cost AS cost,product.price AS price,product.unit AS unit,product.pdstat,product.statnote,product.date_reg AS date_reg,
 				IFNULL(`product`.`group_root`,\"defaultroot\") AS `group_root`,IFNULL(`product`.`props`,\"[]\") AS props,
+				GetListPartner_(IFNULL(`partner`,'[]')) AS `partner`,
 				unit.name AS unit_name,
 				`group`.`d1` AS `d1`,`group`.`d2` AS `d2`,`group`.`d3` AS `d3`,`group`.`d4` AS `d4`
 			FROM `product` 
