@@ -462,8 +462,49 @@ class bills_in extends bills{
 			$this->pageFoot();
 	}
 	private function writeContentInBillsin():void{
+		$pn=$this->getPartnerAll();	
 		echo '<form class="form100"  name="billsin" method="post">
 			<input type="hidden" name="sku" value="" />
+			<div class="billinhead">
+				<div>
+					<p><span>ใบสั่งซื้อ/คู่ค้า</span></p>
+					<select name="pn">
+						<optgroup label="ใบสั่งซื้อ">
+						</optgroup>
+						<optgroup label="คู่ค้า">';
+							for($i=0;$i<count($pn);$i++){
+								echo '<option value="'.$pn[$i]["sku_root"].'">'.htmlspecialchars($pn[$i]["name"]).'</option>';
+							}
+		echo '		</optgroup>
+					</select>
+				</div>
+				<div>
+					<p><span>เลขที่ใบเสร็จ</span></p>
+					<input type="text" />
+				</div>
+				<div>
+					<p><span>วันที่ในใบเสร็จ (ค.ศ.)</span></p>
+					<input type="date" />
+				</div>
+				<div>
+					<p><span>รูปแบบใบเสร็จ</span></p>
+					<select name="pay_type">
+						<option>ใบเงินสด</option>
+						<option>ใบกำกับภาษี รวมภาษีในราคาสินค้าแล้ว</option>
+						<option>ใบกำกับภาษี ยังไม่รวมภาษีในราคาสินค้า</option>
+					</select>
+				</div>
+				<div>
+					<p><span>รูปแบบการชำระ</span></p>
+					<select name="pay_type">
+						<option>เงินสด</option>
+					</select>
+				</div>
+				<div>
+					<p><span>หมายเหตุ</span></p>
+					<input type="text" name="note" />
+				</div>
+			</div>
 			<table id="billsin"><tr><th>ที่</th>
 			<th>ชื่อ</th>
 			<th>จำนวน</th>
@@ -471,7 +512,7 @@ class bills_in extends bills{
 			<th>ราคารวม<br />ราคาต่อชิ้น</th>
 			<th>กระทำ</th>
 			</tr>';
-		echo '<tr id="trsearch">
+		echo '<!--<tr id="trsearch">
 				<td colspan="6">
 					<label>
 					<select name="fl">
@@ -486,8 +527,17 @@ class bills_in extends bills{
 			</tr>
 			<tr><td colspan="6" style="font-size:0px;padding:0px;">
 			<div class="iframe"><iframe id="iframeproductin" title="เลือกสินค้า" src="?a=product&amp;b=select&amp;for=billsin" class="iframe_product_in"></iframe></div>
-		</td></table>
-		<br />
+		</td>--></table>
+		<div class="billinfileimg">
+			<div>
+				<p><span>รูปภาพใบเสร็จ</span></p>
+				<div id="div_fileuploadpre" class="fileuploadpres"></div>
+				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" style="display:none" name="picture" onchange="F.fileUploadShow(event,1,\'icon_id\',1024,160)" />
+				<label for="upload_pic" style="border-radius: 2px 2px 2px 2px;text-align: center;line-height:32px;display:block;background-image: linear-gradient(to bottom right, #bbbbbb, #888888);color:#ffffff;width:calc(100% - 2px) ;height:32px;">+เลือกรูปภาพ</label>
+			</div>	
+			<script type="text/javascript">F.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')</script>
+		</div>
+		<br /><br />
 		<input type="button" onclick="Bi.billsinSumit()" value="นำเข้าสินค้าเพิ่ม" /></form>';
 	}
 	private function pageBillsIn():void{
@@ -550,6 +600,18 @@ class bills_in extends bills{
 		$count=(isset($sea["count"]))?$sea["count"]:0;
 		$this->page($count,$this->per,$this->page,"?a=bills&amp;c=in&amp;page=");
 		echo '<br /><input type="button" value="นำเข้า สินค้า" onclick="location.href=\'?a=bills&b=fill&c=in\'" />';
+	}
+	private function getPartnerAll():array{
+		$re=[];
+		$sql=[];
+		$sql["get"]="
+			SELECT `name`,`icon`,`sku_root` FROM `partner` ORDER BY `name`
+		";
+		$se=$this->metMnSql($sql,["get"]);
+		if($se["result"]){
+			$re=$se["data"]["get"];
+		}
+		return $re;
 	}
 	private function getAllBillsIn():array{
 		$re=[];

@@ -27,19 +27,23 @@ class image{
 			$b=explode(",",$a[1]);
 		}
 		if(isset($b[1])){
-			$re["size"]=(int) (strlen(rtrim($b[1], '=')) * 3 / 4);
-			$p=getimagesize($_POST[$icon_name]);
-			$re["width"]=$p[0];
-			$re["height"]=$p[1];
-			$re["mime"]=$p["mime"];
-			$re["file"]=$_POST[$icon_name];
-			if($re["width"]>0&&$re["height"]>0){
-				if($re["mime"]=="image/png"||$re["mime"]=="image/gif"||$re["mime"]=="image/jpeg"){
-					$re["result"]=true;
-				}else{
-					$re["message_error"]="เกิดข้อผิดพลาดเกี่ยวกับ ข้อมูล รูป";
-				}
-			}			
+			if(is_writable($this->dir)){
+				$re["size"]=(int) (strlen(rtrim($b[1], '=')) * 3 / 4);
+				$p=getimagesize($_POST[$icon_name]);
+				$re["width"]=$p[0];
+				$re["height"]=$p[1];
+				$re["mime"]=$p["mime"];
+				$re["file"]=$_POST[$icon_name];
+				if($re["width"]>0&&$re["height"]>0){
+					if($re["mime"]=="image/png"||$re["mime"]=="image/gif"||$re["mime"]=="image/jpeg"){
+						$re["result"]=true;
+					}else{
+						$re["message_error"]="เกิดข้อผิดพลาดเกี่ยวกับ ข้อมูล รูป";
+					}
+				}	
+			}else{
+				$re["message_error"]="ไม่สามารถเขียนไฟล์ได้ที่ใน ".$this->dir." โปรดตรวจสอบ สิทธิ์ ของแฟ้ม ";
+			}		
 		}else{
 			$re["message_error"]="เกิดข้อผิดพลาดเกี่ยวกับ ข้อมูล รูป";
 		}
