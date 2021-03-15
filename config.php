@@ -2,11 +2,11 @@
 #คำเตือน!! โปรดแก้ไขด้วยความระมัดระวัง
 define("CF", [
 #หน้า index?a=value ทั้งหมดที่มีและใช้งาน
-	"a"=>["product","unit","fetch","me","user","setting","bills","sell","barcode","bill58","ret","it","day","qrc","cd","group","partner","prop"],
+	"a"=>["product","unit","fetch","me","user","setting","bills","sell","barcode","bill58","ret","it","day","qrc","cd","group","partner","prop","payu","tool"],
 	"require" => ["group"=>["prop"],"product"=>["group","prop"]],
 #้ข้อมูลการเชื่อมต่อกับ ฐานข้อมูล MariaDB
 	"server"=>"127.0.0.1",
-	"database"=>"diypos_0.3",
+	"database"=>"diypos_0.4",
 	"user"=>"diypos",		
 	"password"=>"mr12345678",	
 #http port ต้องตรงกับในไฟล์ httpd.conf
@@ -22,14 +22,14 @@ define("CF", [
 	"userceo"=>[
 		["name"=>"[[SYSTEM]]","a"=>["cd","me"]],
 		["name"=>"พักหรือออก","a"=>[]],
-		["name"=>"พนักงานขาย","a"=>["sell","me","fetch","product","bills","bill58","barcode","qrc","group","partner","prop"]],
+		["name"=>"พนักงานขาย","a"=>["sell","me","fetch","product","bills","setting","bill58","barcode","qrc","group","partner","prop","payu"]],
 		["name"=>"-","a"=>["me"]],
 		["name"=>"-","a"=>["me"]],
 		["name"=>"-","a"=>["me"]],
 		["name"=>"-","a"=>["me"]],
 		["name"=>"-","a"=>["me"]],
-		["name"=>"ผู้จัดการรร้าน","a"=>["product","unit","fetch","me","user","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop"]],
-		["name"=>"เจ้าของร้าน","a"=>["product","unit","fetch","me","user","setting","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop"]]
+		["name"=>"ผู้จัดการรร้าน","a"=>["product","unit","fetch","me","user","setting","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop","payu","tool"]],
+		["name"=>"เจ้าของร้าน","a"=>["product","unit","fetch","me","user","setting","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop","payu","tool"]]
 	]
 ]);
 #ค่าการอณุญาตการใช้งาน

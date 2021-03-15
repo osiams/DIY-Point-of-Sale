@@ -664,7 +664,17 @@ class F{
 		return str;
 	}
 	static  fileUploadShow(e,n,icon_id,max=1920,maxdisplay=116,type="",divuploadpre="",icon_load_id=null) {//-https://stackoverflow.com/questions/30902360/resize-image-before-sending-to-base64-without-using-img-element
-		let ic=M.id(icon_id)
+		let ic=null
+		let icon_ref=null
+		if(typeof(icon_id)=="object"){
+			let idr=M.rid()
+			icon_id[idr]=""
+			ic=icon_id
+			icon_ref=idr
+		}else{
+			ic=M.id(icon_id)
+			icon_ref=ic.id
+		}
 		if(icon_load_id!=null){
 			ic=M.id(icon_load_id)
 		}
@@ -673,7 +683,7 @@ class F{
 		let div_id=M.rid()
 		let cv=M.ce("canvas",{"id":canvas_id,"width":"50px","height":"50px","style":"display:none"})
 		let dv =M.ce("div",{"id":div_id,"data-canvas_id":canvas_id})
-		let dvl=M.ce("div",{"title":"ลบออก","onclick":`F.fileUploadDel(this,'${div_id}','${ic.id}','${canvas_id}')`})
+		let dvl=M.ce("div",{"title":"ลบออก","onclick":`F.fileUploadDel(this,'${div_id}','${icon_ref}','${canvas_id}')`})
 		if(e!=null){
 			if(e.target.files[0].type!="image/png"&&e.target.files[0].type!="image/jpeg"&&e.target.files[0].type!="image/gif"&&e.target.files[0].type!="image/webp"){
 				alert("ไฟล์ที่เลือก ไม่รองรับ สำหรับการเลือก\nไฟล์คุณ "+ e.target.files[0].type)
@@ -735,8 +745,11 @@ class F{
 		//img.src = "https://i.ytimg.com/vi/HLt7Ze-JUPM/hqdefault.jpg?sqp=-oaymwEiCNIBEHZIWvKriqkDFQgBFQAAAAAYASUAAMhCPQCAokN4AQ==&rs=AOn4CLCT1cUDWu32RiYDo8r9qKFv03MENw"
 	}
 	static fileUploadDel(did,div_id,icon_id,canvas_id){
-		let ic=M.id(icon_id)
-		ic.value=""
+		if(M.id(icon_id)!=undefined){
+			M.id(icon_id).value=""
+		}else if(Bi.icon.hasOwnProperty(icon_id)){
+			delete Bi.icon[icon_id]
+		}	
 		M.id(div_id).parentNode.removeChild(M.id(div_id))
 		M.id(canvas_id).parentNode.removeChild(M.id(canvas_id))
 	}

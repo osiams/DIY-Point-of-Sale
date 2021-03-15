@@ -22,48 +22,37 @@ class main{
 			"l"=>["icon"=>"📏","desc"=>"วัดความยาวขาย","opg"=>"ความยาว"],
 			"v"=>["icon"=>"🧊","desc"=>"ขายเป็นปริมาตร","opg"=>"ปริมาตร"]
 		];
+		$this->money_type=[
+			"ca"=>["icon"=>"⚃","name"=>"เงินสด"],
+			"tr"=>["icon"=>"⚖️","name"=>"เงินโอน"],
+			"ck"=>["icon"=>"📏","name"=>"เช็ก"],
+			"cd"=>["icon"=>"🧊","name"=>"เงินเชื่อ"]
+		];
 		$this->tb=[
+			"bill_in"=>[
+				"name"=>"bill_in",
+				"column"=>["id","in_type","sku","lot_from","lot_root","bill","n",
+				"bill_po_sku","pn","bill_no","bill_date","bill_type","payu_arr","icon_arr","vat_n",
+				"sum","changto","user","user_edit","note","stkey_","stroot_",
+				"r_","_r","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],				
+				"primary"=>"sku",
+				"index"=>["in_type","changto","user","note","stkey_","stroot_","r_","_r"]
+			],
+			"bill_in_list"=>[
+				"name"=>"bill_in_list",
+				"column"=>["id","stkey","stroot","bill_in_sku","lot","product_sku_key","product_sku_root","name","s_type",
+				"n","balance","n_wlv","balance_wlv","sum","sq","unit_sku_key","unit_sku_root","note","idkey"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],
+				"primary"=>"id",
+				"index"=>["lot","stkey","stroot","bill_in_sku","product_sku_key","product_sku_root","balance"]
+			],
 			"gallery"=>[
 				"name"=>"gallery",
 				"column"=>["id","sku_key","name","a_type","mime_type","md5","user","size","width","height","date_reg"],
 				"primary"=>"sku_key",
 				"index"=>["a_type","mime_type","size","width","height"]
-			],
-			"product"=>[
-				"name"=>"product",
-				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type","partner",
-					"unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pdstat"=>"c","s_type"=>"p"],
-				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
-				"not_null"=>["name","sku_root"],
-				"primary"=>"sku_root",
-				"unique"=>["sku","name","barcode"],
-				"index"=>["pdstat","skuroot1","skuroot2","group_root","s_type"]
-			],
-			"product_ref"=>[
-				"name"=>"product_ref",
-				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type","partner",
-					"unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
-				"not_null"=>["name","sku_root"],
-				"primary"=>"sku_key",
-				"index"=>["sku_root"]
-			],
-			"unit"=>[
-				"name"=>"unit",
-				"column"=>["id","sku","sku_key","sku_root","name","s_type","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","s_type"=>"p"],
-				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
-				"primary"=>"sku_root",
-				"not_null"=>["name"],
-				"unique"=>["name","sku"]
-			],
-			"unit_ref"=>[
-				"name"=>"unit_ref",
-				"column"=>["id","sku","sku_key","sku_root","name","s_type","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","s_type"=>"p"],
-				"primary"=>"sku_key",
-				"index"=>["sku_root"]
 			],
 			"group"=>[
 				"name"=>"group",
@@ -84,19 +73,23 @@ class main{
 				"index"=>["sku_root"],
 				"check"=>" prop IS NULL OR JSON_VALID(prop)"
 			],
-			"prop"=>[
-				"name"=>"prop",
-				"column"=>["id","sku","sku_key","sku_root","name","data_type","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","data_type"=>"u"],
+			"product"=>[
+				"name"=>"product",
+				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type","partner",
+					"vat","vat_p","unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pdstat"=>"c","s_type"=>"p"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"not_null"=>["name","sku_root"],
 				"primary"=>"sku_root",
-				"not_null"=>["name"],
-				"unique"=>["name","sku"]
+				"unique"=>["sku","name","barcode"],
+				"index"=>["pdstat","skuroot1","skuroot2","group_root","s_type"]
 			],
-			"prop_ref"=>[
-				"name"=>"prop_ref",
-				"column"=>["id","sku","sku_key","sku_root","name","data_type","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","data_type"=>"u"],
+			"product_ref"=>[
+				"name"=>"product_ref",
+				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type","partner",
+					"vat","vat_p","unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"not_null"=>["name","sku_root"],
 				"primary"=>"sku_key",
 				"index"=>["sku_root"]
 			],
@@ -127,6 +120,45 @@ class main{
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
 				"unsigned"=>["day_nv"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_key",
+				"index"=>["sku_root"]
+			],
+			"payu"=>[
+				"name"=>"payu",
+				"column"=>["id","sku","sku_key","sku_root",
+					"name","money_type","icon",
+					"note","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_root",
+				"not_null"=>["name"],
+				"index"=>["money_type"],
+				"unique"=>["name","sku","sku_key"]
+			],
+			"payu_ref"=>[
+				"name"=>"payu_ref",
+				"column"=>["id","sku","sku_key","sku_root",
+					"name","money_type","icon",
+					"note","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_key",
+				"not_null"=>["name"],
+				"index"=>["money_type","sku"]
+			],
+			"prop"=>[
+				"name"=>"prop",
+				"column"=>["id","sku","sku_key","sku_root","name","data_type","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","data_type"=>"u"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_root",
+				"not_null"=>["name"],
+				"unique"=>["name","sku"]
+			],
+			"prop_ref"=>[
+				"name"=>"prop_ref",
+				"column"=>["id","sku","sku_key","sku_root","name","data_type","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","data_type"=>"u"],
 				"primary"=>"sku_key",
 				"index"=>["sku_root"]
 			],
@@ -163,15 +195,6 @@ class main{
 				"primary"=>"id",
 				"index"=>["sku","bill_in_list_id","lot","product_sku_key","product_sku_root","n_wlv"]
 			],
-			"bill_in"=>[
-				"name"=>"bill_in",
-				"column"=>["id","in_type","sku","lot_from","lot_root","bill","n","sum","changto","user","user_edit","note","stkey_","stroot_",
-				"r_","_r","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
-				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],				
-				"primary"=>"sku",
-				"index"=>["in_type","changto","user","note","stkey_","stroot_","r_","_r"]
-			],
 			"mmm"=>[
 				"name"=>"mmm",
 				"column"=>["id","bill_in_id",
@@ -180,14 +203,6 @@ class main{
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","skuroot_n"=>0,"skuroot1_n"=>0,"skuroot2_n"=>0],
 				"primary"=>"bill_in_id",
 				"index"=>["skuroot"]
-			],
-			"bill_in_list"=>[
-				"name"=>"bill_in_list",
-				"column"=>["id","stkey","stroot","bill_in_sku","lot","product_sku_key","product_sku_root","name","s_type",
-				"n","balance","n_wlv","balance_wlv","sum","sq","unit_sku_key","unit_sku_root","note","idkey"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],
-				"primary"=>"id",
-				"index"=>["lot","stkey","stroot","bill_in_sku","product_sku_key","product_sku_root","balance"]
 			],
 			"it"=>[
 				"name"=>"it",
@@ -221,6 +236,22 @@ class main{
 				"column"=>["id","tms","note","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","tms"=>00000.000000],
 				"primary"=>"id"
+			],
+			"unit"=>[
+				"name"=>"unit",
+				"column"=>["id","sku","sku_key","sku_root","name","s_type","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","s_type"=>"p"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_root",
+				"not_null"=>["name"],
+				"unique"=>["name","sku"]
+			],
+			"unit_ref"=>[
+				"name"=>"unit_ref",
+				"column"=>["id","sku","sku_key","sku_root","name","s_type","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","s_type"=>"p"],
+				"primary"=>"sku_key",
+				"index"=>["sku_root"]
 			]
 		];
 		$this->fills=[
@@ -231,9 +262,13 @@ class main{
 			"balance"=>["name"=>"คงเหลือ","type"=>"INT","length_value"=>10],
 			"balance_wlv"=>["name"=>"คงเหลือชั่งตวงวัด","type"=>"FLOAT","length_value"=>[10,4]],
 			"bill"=>["name"=>"ใบ","type"=>"CHAR","length_value"=>25],
+			"bill_date"=>["name"=>"วันที่ในใบเสร็จ","type"=>"TIMESTAMP",],
 			"bill_in_id"=>["name"=>"ที่นำเขา","type"=>"INT","length_value"=>10],
 			"bill_in_list_id"=>["name"=>"ที่นำเขา","type"=>"INT","length_value"=>10],
+			"bill_no"=>["name"=>"เลขที่ในใบเส็จ","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
+			"bill_po_sku"=>["name"=>"เลขที่ใบสั่งซื้อ","type"=>"CHAR","length_value"=>25],
 			"bill_in_sku"=>["name"=>"รหัสภายในใบนำเข้าสินค้า","type"=>"CHAR","length_value"=>25],
+			"bill_type"=>["name"=>"ประเภทใบเสร็จ","type"=>"ENUM","length_value"=>["c","tfp0","tfp1","tsp0","tsp1"]],
 			"brand_name"=>["name"=>"ชื่อการค้า","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			//--0=เงินม1=สินค้าตัวเดิม
 			"changto"=>["name"=>"เปลี่ยนเป็น","type"=>"ENUM","length_value"=>["0","1"]],
@@ -261,6 +296,7 @@ class main{
 			"h"=>["name"=>"เปลี่ยน","type"=>"INT","length_value"=>10],
 			"height"=>["name"=>"กว้าง","type"=>"INT","length_value"=>6],
 			"icon"=>["name"=>"รูป","type"=>"CHAR","length_value"=>255],
+			"icon_arr"=>["name"=>"รูปหลาย","type"=>"TEXT","length_value"=>65535],
 			"id"=>["name"=>"ที่","type"=>"INT","length_value"=>10],
 			"idkey"=>["name"=>"ที่อ้างอิง","type"=>"INT","length_value"=>10],
 			//--"buy","cancel","return",move,x,delete
@@ -274,6 +310,7 @@ class main{
 			"md5"=>["name"=>"md5","type"=>"CHAR","length_value"=>32],
 			"mime_type"=>["name"=>"ประเภทไฟล์","type"=>"ENUM","length_value"=>["image/png","image/gif","image/jpeg"]],
 			"modi_date"=>["name"=>"วันปรับปรุง","type"=>"TIMESTAMP",],
+			"money_type"=>["name"=>"รูปแบบเงิน","type"=>"ENUM","length_value"=>["ca","tr","ck","cd"]],
 			"n"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
 			"n_wlv"=>["name"=>"จำนวนชั่งตวงวัด","type"=>"FLOAT","length_value"=>[10,4]],
 			"no"=>["name"=>"เลขที่","type"=>"CHAR","length_value"=>25],
@@ -285,10 +322,12 @@ class main{
 			//"partner1"=>["name"=>"คู่ค้า1","type"=>"CHAR","length_value"=>255],
 			//"partner2"=>["name"=>"คู่ค้า2","type"=>"CHAR","length_value"=>255],
 			//"partner3"=>["name"=>"คู่ค้า3","type"=>"CHAR","length_value"=>255],
+			"payu_arr"=>["name"=>"รูปแบบการชำระ","type"=>"VARCHAR","length_value"=>1024],
 			"partner"=>["name"=>"คู่ค้า","type"=>"TEXT","length_value"=>65535],
 			"password"=>["name"=>"รหัสผ่าน","type"=>"CHAR","length_value"=>64],
 			//--"b"=>"ใบดำ บัญชีดำ","r"=>หยุดขาย ,"y"=>นำเข้ามาขายแต่ต้องระวังและตรวจสอบเป็นพิเศษ,"c"=>ขายปกติ
 			"pdstat"=>["name"=>"สถานะ","type"=>"ENUM","length_value"=>["b","r","y","c"]],
+			"pn"=>["name"=>"คู่ค้า1","type"=>"CHAR","length_value"=>25],
 			"pn_type"=>["name"=>"ประเภทคู่ค้า","type"=>"ENUM","length_value"=>["s","n"]],
 			"post_no"=>["name"=>"รหัสไปรษณี","type"=>"CHAR","length_value"=>25],
 			"price"=>["name"=>"ราคา","type"=>"FLOAT","length_value"=>[15,2]],
@@ -343,6 +382,9 @@ class main{
 			"w2"=>["name"=>"สินค้าแถมที่รวม","type"=>"CHAR","length_value"=>25],
 			"web"=>["name"=>"เว็บไซต์","type"=>"CHAR","length_value"=>255],
 			"width"=>["name"=>"กว้าง","type"=>"INT","length_value"=>6],
+			"vat"=>["name"=>"มีภาษี","type"=>"ENUM","length_value"=>["0","1"]],
+			"vat_p"=>["name"=>"อัตราภาษี","type"=>"INT","length_value"=>2],
+			"vat_n"=>["name"=>"ภาษี","type"=>"INT","length_value"=>10],
 			
 			"tr"=>["name"=>"ช่วงเวลา","type"=>"INT","length_value"=>10],
 			"bi_c"=>["name"=>"จำนวนแถว bill_in","type"=>"INT","length_value"=>10],

@@ -12,16 +12,17 @@ div.billsin_note_edit > input{width:98%;text-align:center}
 #billsin td{border-bottom:1px solid gray}
 
 
-.billinhead{display:grid;grid-template-columns:50% 50%;grid-gap: 2px 2px;padding:2px 0px;width:calc(100% - 2px);background-color:transparent;margin:0px 0px 20px 0px;}
+.billinhead{display:grid;grid-template-columns:50% 50%;grid-gap: 2px 2px;padding:2px 0px;width:calc(100% - 2px);background-color:transparent;margin:0px 0px 20px 0px;max-width:800px;}
 /*.billinhead > div:nth-child(1){background-color:red;}*/
 .billinhead > div > select{width:calc(100% - 8px);}
 .billinhead > div > input{width:calc(100% - 12px - 6px);}
 .billinhead > div > p{color:blue;text-align:right;padding-right:20px;background-color:transparent;width:calc(100% - 26px);}
 .billinhead > div > p >span{position:relative;top:10px;background-color:#fefefe;}
-.billinfileimg{width:100%;}
+.billinfileimg{width:100%;max-width:800px;}
 .billinfileimg > div > p{color:blue;text-align:right;padding-right:20px;width:calc(100% - 26px);}
 .billinfileimg > div > p >span{position:relative;top:10px;background-color:#fefefe;}
-.billinfileimg > div > div{min-height:160px;border-radius: 3px 3px 3px 3px;border:1px solid gray;width:calc(100% - 6px);} 
+.billinfileimg > div > div{border-radius: 3px 3px 3px 3px;border:1px solid gray;width:calc(100% - 6px);} 
+.billinvat{display:grid;grid-template-columns:auto 160px;padding:5px;grid-gap: 5px 5px;}
 
 /*#billsin  tr > td:nth-child(2) > input{width:calc(100% - 10px);}*/
 .wwp{width:calc(100% - 10px);background-color:transparent;}

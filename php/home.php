@@ -25,6 +25,8 @@ class home extends main{
 		echo ''.$this->os("it",'<div  class="icon icon_it" onclick="location.href=\'?a=it\'">คลังสินค้า</div>').'';
 		echo ''.$this->os("day",'<div  class="icon icon_day" onclick="location.href=\'?a=day\'">สรุป ประจำวัน</div>').'';
 		echo ''.$this->os("barcode",'<div  class="icon icon_barcode" onclick="location.href=\'?a=barcode\'">รหัสแท่ง</div>').'';
+		echo ''.$this->os("payu",'<div  class="icon icon_payu" onclick="location.href=\'?a=payu\'">รูปแบบการชำระ</div>').'';
+		echo ''.$this->os("tool",'<div  class="icon icon_tool" onclick="location.href=\'?a=tool\'">เครื่องมือ</div>').'';
 		echo ''.$this->os("setting",'<div  class="icon icon_setting" onclick="location.href=\'?a=setting\'">ตั้งค่า</div>').'';
 		echo ''.$this->os("cd",'<div  class="icon icon_cd" onclick="location.href=\'?a=cd\'">จอแสดงผล สำหรับลูกค้า</div>').'';
 		echo '<script type="text/javascript">M.b.classList.add(\'bghome\');M.b.classList.add(\'sd\');</script>';

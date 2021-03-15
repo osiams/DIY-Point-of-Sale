@@ -3,6 +3,7 @@ class billsin extends main{
 	constructor(){
 		super()
 		this.dow_n=0
+		this.icon={};
 	}
 	setAct(did){
 		let o=did.parentNode.parentNode

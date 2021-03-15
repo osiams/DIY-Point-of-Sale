@@ -117,6 +117,10 @@ class install extends main{
 				INSERT INTO `group` (`id`,`sku`,`sku_key`,`sku_root`,`d1`,`name`) VALUES (1,'default','defaultroot','defaultroot','defaultroot','_ไม่ระบุ') 
 				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`d1`='defaultroot',`name`='_ไม่ระบุ';
 			";
+			$sql["default_payu"]="
+				INSERT INTO `payu` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`money_type`,`icon`) VALUES (1,'default','defaultroot','defaultroot','เงินสด','ca','__default_payu_defaultroot.png') 
+				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`name`='เงินสด',`money_type`='ca',`icon`='__default_payu_defaultroot.png';
+			";
 			$pw=password_hash("12345678", PASSWORD_DEFAULT);
 			$sql["default_user"]="BEGIN NOT ATOMIC
 				INSERT INTO `user` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`lastname`,`email`,`password`,`userceo`) 
@@ -163,6 +167,7 @@ class install extends main{
 			$sql["ref_group"]=$this->ref("group","sku_key","defaultroot");
 			$sql["ref_user1"]=$this->ref("user","sku_key","administratorroot");
 			$sql["ref_user2"]=$this->ref("user","sku_key","systemroot");
+			$sql["ref_payu1"]=$this->ref("payu","sku_key","defaultroot");
 			$sql["ref_it1"]=$this->ref("it","sku_key","defaultroot");
 			$sql["ref_it2"]=$this->ref("it","sku_key","proot");
 			$sql["ref_it3"]=$this->ref("it","sku_key","xroot");
@@ -227,7 +232,7 @@ class install extends main{
 			echo '<p class="c"><a href="install.php">ลองติดตั้งใหม่</a> หรือ <a href="index.php">ไปหน้าหลัก</a></p>';
 		}
 	}
-private function createTable(string $table,string $sql):array{
+	private function createTable(string $table,string $sql):array{
 		$re=array("connect"=>false,
 					"connect_message"=>"",
 					"result"=>false,

@@ -528,14 +528,25 @@ class bills_in extends bills{
 			<tr><td colspan="6" style="font-size:0px;padding:0px;">
 			<div class="iframe"><iframe id="iframeproductin" title="เลือกสินค้า" src="?a=product&amp;b=select&amp;for=billsin" class="iframe_product_in"></iframe></div>
 		</td>--></table>
+		<div class="billinvat">
+			<div class="r">ราคารวม ยังไม่บวกภาษี</div>
+			<div class="r">0.00</div>
+			<div class="r">ภาษีรวม</div>
+			<div class="r">0.00</div>
+			<div class="r">ราคารวม บวกภาษีรวม</div>
+			<div class="r">0.00</div>
+		</div>
+		<div><input type="button" value="เลือก/แก้ไข สินค้า" /></div>
 		<div class="billinfileimg">
 			<div>
 				<p><span>รูปภาพใบเสร็จ</span></p>
-				<div id="div_fileuploadpre" class="fileuploadpres"></div>
-				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" style="display:none" name="picture" onchange="F.fileUploadShow(event,1,\'icon_id\',1024,160)" />
-				<label for="upload_pic" style="border-radius: 2px 2px 2px 2px;text-align: center;line-height:32px;display:block;background-image: linear-gradient(to bottom right, #bbbbbb, #888888);color:#ffffff;width:calc(100% - 2px) ;height:32px;">+เลือกรูปภาพ</label>
+				<div>
+					<div id="div_fileuploadpre" class="fileuploadpres"></div>
+					<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" style="display:none" name="picture" onchange="F.fileUploadShow(event,20,Bi.icon,1024,160)" />
+					<label for="upload_pic" style="border-radius: 2px 2px 2px 2px;text-align: center;line-height:32px;display:block;background-image: linear-gradient(to bottom right, #bbbbbb, #888888);color:#ffffff;width:calc(100% - 0px) ;height:32px;">+เลือกรูปภาพ</label>
+				</div>
 			</div>	
-			<script type="text/javascript">F.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')</script>
+			<script type="text/javascript">/*F.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')*/</script>
 		</div>
 		<br /><br />
 		<input type="button" onclick="Bi.billsinSumit()" value="นำเข้าสินค้าเพิ่ม" /></form>';
