@@ -457,7 +457,7 @@ class partner extends main{
 		$sql["ref"]=$this->ref("partner","sku_key",$key);
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`";
 		$se=$this->metMnSql($sql,["result"]);
-		print_r($sql);
+		//print_r($sql);
 		return $se;
 	}
 	protected function regisPartnerPage(string $error):void{

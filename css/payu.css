@@ -1,0 +1,8 @@
+.table_view_all_payu{width:100%;}
+.table_view_all_payu  th:nth-child(2){width:48px;}
+.table_view_all_payu  td:nth-child(2){width:48px;}
+@media screen and (max-width: 635px) {
+	.py_search > form > label > select{width:80px;}
+	.py_search >form >   label >input[type="text"]{width:calc(100% - 160px);}
+	.py_search > form > label > input[type="button"]{width:60px;}
+}

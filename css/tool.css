@@ -1,0 +1,19 @@
+.tool_main{max-width:1080px;display:grid;align-content: center;justify-content: center;}
+.tool_main > div{display:grid;grid-template-columns:64px auto;border:1px solid gray;cursor:pointer;}
+.tool_main > div >div:nth-child(1){min-height:64px;padding:2px;}
+.tool_main > div >div:nth-child(2){padding:5px;text-align:left;}
+
+.icon_tool_pd_to_data_txt{background-image:url('../img/pos/64x64_tool_pd_to_data_txt.png'); background-repeat: no-repeat;}
+
+@media screen and (min-width: calc(720px + 360px)) {
+	.tool_main{display:grid;grid-template-columns:33% 33% auto;}
+}
+@media screen and (max-width: calc(720px + 360px)) {
+	.tool_main{display:grid;grid-template-columns:33% 33% auto;}
+}
+@media screen and (max-width: 720px) {
+	.tool_main{display:grid;grid-template-columns:50% 50%;}
+}
+@media screen and (max-width: calc(360px + 180px)) {
+	.tool_main{display:grid;grid-template-columns:calc(100% - 2px );}
+}
