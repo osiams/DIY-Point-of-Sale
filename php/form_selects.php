@@ -40,6 +40,16 @@ class form_selects extends main{
 				$this->partner->defaultPageSearch();
 				$this->fetchPartnerSelectPage();
 			}
+		}else if($this->a=="payu"){
+			if(isset($_POST["c"])&&$_POST["c"]=="payu_get"){
+				$this->fetchPayuGetPage();
+			}else{
+				require_once("php/payu.php");
+				$this->payu= new payu();
+				$this->payu->page=$this->setPageR();
+				$this->payu->defaultPageSearch();
+				$this->fetchPayuSelectPage();
+			}
 		}
 	}
 	private function fetchPartnerSelectPage():void{
@@ -62,10 +72,18 @@ class form_selects extends main{
 		echo json_encode($this->re);
 	}
 	public function writeForm(){
-		echo '<table id="'.$this->id.'" class="table_select_partner">
-			<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
-		</table>';
-		echo '<script type="text/javascript">Fsl.setLoadPartner(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')</script>';
+		if($this->a=="partner"){
+			echo '<table id="'.$this->id.'" class="table_select_partner">
+				<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
+			</table>';
+			echo '<script type="text/javascript">Fsl.setLoadPartner(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')</script>';
+		}else if($this->a=="payu"){
+			echo '<table id="'.$this->id.'"class="div_select_payu r">
+				<tr><td colspan="3" class="r">
+					<input type="button" value="เพิ่ม/แก้ไข"  onclick="Fsl.ctAddPayu(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')">
+				</td></tr>
+			</table>';
+		}
 	}
 	private function partnerGetData(string $tin):array{
 		$re=[];
@@ -87,5 +105,25 @@ class form_selects extends main{
 			$ar = explode(",,",substr($prop,1,-1));
 		}
 		return json_encode($ar);
+	}
+	###################################################
+	private function fetchPayuGetPage():void{
+		$py_list=(isset($_POST["payu_list"]))?$_POST["payu_list"]:"";
+		$tin=$this->setPropR($py_list);
+		$tin=substr($tin,1,-1);
+		$se=$this->payuGetData($tin);
+		$this->re["result"]=true;
+		$this->re["message_error"]="";
+		$this->re["data"]=$se;
+		header('Content-type: application/json');
+		echo json_encode($this->re);
+	}
+	private function fetchPayuSelectPage():void{
+		$this->re["result"]=true;
+		$this->re["message_error"]="";
+		$this->re["data"]=$this->payu->getAllPayu();
+		$this->re["data"]["page"]=["page"=>$this->payu->page,"per"=>$this->payu->per];
+		header('Content-type: application/json');
+		echo json_encode($this->re);
 	}
 }

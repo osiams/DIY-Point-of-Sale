@@ -1,7 +1,7 @@
 .tool_main{max-width:1080px;display:grid;align-content: center;justify-content: center;}
-.tool_main > div{display:grid;grid-template-columns:64px auto;border:1px solid gray;cursor:pointer;}
-.tool_main > div >div:nth-child(1){min-height:64px;padding:2px;}
-.tool_main > div >div:nth-child(2){padding:5px;text-align:left;}
+.tool_main > div{display:grid;grid-template-columns:64px auto;border:1px solid gray;cursor:pointer;padding:5px;grid-gap:5px;width:calc(100% - 15px)}
+.tool_main > div >div:nth-child(1){min-height:64px;}
+.tool_main > div >div:nth-child(2){text-align:left;}
 
 .icon_tool_pd_to_data_txt{background-image:url('../img/pos/64x64_tool_pd_to_data_txt.png'); background-repeat: no-repeat;}
 

@@ -24,6 +24,10 @@ div.billsin_note_edit > input{width:98%;text-align:center}
 .billinfileimg > div > div{border-radius: 3px 3px 3px 3px;border:1px solid gray;width:calc(100% - 6px);} 
 .billinvat{display:grid;grid-template-columns:auto 160px;padding:5px;grid-gap: 5px 5px;}
 
+@media screen and (max-width: calc(360px + 180px)) {
+	.billinhead{display:grid;grid-template-columns:calc(100% - 2px );}
+}
+
 /*#billsin  tr > td:nth-child(2) > input{width:calc(100% - 10px);}*/
 .wwp{width:calc(100% - 10px);background-color:transparent;}
 .wpp{width:calc(300% - 40px);margin:0 auto;position:relative;z-index:2;left:0px;max-width:calc(100vw - 60px);}

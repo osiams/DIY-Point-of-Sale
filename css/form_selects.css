@@ -24,3 +24,4 @@
 .selected_list_partner_search > select:nth-child(1){width:100%}
 .selected_list_partner_search > input:nth-child(2){width:calc(100% - 6px)}
 
+.div_select_payu{width:calc(100% - 8px);border-radius: 3px 3px 3px 3px;border-spacing:0px;border:1px solid gray;min-height:32px;cursor:pointer;}

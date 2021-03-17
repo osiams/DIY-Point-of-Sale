@@ -4,6 +4,7 @@ class bills_in extends bills{
 		parent::__construct();
 		$this->per=10;
 		$this->page=1;
+		$this->form_py=null;
 	}
 	public function run(){
 		$this->page=$this->setPageR();
@@ -12,6 +13,10 @@ class bills_in extends bills{
 		if(isset($_GET["b"])&&in_array($_GET["b"],$q)){
 			//$this->getSelect();
 			$t=$_GET["b"];
+			if($t=="fill"||$t=="edit"){
+				$file = "php/form_selects.php";
+				require($file);			
+			}
 			if($t=="fill"){
 				$this->billsinPage();
 			}else if($t=="view"){
@@ -450,7 +455,7 @@ class bills_in extends bills{
 	}
 	private function billsinPage(){
 		$this->addDir("?a=bills&amp;b=fill&amp;c=in","นำเข้าสินค้า ");
-		$this->pageHead(["title"=>"นำเข้า สินค้า DIYPOS","js"=>["billsin","Bi"],"css"=>["billsin"]]);
+		$this->pageHead(["title"=>"นำเข้า สินค้า DIYPOS","js"=>["billsin","Bi","form_selects","Fsl"],"css"=>["billsin","form_selects"],"run"=>["Fsl"]]);
 			echo '<div class="content">
 				<div class="form">
 					<h1 class="c">นำเข้าสินค้า</h1>';
@@ -463,8 +468,10 @@ class bills_in extends bills{
 	}
 	private function writeContentInBillsin():void{
 		$pn=$this->getPartnerAll();	
+		$payu_list_id=$this->key("key",7);
 		echo '<form class="form100"  name="billsin" method="post">
-			<input type="hidden" name="sku" value="" />
+			<input type="hidden" name="sku_root" value="" />
+			<input type="hidden" id="'.$payu_list_id.'" name="payu_list" value="" />
 			<div class="billinhead">
 				<div>
 					<p><span>ใบสั่งซื้อ/คู่ค้า</span></p>
@@ -496,9 +503,10 @@ class bills_in extends bills{
 				</div>
 				<div>
 					<p><span>รูปแบบการชำระ</span></p>
-					<select name="pay_type">
-						<option>เงินสด</option>
-					</select>
+				<div>';
+			$this->form_py=new form_selects("payu","คู่ค้า","billsin",$this->key("key",7),$payu_list_id);	
+			$this->form_py->writeForm("billsin");
+		echo '</div>
 				</div>
 				<div>
 					<p><span>หมายเหตุ</span></p>
