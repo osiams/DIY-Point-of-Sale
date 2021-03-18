@@ -410,7 +410,7 @@ class payu extends main{
 				<h1 class="c">'.$this->title.'</h1>
 				<div class="pn_search">
 					<form class="form100" name="py_search" action="" method="get">
-						<input type="hidden" name="a" value="partner" />
+						<input type="hidden" name="a" value="payu" />
 						<input type="hidden" name="lid" value="0" />
 						<label><select id="product_search_fl" name="fl">
 							<option value="name"'.(($this->fl=="name")?" selected":"").'>ชื่อ</option>
@@ -444,12 +444,12 @@ class payu extends main{
 		if($tx!=""){
 			$tx=substr($tx,1,-1);
 			$this->txsearch=$tx;
-			$se=" WHERE `partner`.`".$fl."` LIKE  \"%".$tx."%\"  ";
+			$se=" WHERE `payu`.`".$fl."` LIKE  \"%".$tx."%\"  ";
 		}
 		return $se;
 	}
 	public function defaultPageSearch():void{
-		$fla=["brand_name","sku","name"];
+		$fla=["sku","name"];
 		$fl="name";
 		$tx="";
 		$se="";
@@ -475,7 +475,7 @@ class payu extends main{
 			if($this->lid>0){
 				$idsearch="<=".$this->lid." ";
 			}
-			$this->sh=" WHERE `partner`.`id`".$idsearch." AND `partner`.`".$fl."` LIKE  \"%".$tx."%\""  ;
+			$this->sh=" WHERE `payu`.`id`".$idsearch." AND `payu`.`".$fl."` LIKE  \"%".$tx."%\""  ;
 		}
 	}
 	protected function pageSearch(int $row):void{

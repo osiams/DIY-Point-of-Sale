@@ -468,10 +468,11 @@ class bills_in extends bills{
 	}
 	private function writeContentInBillsin():void{
 		$pn=$this->getPartnerAll();	
+		$payu=(isset($_POST["payu"]))?htmlspecialchars($_POST["payu"]):",defaultroot,";
 		$payu_list_id=$this->key("key",7);
 		echo '<form class="form100"  name="billsin" method="post">
 			<input type="hidden" name="sku_root" value="" />
-			<input type="hidden" id="'.$payu_list_id.'" name="payu_list" value="" />
+			<input type="hidden" id="'.$payu_list_id.'" name="payu_list" value="'.$payu.'" />
 			<div class="billinhead">
 				<div>
 					<p><span>ใบสั่งซื้อ/คู่ค้า</span></p>

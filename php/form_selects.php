@@ -15,26 +15,7 @@ class form_selects extends main{
 				$this->fetchPartnerGetPage();
 			}else{
 				require_once("php/partner.php");
-				if(!isset($_POST["page"])){
-					$_GET["page"]=1;
-				}else{
-					$_GET["page"]=$_POST["page"];
-				}
-				if(!isset($_POST["tx"])){
-					$_GET["tx"]="";
-				}else{
-					$_GET["tx"]=$_POST["tx"];
-				}
-				if(!isset($_POST["fl"])){
-					$_GET["fl"]="name";
-				}else{
-					$_GET["fl"]=$_POST["fl"];
-				}
-				if(!isset($_POST["lid"])){
-					$_GET["lid"]=0;
-				}else{
-					$_GET["lid"]=$_POST["lid"];
-				}
+				$this->postToGet();
 				$this->partner= new partner();
 				$this->partner->page=$this->setPageR();
 				$this->partner->defaultPageSearch();
@@ -45,11 +26,34 @@ class form_selects extends main{
 				$this->fetchPayuGetPage();
 			}else{
 				require_once("php/payu.php");
+				$this->postToGet();
 				$this->payu= new payu();
 				$this->payu->page=$this->setPageR();
 				$this->payu->defaultPageSearch();
 				$this->fetchPayuSelectPage();
 			}
+		}
+	}
+	private function postToGet():void{
+		if(!isset($_POST["page"])){
+			$_GET["page"]=1;
+		}else{
+			$_GET["page"]=$_POST["page"];
+		}
+		if(!isset($_POST["tx"])){
+			$_GET["tx"]="";
+		}else{
+			$_GET["tx"]=$_POST["tx"];
+		}
+		if(!isset($_POST["fl"])){
+			$_GET["fl"]="name";
+		}else{
+			$_GET["fl"]=$_POST["fl"];
+		}
+		if(!isset($_POST["lid"])){
+			$_GET["lid"]=0;
+		}else{
+			$_GET["lid"]=$_POST["lid"];
 		}
 	}
 	private function fetchPartnerSelectPage():void{
@@ -74,15 +78,16 @@ class form_selects extends main{
 	public function writeForm(){
 		if($this->a=="partner"){
 			echo '<table id="'.$this->id.'" class="table_select_partner">
-				<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
+				<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\'partner\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
 			</table>';
-			echo '<script type="text/javascript">Fsl.setLoadPartner(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')</script>';
+			echo '<script type="text/javascript">Fsl.setLoadPartner(\'partner\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')</script>';
 		}else if($this->a=="payu"){
-			echo '<table id="'.$this->id.'"class="div_select_payu r">
-				<tr><td colspan="3" class="r">
-					<input type="button" value="เพิ่ม/แก้ไข"  onclick="Fsl.ctAddPayu(\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')">
+			echo '<table id="'.$this->id.'"class="table_select_payu r">
+				<tr><td colspan="4" class="r">
+					<input type="button" value="เพิ่ม/แก้ไข"  onclick="Fsl.ctAddPartner(\'payu\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')">
 				</td></tr>
 			</table>';
+			echo '<script type="text/javascript">Fsl.setLoadPartner(\'payu\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')</script>';
 		}
 	}
 	private function partnerGetData(string $tin):array{
@@ -108,8 +113,8 @@ class form_selects extends main{
 	}
 	###################################################
 	private function fetchPayuGetPage():void{
-		$py_list=(isset($_POST["payu_list"]))?$_POST["payu_list"]:"";
-		$tin=$this->setPropR($py_list);
+		$pn_list=(isset($_POST["partner_list"]))?$_POST["partner_list"]:"";
+		$tin=$this->setPropR($pn_list);
 		$tin=substr($tin,1,-1);
 		$se=$this->payuGetData($tin);
 		$this->re["result"]=true;
@@ -117,6 +122,19 @@ class form_selects extends main{
 		$this->re["data"]=$se;
 		header('Content-type: application/json');
 		echo json_encode($this->re);
+	}
+	private function payuGetData(string $tin):array{
+		$re=[];
+		$sql=[];
+		$sql["get"]="SELECT `id`,`name`,`icon`,`sku`,`sku_root` 
+			FROM `payu` 
+			WHERE `sku_root` IN(".$tin.")
+			ORDER BY `id` DESC ";
+		$se=$this->metMnSql($sql,["get"]);
+		if($se["result"]){
+			$re=$se["data"]["get"];
+		}
+		return $re;
 	}
 	private function fetchPayuSelectPage():void{
 		$this->re["result"]=true;
