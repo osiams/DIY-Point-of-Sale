@@ -5,7 +5,7 @@ class payu extends main{
 		$this->img=null;
 		$this->title = "รูปแบบการชำระ";
 		$this->a = "payu";
-		$this->per=10;
+		$this->per=3;
 		$this->page=1;
 		$this->txsearch="";
 		$this->fl="";
@@ -455,9 +455,12 @@ class payu extends main{
 		$se="";
 		if(isset($_GET["fl"])){
 			if(in_array($_GET["fl"],$fla)){
-				if(($_GET["fl"]=="sku")
-					&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["tx"])){
-					$fl=$_GET["fl"];
+				if($_GET["fl"]=="sku"){
+					if(preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["tx"])){
+						$fl=$_GET["fl"];
+					}else{
+						$_GET["tx"]="=*/?";
+					}
 				}
 			}
 		}

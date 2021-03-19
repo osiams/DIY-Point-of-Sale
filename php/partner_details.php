@@ -18,6 +18,8 @@ class partner_details extends partner{
 			<div class="form">
 				<h1 class="c">'.$pn_name.'</h1>';
 		$this->writeContentPartner($dt);		
+		echo '<br />';
+		$this->writeContentProduct();
 		$this->pageFoot();
 	}
 	private function writeContentPartner(array $dt):void{
@@ -87,6 +89,24 @@ class partner_details extends partner{
 			echo '<tr class="i'.(($s%2)+1).'"><td class="l">ที่อยู่</td><td class="l">'.$addres.'</td></tr>';
 		}
 		echo '</table>';
+		
+		
+	}
+	private function writeContentProduct():void{
+		$pd=$this->detailsGetProduct();
+		echo '<table class="table_details">
+			<caption>สินค้า</caption>
+			<tr><th>ที่</th><th>ป.</th><th>รหัสแท่ง</th><th>ชื่อ</th></tr>';
+		for($i=0;$i<count($pd);$i++){
+			$s_type=($pd[$i]["s_type"]!==""&&isset($this->s_type[$pd[$i]["s_type"]]))?$this->s_type[$pd[$i]["s_type"]]["icon"]:"";
+			echo '<tr>
+				<td>'.($i+1).'</td>
+				<td>'.$s_type.'</td>
+				<td class="l">'.$pd[$i]["barcode"].'</td>
+				<td class="l"><a href="?a=product&amp;b=details&amp;sku_root='.$pd[$i]["sku_root"].'">'.htmlspecialchars($pd[$i]["name"]).'</a></td>
+			</tr>';
+		}
+		echo '</table>';
 	}
 	private function detailsGetData(){
 		$sku_root=$this->getStringSqlSet($this->sku_root);
@@ -99,6 +119,20 @@ class partner_details extends partner{
 		if($se["result"]){
 			$re["partner"]=$se["data"]["partner"][0];
 		}
+		return $re;
+	}
+	private function detailsGetProduct(){
+		$sku_root=$this->getStringSqlSet($this->sku_root);
+		$re=["get"=>[]];
+		$sql=[];
+		$sql["product"]="SELECT `name`,`barcode`,`sku_root`,IFNULL(`s_type`,'') AS `s_type` FROM `product`
+			WHERE JSON_SEARCH(`partner`, 'one', ".$sku_root.") IS NOT NULL;
+		";
+		$se=$this->metMnSql($sql,["product"]);
+		if($se["result"]){
+			$re=$se["data"]["product"];
+		}
+		//print_r($se);
 		return $re;
 	}
 }

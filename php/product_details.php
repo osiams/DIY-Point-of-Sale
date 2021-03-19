@@ -10,10 +10,16 @@ class product_details extends product{
 			$this->loadGroupAndProp();
 			$this->sku_root=$_GET["sku_root"];
 			$dt=$this->getData($_GET["sku_root"]);
-			$this->addDir("?a=product&amp;b=details&amp;sku_root=".$_GET["sku_root"],"รายละเอียดสินค้า ".htmlspecialchars($dt["product"][0]["name"]));
+			$pd_name="ไม่พบสินค้า";
+			if(count($dt["product"])>0){
+				$pd_name=htmlspecialchars($dt["product"][0]["name"]);
+			}
+			$this->addDir("?a=product&amp;b=details&amp;sku_root=".$_GET["sku_root"],"รายละเอียดสินค้า ".$pd_name);
 			$this->pageHead(["title"=>"รายละเอียดสินค้า DIYPOS","css"=>["product_details"]]);
-			$this->details($dt["product"][0]);
-			$this->detailsProp($dt["product"][0]["group_root"],json_decode($dt["product"][0]["props"],true));
+			if(count($dt["product"])>0){
+				$this->details($dt["product"][0]);
+				$this->detailsProp($dt["product"][0]["group_root"],json_decode($dt["product"][0]["props"],true));
+			}
 			$this->stock($dt["stock"]);
 			$this->bill($dt["bill"]);
 		}
@@ -199,12 +205,15 @@ class product_details extends product{
 			ORDER BY bill_sell.id DESC LIMIT 10
 		";
 		$se=$this->metMnSql($sql,["product","stock","bill"]);
-		if(isset($se["data"]["product"])){
+		if(isset($se["data"]["product"])&&count($se["data"]["product"])>0){
 			$re["product"]=$se["data"]["product"];
 			$re["stock"]=$se["data"]["stock"];
 			$re["bill"]=$se["data"]["bill"];
+		}else{
+			$re["product"]=[];
+			$re["stock"]=[];
+			$re["bill"]=[];
 		}
-		//print_r($se);
 		return $re;
 	}
 }

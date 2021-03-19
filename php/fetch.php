@@ -30,7 +30,7 @@ class fetch extends main{
 					(new it())->fetchM($_POST["b"]);
 				}
 			}else if($_POST["a"]=="form_selects"){
-				$b=["partner","payu"];
+				$b=["partner","payu","product"];
 				
 				if(isset($_POST["b"])&&in_array($_POST["b"],$b)){
 					eval("(new form_selects(\"".$_POST["b"]."\"))->fetch();");

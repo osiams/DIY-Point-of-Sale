@@ -794,7 +794,7 @@ class product extends main{
 		$t.='';
 		return $t;
 	}
-	private function getAllProduct(string $for=null):array{
+	public function getAllProduct(string $for=null):array{
 		$sh=$this->defaultSearch();
 		$re=[];
 		$sql=[];
@@ -857,7 +857,12 @@ class product extends main{
 		$se=$this->metMnSql($sql,["get","result"]);
 		//print_r($se);
 		if($se["result"]){
-			$re=["row"=>$se["data"]["get"],"count"=>$se["data"]["result"][0]["count"]];
+			if($for!="form_select"){
+				$re=["row"=>$se["data"]["get"],"count"=>$se["data"]["result"][0]["count"]];
+			}else{
+				$count = (object) ["count"=>$se["data"]["result"][0]["count"]];
+				$re=["get"=>$se["data"]["get"],"count"=>[$count]];
+			}
 		}
 		return $re;
 	}
@@ -885,16 +890,19 @@ class product extends main{
 		}
 		return $se;
 	}
-	private function defaultPageSearch():void{
+	public function defaultPageSearch():void{
 		$fla=["sku","barcode","name"];
 		$fl="name";
 		$tx="";
 		$se="";
 		if(isset($_GET["fl"])){
 			if(in_array($_GET["fl"],$fla)){
-				if(($_GET["fl"]=="barcode"||$_GET["fl"]=="sku")
-				&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["tx"])){
-					$fl=$_GET["fl"];
+				if(($_GET["fl"]=="barcode"||$_GET["fl"]=="sku")){
+					if(preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["tx"])){
+						$fl=$_GET["fl"];
+					}else{
+						$_GET["tx"]="=*/?";
+					}
 				}
 			}
 		}

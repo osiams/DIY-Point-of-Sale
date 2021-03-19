@@ -18,7 +18,18 @@ class bills_in extends bills{
 				require($file);			
 			}
 			if($t=="fill"){
-				$this->billsinPage();
+				$q=["po","partner"];
+				if(isset($_GET["group"])&&in_array($_GET["group"],$q)){
+					if($_GET["group"]=="partner"
+						&&isset($_GET["sku_root"])
+						&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku_root"])){
+						$this->billsinPage("partner",$_GET["sku_root"]);
+					}else{
+						$this->billsinPage();
+					}
+				}else{
+					$this->billsinPage();
+				}
 			}else if($t=="view"){
 				$this->view();
 			}else if($t=="edit"){
@@ -383,7 +394,6 @@ class bills_in extends bills{
 		}
 	}
 	private function writeJsDataEdit(array $dt,bool $editable=true):void{
-		//print_r($dt);
 		$br="\n";
 		$edb=($editable)?"true":"false";
 		echo '<script type="text/javascript">Bi.insertData([';
@@ -453,35 +463,39 @@ class bills_in extends bills{
 		}
 		return $re;
 	}
-	private function billsinPage(){
+	private function billsinPage(string $group="",string $sku_root=""){
 		$this->addDir("?a=bills&amp;b=fill&amp;c=in","นำเข้าสินค้า ");
 		$this->pageHead(["title"=>"นำเข้า สินค้า DIYPOS","js"=>["billsin","Bi","form_selects","Fsl"],"css"=>["billsin","form_selects"],"run"=>["Fsl"]]);
 			echo '<div class="content">
 				<div class="form">
 					<h1 class="c">นำเข้าสินค้า</h1>';
-			$this->writeContentInBillsin();
+			$this->writeContentInBillsin($group,$sku_root);
 			echo '<br /><p class="c">
 				
 			</p>';
 			echo '</div></div>';
 			$this->pageFoot();
 	}
-	private function writeContentInBillsin():void{
+	private function writeContentInBillsin(string $group="",string $sku_root=""):void{
 		$pn=$this->getPartnerAll();	
 		$payu=(isset($_POST["payu"]))?htmlspecialchars($_POST["payu"]):",defaultroot,";
+		$product=(isset($_POST["product"]))?htmlspecialchars($_POST["product"]):"";
 		$payu_list_id=$this->key("key",7);
+		$product_list_id=$this->key("key",7);
 		echo '<form class="form100"  name="billsin" method="post">
 			<input type="hidden" name="sku_root" value="" />
 			<input type="hidden" id="'.$payu_list_id.'" name="payu_list" value="'.$payu.'" />
+			<input type="hidden" id="'.$product_list_id.'" name="product_list" value="'.$product.'" />
 			<div class="billinhead">
 				<div>
 					<p><span>ใบสั่งซื้อ/คู่ค้า</span></p>
-					<select name="pn">
+					<select name="pn" onchange="Bi.loadProduct(this)">
 						<optgroup label="ใบสั่งซื้อ">
 						</optgroup>
 						<optgroup label="คู่ค้า">';
 							for($i=0;$i<count($pn);$i++){
-								echo '<option value="'.$pn[$i]["sku_root"].'">'.htmlspecialchars($pn[$i]["name"]).'</option>';
+								$st=($pn[$i]["sku_root"]==$sku_root)?" selected":"";
+								echo '<option data-group="partner" value="'.$pn[$i]["sku_root"].'"'.$st.'>'.htmlspecialchars($pn[$i]["name"]).'</option>';
 							}
 		echo '		</optgroup>
 					</select>
@@ -521,7 +535,7 @@ class bills_in extends bills{
 			<th>ราคารวม<br />ราคาต่อชิ้น</th>
 			<th>กระทำ</th>
 			</tr>';
-		echo '<!--<tr id="trsearch">
+		echo '<tr id="trsearch">
 				<td colspan="6">
 					<label>
 					<select name="fl">
@@ -536,7 +550,7 @@ class bills_in extends bills{
 			</tr>
 			<tr><td colspan="6" style="font-size:0px;padding:0px;">
 			<div class="iframe"><iframe id="iframeproductin" title="เลือกสินค้า" src="?a=product&amp;b=select&amp;for=billsin" class="iframe_product_in"></iframe></div>
-		</td>--></table>
+		</td></table>
 		<div class="billinvat">
 			<div class="r">ราคารวม ยังไม่บวกภาษี</div>
 			<div class="r">0.00</div>
@@ -544,9 +558,11 @@ class bills_in extends bills{
 			<div class="r">0.00</div>
 			<div class="r">ราคารวม บวกภาษีรวม</div>
 			<div class="r">0.00</div>
-		</div>
-		<div><input type="button" value="เลือก/แก้ไข สินค้า" /></div>
-		<div class="billinfileimg">
+		</div>';
+		//<div><input type="button" value="เลือก/แก้ไข สินค้า" /></div>
+		$this->form_pd=new form_selects("product","สินค้า","billsin",$this->key("key",7),$product_list_id);	
+		$this->form_pd->writeForm("billsin");
+		echo '<div class="billinfileimg">
 			<div>
 				<p><span>รูปภาพใบเสร็จ</span></p>
 				<div>
@@ -559,6 +575,16 @@ class bills_in extends bills{
 		</div>
 		<br /><br />
 		<input type="button" onclick="Bi.billsinSumit()" value="นำเข้าสินค้าเพิ่ม" /></form>';
+		
+		if($group=="partner"){
+			$pd=$this->loadProductPartner($sku_root);
+			for($i=0;$i<count($pd);$i++){
+				$pd[$i]["n"]=0;
+				$pd[$i]["balance"]=0;
+				$pd[$i]["sum"]=0;
+			}
+			$this->writeJsDataEdit($pd,true);
+		}
 	}
 	private function pageBillsIn():void{
 		$this->pageHead(["title"=>"ใบนำเข้าสินค้า DIYPOS","js"=>["billsin","Bi"],"css"=>["billsin"]]);
@@ -809,6 +835,25 @@ class bills_in extends bills{
 			$re=$se["data"]["get"];
 		}
 		//print_r($se);
+		return $re;
+	}
+	private function loadProductPartner(string $sku_root):array{
+		$sku_root=$this->getStringSqlSet($sku_root);
+		$re=["get"=>[]];
+		$sql=[];
+		$sql["product"]="SELECT 
+				`product`.`name`		,`product`.`sku` AS `product_sku`	,`product`.`barcode` AS `barcode`		,`product`.`cost`,
+				`product`.`price`		,`product`.`sku_root`						,IFNULL(`product`.`s_type`,'') AS `s_type`,
+				`unit`.`name` AS `unit_name`
+			FROM `product`
+			LEFT JOIN `unit`
+			ON(`product`.`unit`=`unit`.`sku_root`)
+			WHERE JSON_SEARCH(`partner`, 'one', ".$sku_root.") IS NOT NULL;
+		";
+		$se=$this->metMnSql($sql,["product"]);
+		if($se["result"]){
+			$re=$se["data"]["product"];
+		}
 		return $re;
 	}
 }

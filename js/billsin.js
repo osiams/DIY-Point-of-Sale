@@ -5,6 +5,14 @@ class billsin extends main{
 		this.dow_n=0
 		this.icon={};
 	}
+	loadProduct(did){
+		let index=did.selectedIndex
+		let group=did.options[index].getAttribute("data-group")
+		if(group=="partner"){
+			location.href="?a=bills&b=fill&c=in&group=partner&sku_root="+did.value
+		}
+		
+	}
 	setAct(did){
 		let o=did.parentNode.parentNode
 		if(o.tagName=="TD"){
@@ -46,8 +54,13 @@ class billsin extends main{
 
 	}
 	insertData(data,editable){
+		let u=0
 		for(let i=0;i<data.length;i++){
-			this.productSelect(data[i],editable)
+			let y=false
+			y=Bi.productSelect(data[i],editable)
+			if(y){
+				
+			}
 		}
 	}
 	billsinSelect(did,sku_root,cost){
@@ -59,6 +72,7 @@ class billsin extends main{
 		window.parent.billsinSelect(a)
 	}
 	productSelect(a,editable=true){
+		M.l(a)
 		let step="1"
 		if(a.s_type!="p"){
 			step="any"
@@ -93,16 +107,16 @@ class billsin extends main{
 		//p1.appendChild(ipn)
 		let p2=M.ce("p",{"class":"p_bc"})
 			let s_wlv=M.ce("span",{"class":"s_wlvt"})
-			this.end(s_wlv,[this.cn("ชั่งตวงวัด")])
+			M.end(s_wlv,[M.cn("ชั่งตวงวัด")])
 			let s_price=M.ce("span",{})
-			this.end(s_price,[M.cn(" (ปัจจุบัน ขาย ฿"+a.price)])
+			M.end(s_price,[M.cn(" (ปัจจุบัน ขาย ฿"+a.price)])
 			let s_cost=M.ce("span",{})
-			this.end(s_cost,[M.cn(",ทุน ฿"+a.cost+")")])
+			M.end(s_cost,[M.cn(",ทุน ฿"+a.cost+")")])
 		if(a.s_type!="p"){
 			p2.appendChild(s_wlv)
 		}
 		p2.appendChild(M.cn(a.bcsku==null?"":a.bcsku))
-		this.end(p2,[s_price,s_cost])
+		M.end(p2,[s_price,s_cost])
 		cell1.appendChild(ipn)
 		cell1.appendChild(p2)
 		let amu=0
@@ -125,7 +139,7 @@ class billsin extends main{
 			tol=a.sum
 		}
 		let ip2=M.ce("input",{"type":"number","min":"0","class":"r","value":tol,"onkeyup":"Bi.setAct(this)","onchange":"Bi.setAct(this)","step":"any"})
-		let tavg=this.nb(tol/amu,2)
+		let tavg=M.nb(tol/amu,2)
 		let avg=M.ce("p",{})
 			avg.appendChild(M.cn(isNaN(tavg)?"0.00":tavg))
 		cell4.appendChild(ip2)
@@ -135,13 +149,14 @@ class billsin extends main{
 		}else{
 			row.className="ty"
 		}
-		row.id=this.rid()
+		row.id=M.rid()
 		let row_an=t.insertRow(ls+1)
 		row_an.id=row.id+"_an"
 		row_an.style.height="0px"
 		let ho=row.offsetHeight
 		row.style.display="none"
 		setTimeout("Bi.setTrHeight('"+row.id+"',"+ho+",0)",10)
+		return true
 	}
 	setTrHeight(id,n,n_an){
 		let m=1

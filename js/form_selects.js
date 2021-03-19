@@ -8,16 +8,15 @@ class form_selects{
 	run(){
 
 	}
-	ctAddPartner(a,form_name,dialog_id=null,display_id,partner_list_id,get_type="new",page=1,oshid=null,ipshid=null,lid=0,fl="name",tx=""){
+	ctAddPartner(a,callback=null,form_name,dialog_id=null,display_id,partner_list_id,get_type="new",page=1,oshid=null,ipshid=null,lid=0,fl="name",tx=""){
 		if(this.partner[display_id]==undefined){
 			this.partner[display_id]={}
 			this.search[display_id]={}
 		}
 		dialog_id=(dialog_id==null)?this.main.rid():dialog_id
-		
 		let partner_list=document.forms[form_name][partner_list_id].value
 		
-		let dt={"data":{"a":"form_selects","b":a,"dialog_id":dialog_id,"display_id":display_id,
+		let dt={"data":{"a":"form_selects","b":a,"callback":callback,"dialog_id":dialog_id,"display_id":display_id,
 				"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"get_type":get_type,"page":page,
 				"oshid":oshid,"ipshid":ipshid,"lid":lid,"fl":fl,"tx":tx},"result":Fsl.getListPartnerResult,"error":Fsl.getListPartnerError}		
 		this.main.setFec(dt)
@@ -35,9 +34,11 @@ class form_selects{
 	}
 	ctSelectPartner(re,form,bt){
 		let a=form.get("b")
-		let title_bar={"partner":"เลือกคู่ค้า","payu":"เลือกรูปแบบการชำระ"}
+		let callback=form.get("callback")
+		let title_bar={"partner":"เลือกคู่ค้า","payu":"เลือกรูปแบบการชำระ","product":"เลือกสินค้า"}
 		let tsh_prop={"partner":{"name":"ชื่อ","brand_name":"ชื่อการค้า","sku":"รหัสภายใน"},
-			"payu":{"name":"ชื่อ","sku":"รหัสภายใน"}
+			"payu":{"name":"ชื่อ","sku":"รหัสภายใน"},
+			"product":{"name":"ชื่อ","sku":"รหัสภายใน","barcode":"รหัสแท่ง"}
 		}
 		if(a!=null&&!title_bar.hasOwnProperty(a)){
 			return false
@@ -66,7 +67,7 @@ class form_selects{
 				}
 			let ipshid="input_search_partner_id_"+display_id
 			let its=this.main.ce("input",{"id":ipshid,"type":"text"})
-			let ibs=this.main.ce("input",{"type":"button","value":"🔍","onclick":"Fsl.selectPartnerSearch('"+a+"','"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"')"})		
+			let ibs=this.main.ce("input",{"type":"button","value":"🔍","onclick":"Fsl.selectPartnerSearch('"+a+"','"+callback+"','"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"')"})		
 		this.main.end(cpn,[pn_sh,its,ibs])
 		let ct=this.main.ce("div",{})
 			let ct0 = this.main.ce("div",{"id":"ct0_partner_"+display_id})
@@ -74,8 +75,9 @@ class form_selects{
 			let d1 = this.main.ce("div",{"class":"selects_list_partner"})
 
 			let lid=form.get("lid")
-			
+					
 			let partner_has = partner_list.substring(1, partner_list.length-1).split(",,")
+										
 				for(let i=0;i<arr.length;i++){
 					let ckrid = "checkboxid_"+arr[i]["sku_root"]
 					let div1=this.main.ce("div",{"class":"i"+((i%2)+1)})
@@ -90,21 +92,24 @@ class form_selects{
 						let boc = this.main.ce("label",{"for":ckrid})		
 							let tn = this.main.cn(arr[i]["name"])
 						this.main.end(boc,[tn])
-						let s=this.main.ce("div",{"data-rid_close":rid,"onclick":"Fsl.select1Partner(this,'"+a+"','"+display_id+"','"+partner_list_id+"')"})
+						let s=this.main.ce("div",{"data-rid_close":rid,"onclick":"Fsl.select1Partner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')"})
 						this.main.end(s,[this.main.cn("⬆")])
 					this.main.end(div1,[ck,div_img,boc,s])
 					this.main.end(d1,[div1])
 					lid=arr[i]["id"]
 				}
-			this.main.end(fron,[d1])
+			this.main.end(fron,[d1])						
 			let div_page=this.ctPage(re,form,form_name,dialog_id,display_id,partner_list_id,lid)
+			
 			this.main.end(ct0,[fron,div_page])	
 			let ct1 = this.main.ce("div",{"id":"ct1_partner_"+display_id})
 		this.main.end(ct,[ct0,ct1])	
+
 		let count=Object.keys(this.partner[display_id]).length
+
 		let bts = [
-			{"value":"⬅ เลือกเพิ่ม","style":"visibility:hidden","id":"bt_back_select_"+display_id,"onclick":"Fsl.backSelectPartner(this,'"+a+"','"+display_id+"','"+partner_list_id+"')"},
-			{"value":"ดูที่เลือก ("+count+")","rid_close":rid,"id":"bt_select_n_"+display_id,"onclick":"Fsl.viewSlectedPartner(this,'"+a+"','"+display_id+"','"+partner_list_id+"')"}
+			{"value":"⬅ เลือกเพิ่ม","style":"visibility:hidden","id":"bt_back_select_"+display_id,"onclick":"Fsl.backSelectPartner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')"},
+			{"value":"ดูที่เลือก ("+count+")","rid_close":rid,"id":"bt_select_n_"+display_id,"onclick":"Fsl.viewSlectedPartner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')"}
 		]
 		if(get_type=="new"){
 			
@@ -115,20 +120,23 @@ class form_selects{
 			//this.main.id("ct0_partner_"+display_id).appenChild()
 		}
 	}
-	selectPartnerSearch(a,option_search_id,input_search_id,form_name,dialog_id,display_id,partner_list_id,page=1,lid=0){
+	selectPartnerSearch(a,callback,option_search_id,input_search_id,form_name,dialog_id,display_id,partner_list_id,page=1,lid=0){
 		let fl=this.main.id(option_search_id).value
 		let tx=this.main.id(input_search_id).value
-		this.ctAddPartner(a,form_name,dialog_id,display_id,partner_list_id,"update",page,option_search_id,input_search_id,(lid),fl,tx,)
+		this.ctAddPartner(a,callback,form_name,dialog_id,display_id,partner_list_id,"update",page,option_search_id,input_search_id,(lid),fl,tx,)
 	}
 	ctPage(re,form,form_name,dialog_id,display_id,partner_list_id,lid=0){
+		let a=form.get("b")
+		let callback=form.get("callback")
 		let per=re.data.page["per"]
 		let page=re.data.page["page"]
 		let count=re.data.count[0]["count"]*1
+		
 		let n_page=Math.ceil(count/per)
 		let tx= form.get("tx")
 		let ct=this.main.ce("div",{"class":"c"})
 			if(tx.trim()==""){
-				let sl=this.main.ce("select",{"onchange":"Fsl.partnerGoPage(this,'"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"')"})
+				let sl=this.main.ce("select",{"onchange":"Fsl.partnerGoPage(this,'"+a+"','"+callback+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"')"})
 					for(let i=1;i<=n_page;i++){
 						let op =this.main.ce("option",{})
 							let t=this.main.cn(i)
@@ -149,31 +157,29 @@ class form_selects{
 				
 				if(page>1){
 					let lid_ref=(this.search[display_id][page-1]!=undefined)?this.search[display_id][page-1]:0
-					let nex_tx="Fsl.selectPartnerSearch('"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"',"+(page-1)+","+lid_ref+")"
-						let a=this.main.ce("a",{"onclick":nex_tx})
-						this.main.end(a,[this.main.cn("⬅️ก่อนหน้า️")])
-						this.main.end(ct,[a])
+					let nex_tx="Fsl.selectPartnerSearch('"+a+"','"+callback+"','"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"',"+(page-1)+","+lid_ref+")"
+						let ahf=this.main.ce("a",{"onclick":nex_tx})
+						this.main.end(ahf,[this.main.cn("⬅️ก่อนหน้า️")])
+						this.main.end(ct,[ahf])
 				}				
 				
 				this.main.end(sp,[this.main.cn("หน้า : "+page)])
 				this.main.end(ct,[sp])
-				
-
+	
 				if(page==1){
-					if(count>per){
+					if(count>per){	
 						this.search[display_id][page]=0
-						let nex_tx="Fsl.selectPartnerSearch('"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"',"+(page+1)+","+lid+")"
-						alert("page="+page+";"+nex_tx)
-						let a=this.main.ce("a",{"onclick":nex_tx})
-						this.main.end(a,[this.main.cn("ถัดไป➡️")])
-						this.main.end(ct,[a])
+						let nex_tx="Fsl.selectPartnerSearch('"+a+"','"+callback+"','"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"',"+(page+1)+","+lid+")"
+						let ahf=this.main.ce("a",{"onclick":nex_tx})
+						this.main.end(ahf,[this.main.cn("ถัดไป➡️")])
+						this.main.end(ct,[ahf])
 					}
-				}
+				}	
 			}
 		return ct
 	}
-	partnerGoPage(did,form_name,dialog_id,display_id,partner_list_id){
-		this.ctAddPartner(form_name,dialog_id,display_id,partner_list_id,"update",did.value)
+	partnerGoPage(did,a,callback,form_name,dialog_id,display_id,partner_list_id){
+		this.ctAddPartner(a,callback,form_name,dialog_id,display_id,partner_list_id,"update",did.value)
 	}
 	selectCkPartner(did,display_id){
 		let sku_root=did.value
@@ -195,24 +201,24 @@ class form_selects{
 		let count=Object.keys(this.partner[display_id]).length
 		this.main.id("bt_select_n_"+display_id).value="ดูที่เลือก ("+count+")"
 	}
-	viewSlectedPartner(did,a,display_id,partner_list_id){
+	viewSlectedPartner(did,a,callback,display_id,partner_list_id){
 		this.main.id("ct0_partner_"+display_id).style.display="none"
 		this.main.id("cpn0_partner_"+display_id).style.display="none"
 		this.main.id("ct1_partner_"+display_id).style.display="block"
 		this.viewPartnerSlected(did,display_id)
 		this.main.id("bt_back_select_"+display_id).style.visibility="visible"
 		did.value="ยืนยันที่เลือก"
-		did.setAttribute("onclick","Fsl.selectPartnerOK(this,'"+a+"','"+display_id+"','"+partner_list_id+"')")
+		did.setAttribute("onclick","Fsl.selectPartnerOK(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')")
 		did.parentNode.parentNode.click()
 	}
-	backSelectPartner(did,a,display_id,partner_list_id){
+	backSelectPartner(did,a,callback,display_id,partner_list_id){
 		this.main.id("ct0_partner_"+display_id).style.display="block"
 		this.main.id("cpn0_partner_"+display_id).style.display="grid"
 		this.main.id("ct1_partner_"+display_id).style.display="none"
 		did.style.visibility="hidden"
 		let count=Object.keys(this.partner[display_id]).length
 		this.main.id("bt_select_n_"+display_id).value="ดูที่เลือก ("+count+")"
-		this.main.id("bt_select_n_"+display_id).setAttribute("onclick","Fsl.viewSlectedPartner(this,'"+a+"','"+display_id+"','"+partner_list_id+"')")
+		this.main.id("bt_select_n_"+display_id).setAttribute("onclick","Fsl.viewSlectedPartner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')")
 	}
 	viewPartnerSlected(did,display_id){
 		let ct=this.main.id("ct1_partner_"+display_id)
@@ -276,13 +282,15 @@ class form_selects{
 		}
 		this.partner[display_id]=no
 	}
-	selectPartnerOK(did,a,display_id,partner_list_id){
+	selectPartnerOK(did,a,callback,display_id,partner_list_id){
 		this.setEmptyTable(display_id)
 		let rid_close=did.getAttribute("data-rid_close")
 		if(a=="partner"){
 			this.selectPartnerOKAppend(a,display_id)
 		}else if(a=="payu"){
 			this.selectPayuOKAppend(a,display_id)
+		}else if(a=="product"){
+			alert(callback)
 		}
 
 		this.selectPartnerListValue(a,display_id,partner_list_id)
@@ -322,7 +330,7 @@ class form_selects{
 			this.main.end(cell1,[div_img])
 			cell2.innerHTML=this.partner[display_id][prop]["name"]
 			let val=this.main.nb(this.partner[display_id][prop]["value"],2)
-			let ip=this.main.ce("input",{"type":"text","value":val,"onclick":"Fsl.panelNum(this,'"+display_id+"','"+prop+"')"})
+			let ip=this.main.ce("input",{"name":"payu_"+prop,"type":"text","value":val,"onchange":"Fsl.setValue(this,'"+display_id+"','"+prop+"')"})
 			this.main.end(cell3,[ip])	
 		}		
 	}
@@ -417,10 +425,12 @@ class form_selects{
 		}
 	}
 	setEmptyTable(display_id){
-		let t=this.main.id(display_id)
-		let len=t.rows.length
-		for(let i=len-2;i>=0;i--){
-			t.deleteRow(i)
+		if(this.main.id(display_id)!=undefined){
+			let t=this.main.id(display_id)
+			let len=t.rows.length
+			for(let i=len-2;i>=0;i--){
+				t.deleteRow(i)
+			}
 		}
 	}
 	selectPartnerListValue(a,display_id,partner_list_id){
@@ -430,7 +440,7 @@ class form_selects{
 			v.value+=","+prop+","
 		}
 	}
-	select1Partner(did,a,display_id,partner_list_id){
+	select1Partner(did,a,callback,display_id,partner_list_id){
 		let d=did.parentNode.childNodes[0]
 		let sku_root=d.value
 		let name=d.getAttribute("data-name")
@@ -443,7 +453,7 @@ class form_selects{
 				}
 		let count=Object.keys(this.partner[display_id]).length
 		this.main.id("bt_select_n_"+display_id).value="ดูที่เลือก ("+count+")"
-		this.selectPartnerOK(did,a,display_id,partner_list_id)
+		this.selectPartnerOK(did,a,callback,display_id,partner_list_id)
 	}
 	deletePartner(did,display_id,sku_root){
 		did.parentNode.parentNode.removeChild(did.parentNode)

@@ -1,9 +1,9 @@
 <?php
 class form_selects extends main{
-	public function __construct(string $a,string $name=null,string $form_name=null,string $id=null,string $partner_list=null){
+	public function __construct(string $a,string $select_type="one",string $form_name=null,string $id=null,string $partner_list=null){
 		parent::__construct();
 		$this->a=$a;
-		$this->name=$name;
+		$this->select_type=$select_type;
 		$this->form_name=$form_name;
 		$this->id=$id;
 		$this->partner=null;
@@ -32,7 +32,19 @@ class form_selects extends main{
 				$this->payu->defaultPageSearch();
 				$this->fetchPayuSelectPage();
 			}
+		}else if($this->a=="product"){
+			if(isset($_POST["c"])&&$_POST["c"]=="product_get"){
+				$this->fetchProductGetPage();
+			}else{
+				require_once("php/product.php");
+				$this->postToGet();
+				$this->product= new product();
+				$this->product->page=$this->setPageR();
+				$this->product->defaultPageSearch();
+				$this->fetchProductSelectPage();
+			}
 		}
+		
 	}
 	private function postToGet():void{
 		if(!isset($_POST["page"])){
@@ -78,16 +90,18 @@ class form_selects extends main{
 	public function writeForm(){
 		if($this->a=="partner"){
 			echo '<table id="'.$this->id.'" class="table_select_partner">
-				<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\'partner\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
+				<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\'partner\',null,\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
 			</table>';
 			echo '<script type="text/javascript">Fsl.setLoadPartner(\'partner\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')</script>';
 		}else if($this->a=="payu"){
-			echo '<table id="'.$this->id.'"class="table_select_payu r">
+			echo '<table id="'.$this->id.'" class="table_select_payu r">
 				<tr><td colspan="4" class="r">
-					<input type="button" value="เพิ่ม/แก้ไข"  onclick="Fsl.ctAddPartner(\'payu\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')">
+					<input type="button" value="เพิ่ม/แก้ไข"  onclick="Fsl.ctAddPartner(\'payu\',null,\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')">
 				</td></tr>
 			</table>';
 			echo '<script type="text/javascript">Fsl.setLoadPartner(\'payu\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')</script>';
+		}else if($this->a=="product"){
+			echo '<input type="button" value="เพิ่ม/แก้ไขสินค้า"  onclick="Fsl.ctAddPartner(\'product\',\'Bi\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')">';
 		}
 	}
 	private function partnerGetData(string $tin):array{
@@ -141,6 +155,15 @@ class form_selects extends main{
 		$this->re["message_error"]="";
 		$this->re["data"]=$this->payu->getAllPayu();
 		$this->re["data"]["page"]=["page"=>$this->payu->page,"per"=>$this->payu->per];
+		header('Content-type: application/json');
+		echo json_encode($this->re);
+	}
+	#########################################################
+	private function fetchProductSelectPage():void{
+		$this->re["result"]=true;
+		$this->re["message_error"]="";
+		$this->re["data"]=$this->product->getAllProduct("form_select");
+		$this->re["data"]["page"]=["page"=>$this->product->page,"per"=>$this->product->per];
 		header('Content-type: application/json');
 		echo json_encode($this->re);
 	}
