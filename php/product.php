@@ -15,10 +15,12 @@ class product extends main{
 		$this->fl="";
 		$this->lid=0;
 		$this->sh="";
+		$this->pnct="";
 		
 		$this->form_pn=null;
 	}
 	public function run(){
+		$this->system=json_decode(file_get_contents("set/system.json"));
 		$this->page=$this->setPageR();
 		$q=["regis","edit","delete","in","select","details"];
 		if(isset($_GET["b"])&&in_array($_GET["b"],$q)){
@@ -254,7 +256,7 @@ class product extends main{
 		$error="";
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
 			$_POST["partner"]=isset($_POST["partner_list"])?$_POST["partner_list"]:"";
-			$se=$this->checkSet("product",["post"=>["name","sku","barcode","price","cost","unit","group_root"]],"post");
+			$se=$this->checkSet("product",["post"=>["name","sku","barcode","price","cost","unit","group_root","vat_p"]],"post");
 			$ckp = $this->checkValidateProp();
 			if(!$se["result"]){
 				$error=$se["message_error"];
@@ -286,6 +288,7 @@ class product extends main{
 		$barcode=$this->getStringSqlSet($_POST["barcode"]);
 		$price=(strlen(trim($_POST["price"]))>0)?$_POST["price"]:"NULL";
 		$cost=(strlen(trim($_POST["cost"]))>0)?$_POST["cost"]:"NULL";
+		$vat_p=(strlen(trim($_POST["vat_p"]))>0)?$_POST["vat_p"]:"NULL";
 		$unit=$this->getStringSqlSet($_POST["unit"]);
 		$s_type=$this->getStringSqlSet($_POST["s_type"]);
 		$group_root=$this->getStringSqlSet($_POST["group_root"]);
@@ -320,7 +323,7 @@ class product extends main{
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
 				UPDATE `product` SET  `sku`=".$sku.",`sku_key`=".$sku_key.",  `name`= ".$name." ,  `barcode`=".$barcode.", `price`=".$price.",`s_type`=".$s_type.",
-					 `cost`=".$cost.", `unit`=".$unit." ,`group_key` = @group_key,`group_root` = @group_root,`props` = JSON_MERGE_PATCH(`props`,@props),
+					 `cost`=".$cost.", `unit`=".$unit." , `vat_p`=".$vat_p.",`group_key` = @group_key,`group_root` = @group_root,`props` = JSON_MERGE_PATCH(`props`,@props),
 					 `partner`=".$partner." 
 				WHERE `sku_root`=".$sku_root.";
 				SET @result=1;
@@ -340,6 +343,7 @@ class product extends main{
 		$price=(isset($_POST["price"]))?htmlspecialchars($_POST["price"]):"";
 		$cost=(isset($_POST["cost"]))?htmlspecialchars($_POST["cost"]):"";
 		$unit=(isset($_POST["unit"]))?htmlspecialchars($_POST["unit"]):"";
+		$vat_p=(isset($_POST["vat_p"]))?htmlspecialchars($_POST["vat_p"]):number_format($this->system->default->vat,2,'.',',');
 		$partner=(isset($_POST["partner"]))?htmlspecialchars($_POST["partner"]):"";
 		$s_type=(isset($_POST["s_type"]))?$_POST["s_type"]:"p";
 		$group = "defaultroot";
@@ -387,6 +391,8 @@ class product extends main{
 							<div>';
 							$this->group_->writeSelectGroup($group);
 			echo '</div>';
+			echo '<p><label for="product_regis_vat">ภาษีมูลค่าเพิ่ม %</label></p>
+				<div><input id="product_regis_vat" type="text" value="'.$vat_p.'"  name="vat_p"  /></div>';
 			echo '			<br />
 						<input type="submit" value="แก้ไขสินค้า" />
 					</form>
@@ -398,7 +404,7 @@ class product extends main{
 		$error="";
 		if(isset($_POST["submitt"])&&$_POST["submitt"]=="clicksubmit"){
 			$_POST["partner"]=isset($_POST["partner_list"])?$_POST["partner_list"]:"";
-			$se=$this->checkSet("product",["post"=>["barcode","sku","name","price","cost","unit","group_root","partner"]],"post");
+			$se=$this->checkSet("product",["post"=>["barcode","sku","name","price","cost","unit","group_root","partner","vat_p"]],"post");
 			//print_r($se);exit;
 			$ckp = $this->checkValidateProp();
 			if(!$se["result"]){
@@ -490,7 +496,7 @@ class product extends main{
 	}
 	private function editProductSetCurent(string $sku_root):void{
 		$od=$this->editProductOldData($sku_root);
-		$fl=["sku","barcode","name","price","cost","unit","group_root","s_type","partner"];
+		$fl=["sku","barcode","name","price","cost","unit","group_root","s_type","partner","vat_p"];
 		foreach($fl as $v){
 			if(isset($od[$v])){
 				$_POST[$v]=$od[$v];
@@ -513,7 +519,7 @@ class product extends main{
 		$sku_root=$this->getStringSqlSet($sku_root);
 		$sql=[];
 		$sql["result"]="SELECT `name`,`sku`,`barcode` ,`price`,`cost`,`unit`,IFNULL(`group_root`,\"defaultroot\") AS `group_root`,
-			IFNULL(`props`,\"[]\") AS `props` ,`s_type`,IFNULL(`partner`,\"[]\") AS `partner`
+			IFNULL(`props`,\"[]\") AS `props` ,`s_type`,IFNULL(`partner`,\"[]\") AS `partner`,IFNULL(`vat_p`,0) AS `vat_p`
 			FROM `product` 
 			WHERE `sku_root`=".$sku_root."";
 		$re=$this->metMnSql($sql,["result"]);
@@ -532,6 +538,7 @@ class product extends main{
 		$price=(isset($_POST["price"]))?htmlspecialchars($_POST["price"]):"";
 		$cost=(isset($_POST["cost"]))?htmlspecialchars($_POST["cost"]):"";
 		$unit=(isset($_POST["unit"]))?htmlspecialchars($_POST["unit"]):"";
+		$vat_p=(isset($_POST["vat_p"]))?htmlspecialchars($_POST["vat_p"]):number_format($this->system->default->vat,2,'.',',');
 		$partner=(isset($_POST["partner"]))?htmlspecialchars($_POST["partner"]):"";
 		$s_type=(isset($_POST["s_type"]))?$_POST["s_type"]:"p";
 		$group = "defaultroot";
@@ -592,6 +599,8 @@ class product extends main{
 							<div>';
 							$this->group_->writeSelectGroup($group);
 			echo '</div>';
+			echo '<p><label for="product_regis_vat">ภาษีมูลค่าเพิ่ม %</label></p>
+				<div><input id="product_regis_vat" type="text" value="'.$vat_p.'"  name="vat_p"  /></div>';
 			echo '			<br />
 						<input type="button" value="ลงทะเบียนสินค้า" onclick="document.getElementById(\'product_regis_barcode\').blur();Pd.regisSubmit()"  />
 					</form>
@@ -798,7 +807,7 @@ class product extends main{
 		$sh=$this->defaultSearch();
 		$re=[];
 		$sql=[];
-		$sql["count"]="SELECT @count:=COUNT(*) FROM product";
+		$sql["count"]="SELECT @count:=COUNT(*) FROM product ".$this->pnct;
 		if($for=="sell"||$for=="label"||$for=="itmw"){
 			$sql["get"]="SELECT 
 					 `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
@@ -861,6 +870,7 @@ class product extends main{
 				$re=["row"=>$se["data"]["get"],"count"=>$se["data"]["result"][0]["count"]];
 			}else{
 				$count = (object) ["count"=>$se["data"]["result"][0]["count"]];
+				
 				$re=["get"=>$se["data"]["get"],"count"=>[$count]];
 			}
 		}
@@ -870,7 +880,7 @@ class product extends main{
 		$fla=["sku","barcode","name"];
 		$fl="name";
 		$tx="";
-		$se="";
+		$se=" WHERE 1=1 ";
 		if(isset($_GET["fl"])){
 			if(in_array($_GET["fl"],$fla)){
 				if(($_GET["fl"]=="barcode"||$_GET["fl"]=="sku")
@@ -883,10 +893,15 @@ class product extends main{
 		if(isset($_GET["tx"])&&strlen(trim($_GET["tx"]))>0){
 			$tx=$this->getStringSqlSet($_GET["tx"]);
 		}
+
+		if(isset($_GET["partner"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["partner"])){
+			$pn_sku_root=$this->getStringSqlSet($_GET["partner"]);
+			$se.=" AND JSON_SEARCH(`product`.`partner`, 'one', ".$pn_sku_root.") IS NOT NULL ";
+		}	
 		if($tx!=""){
 			$tx=substr($tx,1,-1);
 			$this->txsearch=$tx;
-			$se=" WHERE `product`.`".$fl."` LIKE  \"%".$tx."%\"  ";
+			$se.=" AND `product`.`".$fl."` LIKE  \"%".$tx."%\"  ";
 		}
 		return $se;
 	}
@@ -894,7 +909,7 @@ class product extends main{
 		$fla=["sku","barcode","name"];
 		$fl="name";
 		$tx="";
-		$se="";
+		$this->sh=" WHERE 1=1 ";
 		if(isset($_GET["fl"])){
 			if(in_array($_GET["fl"],$fla)){
 				if(($_GET["fl"]=="barcode"||$_GET["fl"]=="sku")){
@@ -913,6 +928,7 @@ class product extends main{
 		if(isset($_GET["lid"])&&preg_match("/^[0-9]{1,12}$/",$_GET["lid"])){
 			$this->lid=$_GET["lid"];
 		}
+		
 		if($tx!=""){
 			$tx=substr($tx,1,-1);
 			$this->txsearch=$tx;
@@ -920,8 +936,13 @@ class product extends main{
 			if($this->lid>0){
 				$idsearch="<=".$this->lid." ";
 			}
-			$this->sh=" WHERE `product`.`id`".$idsearch." AND `product`.`".$fl."` LIKE  \"%".$tx."%\""  ;
+			$this->sh.=" AND`product`.`id`".$idsearch." AND `product`.`".$fl."` LIKE  \"%".$tx."%\""  ;
 		}
+		if(isset($_GET["partner"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["partner"])){
+			$pn_sku_root=$this->getStringSqlSet($_GET["partner"]);
+			$this->sh.=" AND JSON_SEARCH(`product`.`partner`, 'one', ".$pn_sku_root.") IS NOT NULL ";
+			$this->pnct=" WHERE JSON_SEARCH(`product`.`partner`, 'one', ".$pn_sku_root.") IS NOT NULL ";
+		}			
 	}
 	protected function pageSearch(int $row):void{
 		$href='?a=product&amp;fl='.$this->fl.'&amp;tx='.$this->txsearch.'&amp;page=';

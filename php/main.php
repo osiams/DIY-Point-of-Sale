@@ -6,6 +6,7 @@ class main{
 		date_default_timezone_set ("Asia/Bangkok" );
 		$this->cf=["server"=>CF["server"],"database"=>CF["database"],"user"=>CF["user"],"password"=>CF["password"],"userceo"=>CF["userceo"]];
 		$this->pem=PEM;
+		$this->system=null;
 		$this->user_ceo=isset($_SESSION["userceo"])?$_SESSION["userceo"]:-1;
 		$this->gallery_dir=dirname(__DIR__)."/img/gallery";
 		$this->re=[
@@ -383,8 +384,8 @@ class main{
 			"web"=>["name"=>"เว็บไซต์","type"=>"CHAR","length_value"=>255],
 			"width"=>["name"=>"กว้าง","type"=>"INT","length_value"=>6],
 			"vat"=>["name"=>"มีภาษี","type"=>"ENUM","length_value"=>["0","1"]],
-			"vat_p"=>["name"=>"อัตราภาษี","type"=>"INT","length_value"=>2],
-			"vat_n"=>["name"=>"ภาษี","type"=>"INT","length_value"=>10],
+			"vat_p"=>["name"=>"อัตราภาษีมูลค่าเพิ่ม","type"=>"FLOAT","length_value"=>[3,2]],
+			"vat_n"=>["name"=>"ภาษี","type"=>"FLOAT","length_value"=>[10,4]],
 			
 			"tr"=>["name"=>"ช่วงเวลา","type"=>"INT","length_value"=>10],
 			"bi_c"=>["name"=>"จำนวนแถว bill_in","type"=>"INT","length_value"=>10],
@@ -638,6 +639,7 @@ class main{
 						$barcode=["barcode"];
 						$password=["password"];
 						$money=["price","cost"];
+						$float=["vat_p"];
 						$enum = ["data_type","s_type","pn_type","od_type","tp_type"];
 						$json_arr = ["prop","partner"];
 						if(in_array($v,$sku)){
@@ -724,6 +726,13 @@ class main{
 							if(!in_array($ry,$this->fills[$v]["length_value"])){
 								$re["result"]=false;
 								$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ";
+							}
+						}else if(in_array($v,$float)){
+							$pt="/^(([0-9])*|([0-9]*\.[0-9]{1,2}))$/";
+							if(!preg_match($pt,$ry)) {
+								$re["result"]=false;
+								$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ จำนวน xx.xx";
+								break;
 							}
 						}
 					}

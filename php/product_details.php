@@ -143,6 +143,8 @@ class product_details extends product{
 			<tr class="i2"><td>คู่ค้า</td><td class="l">';
 			$this->writePartnerList($pn_arr);
 		echo '</td></tr>
+			<tr><td>ภาษีมูลค่าเพิ่ม %</td><td>'.number_format($dt["vat_p"],2,'.',',').'</td></tr>
+		
 			</table></main>';
 	}
 	private function writePartnerList(array $pn):void{
@@ -167,7 +169,7 @@ class product_details extends product{
 		";
 		$sql["product"]="SELECT product.id AS id,product.sku AS sku,product.sku_key AS sku_key,product.sku_root AS sku_root,
 				product.barcode AS barcode,product.name AS name,
-				product.cost AS cost,product.price AS price,product.unit AS unit,product.pdstat,product.statnote,product.date_reg AS date_reg,
+				product.cost AS cost,product.price AS price,IFNULL(product.vat_p,0) AS vat_p,product.unit AS unit,product.pdstat,product.statnote,product.date_reg AS date_reg,
 				IFNULL(`product`.`group_root`,\"defaultroot\") AS `group_root`,IFNULL(`product`.`props`,\"[]\") AS props,
 				GetListPartner_(IFNULL(`partner`,'[]')) AS `partner`,
 				unit.name AS unit_name,

@@ -383,7 +383,7 @@ class bills_in extends bills{
 							
 						</p>';
 						echo '</div></div>';
-						$this->writeJsDataEdit($dt,$editable);
+						$this->writeJsDataEdit($dt,$editable,null);
 						$this->pageFoot();
 				}else{
 					$this->addDir("","แก้ไข");
@@ -393,16 +393,23 @@ class bills_in extends bills{
 				}
 		}
 	}
-	private function writeJsDataEdit(array $dt,bool $editable=true):void{
+	private function writeJsDataEdit(array $dt,bool $editable=true,string $partner=null,string $id=null,string $product_list_id=null):void{
+		$tid=($id!=null)?"\"".$id."\"":"null";
+		$pid=($product_list_id!=null)?"\"".$product_list_id."\"":"null";
 		$br="\n";
 		$edb=($editable)?"true":"false";
 		echo '<script type="text/javascript">Bi.insertData([';
 		for($i=0;$i<count($dt);$i++){
 			$name=$this->jsD((string) $dt[$i]["name"]);
 			$unit=$this->jsD((string) $dt[$i]["unit_name"]);
-			echo  $br.'{"name":"'.$name.'","n":"'.intval($dt[$i]["n"]).'","balance":"'.intval($dt[$i]["balance"]).'","sum":"'.number_format($dt[$i]["sum"],2,".","").'","bcsku":"'.$dt[$i]["barcode"].' , '.$dt[$i]["product_sku"].'","sku_root":"'.$dt[$i]["sku_root"].'","unit":"'.$unit.'","s_type":"'.$dt[$i]["s_type"].'","price":"'.$dt[$i]["price"].'","cost":"'.$dt[$i]["cost"].'"},';
+			echo  $br.'{"name":"'.$name.'","n":"'.intval($dt[$i]["n"]).'","balance":"'.intval($dt[$i]["balance"]).'","sum":"'.number_format($dt[$i]["sum"],2,".","").'","bcsku":"'.$dt[$i]["barcode"].' , '.$dt[$i]["product_sku"].'","sku_root":"'.$dt[$i]["sku_root"].'","unit":"'.$unit.'","s_type":"'.$dt[$i]["s_type"].'","price":"'.$dt[$i]["price"].'","cost":"'.$dt[$i]["cost"].'","vat_p":"'.number_format($dt[$i]["vat_p"],2,".","").'"},';
 		}
-		echo '],'.$edb.');</script>';
+		echo '],'.$edb.','.$tid.','.$pid.');';
+		if($partner!=null){
+			echo 'Bi.partner="'.$partner.'";';
+		}
+		echo 'Fsl.selectPartnerListValue("product","'.$id.'","'.$product_list_id.'");';
+		echo '</script>';
 	}
 	private function  jsD(string  $t):string{
 		$t=str_replace('\\','\\\\',$t);
@@ -502,18 +509,18 @@ class bills_in extends bills{
 				</div>
 				<div>
 					<p><span>เลขที่ใบเสร็จ</span></p>
-					<input type="text" />
+					<input name="bill_no" type="text" />
 				</div>
 				<div>
 					<p><span>วันที่ในใบเสร็จ (ค.ศ.)</span></p>
-					<input type="date" />
+					<input name="bill_date" type="date" />
 				</div>
 				<div>
 					<p><span>รูปแบบใบเสร็จ</span></p>
-					<select name="pay_type">
-						<option>ใบเงินสด</option>
-						<option>ใบกำกับภาษี รวมภาษีในราคาสินค้าแล้ว</option>
-						<option>ใบกำกับภาษี ยังไม่รวมภาษีในราคาสินค้า</option>
+					<select name="bill_type" onchange="Bi.setDisplayTV()">
+						<option value="c">ใบเงินสด</option>
+						<option value="v1">ใบกำกับภาษี รวมภาษีในราคาสินค้าแล้ว</option>
+						<option value="v0">ใบกำกับภาษี ยังไม่รวมภาษีในราคาสินค้า</option>
 					</select>
 				</div>
 				<div>
@@ -535,7 +542,7 @@ class bills_in extends bills{
 			<th>ราคารวม<br />ราคาต่อชิ้น</th>
 			<th>กระทำ</th>
 			</tr>';
-		echo '<tr id="trsearch">
+		echo '<!--<tr id="trsearch">
 				<td colspan="6">
 					<label>
 					<select name="fl">
@@ -550,17 +557,18 @@ class bills_in extends bills{
 			</tr>
 			<tr><td colspan="6" style="font-size:0px;padding:0px;">
 			<div class="iframe"><iframe id="iframeproductin" title="เลือกสินค้า" src="?a=product&amp;b=select&amp;for=billsin" class="iframe_product_in"></iframe></div>
-		</td></table>
+		</td></tr>--></table>
 		<div class="billinvat">
 			<div class="r">ราคารวม ยังไม่บวกภาษี</div>
-			<div class="r">0.00</div>
+			<div class="r bold" id="billin_tv0">0.00</div>
 			<div class="r">ภาษีรวม</div>
-			<div class="r">0.00</div>
+			<div class="r bold" id="billin_tv1">0.00</div>
 			<div class="r">ราคารวม บวกภาษีรวม</div>
-			<div class="r">0.00</div>
+			<div class="r bold" id="billin_tv2">0.00</div>
 		</div>';
 		//<div><input type="button" value="เลือก/แก้ไข สินค้า" /></div>
-		$this->form_pd=new form_selects("product","สินค้า","billsin",$this->key("key",7),$product_list_id);	
+		$id=$this->key("key",7);
+		$this->form_pd=new form_selects("product","สินค้า","billsin",$id,$product_list_id);	
 		$this->form_pd->writeForm("billsin");
 		echo '<div class="billinfileimg">
 			<div>
@@ -583,7 +591,7 @@ class bills_in extends bills{
 				$pd[$i]["balance"]=0;
 				$pd[$i]["sum"]=0;
 			}
-			$this->writeJsDataEdit($pd,true);
+			$this->writeJsDataEdit($pd,true,$sku_root,$id,$product_list_id);
 		}
 	}
 	private function pageBillsIn():void{
@@ -843,7 +851,7 @@ class bills_in extends bills{
 		$sql=[];
 		$sql["product"]="SELECT 
 				`product`.`name`		,`product`.`sku` AS `product_sku`	,`product`.`barcode` AS `barcode`		,`product`.`cost`,
-				`product`.`price`		,`product`.`sku_root`						,IFNULL(`product`.`s_type`,'') AS `s_type`,
+				`product`.`price`		,`product`.`sku_root`						,IFNULL(`product`.`s_type`,'') AS `s_type`,IFNULL(`product`.`vat_p`,0) AS `vat_p`,
 				`unit`.`name` AS `unit_name`
 			FROM `product`
 			LEFT JOIN `unit`

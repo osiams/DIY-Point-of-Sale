@@ -738,6 +738,7 @@ class install extends main{
 		</div>';
 	}
 	private function simple():void{
+		$this->system=json_decode(file_get_contents("set/system.json"));
 		$sql=[];
 		$i=0;
 		$s=0;
@@ -780,12 +781,13 @@ class install extends main{
 		}
 		///////////////////////////////////////////////////////////////
 		$handle = @fopen("data/st/pd.txt", "r");
+		$vat_p=number_format($this->system->default->vat,2,'.',',');
 		if ($handle) {
 			$i=0;
 			while (($buffer = fgets($handle, 1024)) !== false) {
 				$cm=",";
 				if($i==0){
-					$sql[$s]="INSERT INTO product (name,barcode,cost,price,unit,sku_key,sku_root,date_reg) VALUES";
+					$sql[$s]="INSERT INTO product (name,barcode,cost,price,unit,sku_key,sku_root,vat_p,date_reg) VALUES";
 					$cm="";
 				}
 				$i+=1;
@@ -799,7 +801,7 @@ class install extends main{
 						$key=$this->key("key",7);
 						$d[1]=(strlen(trim($d[1]))==0)?'NULL':'"'.$d[1].'"';
 						
-						$sql[$s].=$cm.'("'.$d[0].'",'.$d[1].','.((float) $d[2]).','.((float) $d[3]).',"'.$utp.'","'.$key.'","'.$key.'",@reg_date)';
+						$sql[$s].=$cm.'("'.$d[0].'",'.$d[1].','.((float) $d[2]).','.((float) $d[3]).',"'.$utp.'","'.$key.'","'.$key.'",'.$vat_p.',@reg_date)';
 						if($i<10){$sql[$s].=$nl;$cs=false;}else{$sql[$s].=";".$nl;$i=0;$s+=1;$cs=true;}
 					}else{
 						$i=$i-1;

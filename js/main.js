@@ -782,4 +782,11 @@ class F{
 		}
 		document.getElementById(div_id).style.backgroundSize=w+"px "+h+"px"
 	}
+	static valueListToArray(value){
+		let re=[]
+		if(value.length>2){
+			re= value.substring(1, value.length-1).split(",,")
+		}
+		return re
+	}
 }

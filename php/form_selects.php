@@ -67,6 +67,11 @@ class form_selects extends main{
 		}else{
 			$_GET["lid"]=$_POST["lid"];
 		}
+		if(!isset($_POST["partner"])){
+			$_GET["partner"]="";
+		}else{
+			$_GET["partner"]=$_POST["partner"];
+		}
 	}
 	private function fetchPartnerSelectPage():void{
 		$this->re["result"]=true;

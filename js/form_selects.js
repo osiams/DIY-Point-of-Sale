@@ -2,6 +2,7 @@
 class form_selects{
 	constructor(main){
 		this.main=main
+		this.partner_old={}
 		this.partner={}
 		this.search={}
 	}
@@ -12,6 +13,12 @@ class form_selects{
 		if(this.partner[display_id]==undefined){
 			this.partner[display_id]={}
 			this.search[display_id]={}
+		}else{
+			if(this.partner_old[display_id]==undefined){
+				this.partner_old[display_id]={}
+			}else{
+				this.partner[display_id]=Object.assign({}, this.partner_old[display_id]);
+			}
 		}
 		dialog_id=(dialog_id==null)?this.main.rid():dialog_id
 		let partner_list=document.forms[form_name][partner_list_id].value
@@ -19,7 +26,15 @@ class form_selects{
 		let dt={"data":{"a":"form_selects","b":a,"callback":callback,"dialog_id":dialog_id,"display_id":display_id,
 				"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"get_type":get_type,"page":page,
 				"oshid":oshid,"ipshid":ipshid,"lid":lid,"fl":fl,"tx":tx},"result":Fsl.getListPartnerResult,"error":Fsl.getListPartnerError}		
+		if(a=="product"){
+			if((eval(callback)).partner!=null){
+				dt.data.partner=eval(callback).partner
+			}
+		}
 		this.main.setFec(dt)
+	}
+	setPartnerOld(display_id){
+		this.partner_old[display_id]=Object.assign({}, this.partner[display_id]);
 	}
 	getListPartnerResult(re,form,bt){
 		if(re["result"]){
@@ -76,7 +91,7 @@ class form_selects{
 
 			let lid=form.get("lid")
 					
-			let partner_has = partner_list.substring(1, partner_list.length-1).split(",,")
+			let partner_has = F.valueListToArray(partner_list)
 										
 				for(let i=0;i<arr.length;i++){
 					let ckrid = "checkboxid_"+arr[i]["sku_root"]
@@ -285,15 +300,16 @@ class form_selects{
 	selectPartnerOK(did,a,callback,display_id,partner_list_id){
 		this.setEmptyTable(display_id)
 		let rid_close=did.getAttribute("data-rid_close")
+		this.selectPartnerListValue(a,display_id,partner_list_id)
 		if(a=="partner"){
 			this.selectPartnerOKAppend(a,display_id)
 		}else if(a=="payu"){
 			this.selectPayuOKAppend(a,display_id)
 		}else if(a=="product"){
-			alert(callback)
+			eval(callback).selectPartnerOK(display_id,partner_list_id)
 		}
-
-		this.selectPartnerListValue(a,display_id,partner_list_id)
+		
+		this.partner_old[display_id]=Object.assign({}, this.partner[display_id]);
 		M.dialogClose(rid_close)
 	}
 	selectPartnerOKAppend(a,display_id){
@@ -348,7 +364,7 @@ class form_selects{
 		
 		setTimeout(Fsl.panelNumAn,10,rid,p.width,p.height,p.left,p.top,p.width,p.height,p.left,p.top)
 	}
-	panelNumAn(id,width,height,left,top,width1,height1,left1,top1){M.l(width)
+	panelNumAn(id,width,height,left,top,width1,height1,left1,top1){
 		let w=window.innerWidth
 		let h=window.innerHeight
 		let d=M.id(id)
@@ -452,6 +468,7 @@ class form_selects{
 					"value":0
 				}
 		let count=Object.keys(this.partner[display_id]).length
+		this.partner_old[display_id]=Object.assign({}, this.partner[display_id]);
 		this.main.id("bt_select_n_"+display_id).value="ดูที่เลือก ("+count+")"
 		this.selectPartnerOK(did,a,callback,display_id,partner_list_id)
 	}
@@ -504,6 +521,7 @@ class form_selects{
 				"value":0
 			}
 		}	
+		this.setPartnerOld(display_id)
 		if(a=="partner"){
 			this.selectPartnerOKAppend(a,display_id)	
 		}else if(a=="payu"){
