@@ -33,7 +33,7 @@ class main{
 			"bill_in"=>[
 				"name"=>"bill_in",
 				"column"=>["id","in_type","sku","lot_from","lot_root","bill","n",
-				"bill_po_sku","pn","bill_no","bill_date","bill_type","payu_arr","icon_arr","vat_n",
+				"bill_po_sku","pn","bill_no","bill_date","bill_type","payu_json","icon_arr","vat_n",
 				"sum","changto","user","user_edit","note","stkey_","stroot_",
 				"r_","_r","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
@@ -269,7 +269,7 @@ class main{
 			"bill_no"=>["name"=>"เลขที่ในใบเส็จ","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"bill_po_sku"=>["name"=>"เลขที่ใบสั่งซื้อ","type"=>"CHAR","length_value"=>25],
 			"bill_in_sku"=>["name"=>"รหัสภายในใบนำเข้าสินค้า","type"=>"CHAR","length_value"=>25],
-			"bill_type"=>["name"=>"ประเภทใบเสร็จ","type"=>"ENUM","length_value"=>["c","tfp0","tfp1","tsp0","tsp1"]],
+			"bill_type"=>["name"=>"ประเภทใบเสร็จ","type"=>"ENUM","length_value"=>["c","v0","v1"]],
 			"brand_name"=>["name"=>"ชื่อการค้า","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			//--0=เงินม1=สินค้าตัวเดิม
 			"changto"=>["name"=>"เปลี่ยนเป็น","type"=>"ENUM","length_value"=>["0","1"]],
@@ -323,7 +323,7 @@ class main{
 			//"partner1"=>["name"=>"คู่ค้า1","type"=>"CHAR","length_value"=>255],
 			//"partner2"=>["name"=>"คู่ค้า2","type"=>"CHAR","length_value"=>255],
 			//"partner3"=>["name"=>"คู่ค้า3","type"=>"CHAR","length_value"=>255],
-			"payu_arr"=>["name"=>"รูปแบบการชำระ","type"=>"VARCHAR","length_value"=>1024],
+			"payu_json"=>["name"=>"รูปแบบการชำระ","type"=>"VARCHAR","length_value"=>1024],
 			"partner"=>["name"=>"คู่ค้า","type"=>"TEXT","length_value"=>65535],
 			"password"=>["name"=>"รหัสผ่าน","type"=>"CHAR","length_value"=>64],
 			//--"b"=>"ใบดำ บัญชีดำ","r"=>หยุดขาย ,"y"=>นำเข้ามาขายแต่ต้องระวังและตรวจสอบเป็นพิเศษ,"c"=>ขายปกติ
@@ -626,7 +626,7 @@ class main{
 			}else{
 				if(isset($this->tb[$table])){
 					$tb=$this->tb[$table];
-					if(strlen(trim($ry))==0&&in_array($v,$tb["not_null"])){
+					if(strlen(trim($ry))==0&&isset($tb["not_null"])&&in_array($v,$tb["not_null"])){
 						$nm=$this->fills[$v]["name"];
 						$re["result"]=false;
 						$re["message_error"]="ข้อมูล \"".$nm."\"  ต้องไม่ว่าง" ;
@@ -640,8 +640,9 @@ class main{
 						$password=["password"];
 						$money=["price","cost"];
 						$float=["vat_p"];
-						$enum = ["data_type","s_type","pn_type","od_type","tp_type"];
+						$enum = ["data_type","s_type","pn_type","od_type","tp_type","bill_type"];
 						$json_arr = ["prop","partner"];
+						$province=["bill_no"];
 						if(in_array($v,$sku)){
 							$pt="/^[0-9a-zA-Z-+\.&\/]{1,25}$/";
 							if(!preg_match($pt,$ry)) {
@@ -732,6 +733,13 @@ class main{
 							if(!preg_match($pt,$ry)) {
 								$re["result"]=false;
 								$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ จำนวน xx.xx";
+								break;
+							}
+						}else if(in_array($v,$province)){
+							$max=$this->fills[$v]["length_value"]-4;
+							if(strlen($ry)>$max) {
+								$re["result"]=false;
+								$re["message_error"]=$this->fills[$v]["name"]." ยาวเกิน ".$max." แต่ข้อความคุณยาว ".strlen($ry);
 								break;
 							}
 						}

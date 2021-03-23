@@ -14,7 +14,7 @@ class billsin extends main{
 		let index=did.selectedIndex
 		let group=did.options[index].getAttribute("data-group")
 		if(group=="partner"){
-			location.href="?a=bills&b=fill&c=in&group=partner&sku_root="+did.value
+			location.href="?a=bills&b=fill&c=in&pn_partner=partner&sku_root="+did.value
 		}
 		
 	}
@@ -84,7 +84,6 @@ class billsin extends main{
 		let sun=0
 		let vat=0
 		let sum=0
-		let mt=1
 		let product_has = F.valueListToArray(product_list)
 		for(let i=0;i<product_has.length;i++){
 			let prop=product_has[i]
@@ -106,6 +105,7 @@ class billsin extends main{
 		tv0.innerHTML=this.nb(sun,3)
 		tv1.innerHTML=this.nb(vat,3)
 		tv2.innerHTML=this.nb(sun+vat,3)
+		return {"pv0":sun,"v":vat,"pv1":sun+vat}
 	}
 	getSumPay(){
 		
@@ -390,8 +390,7 @@ class billsin extends main{
 			//this.l(o)
 			let ix=o.rowIndex
 			t.deleteRow(ix)
-			let l=t.rows.length
-			let ls=l-2			
+			let ls=Bi.at		
 			for(let i=ix;i<ls;i++){
 				t.rows[i].cells[0].innerHTML=i+"."
 				if(i%2!=0){
@@ -404,6 +403,7 @@ class billsin extends main{
 			let display_id=this.pd[sku_root]["display_id"]
 			let partner_list_id=this.pd[sku_root]["partner_list_id"]
 			delete Fsl.partner[display_id][sku_root]
+			Bi.at-=1
 			Fsl.setPartnerOld(display_id)
 			Fsl.selectPartnerListValue("product",display_id,partner_list_id)
 			
@@ -425,7 +425,6 @@ class billsin extends main{
 		}
 	}
 	billsinSumit(editable=true){
-		this.sumPayu()
 		let f=document.forms.billsin
 		let t=M.id("billsin")
 		//let l=t.rows.length
@@ -451,29 +450,41 @@ class billsin extends main{
 				error=true
 				break
 			}
-			dt[n_list]={"name":name,"sku_root":sku_root,"n":n,"sum":sum,"act":act}
+			let vat_p=this.pd[sku_root]["vat_p"]
+			dt[n_list]={"name":name,"sku_root":sku_root,"n":n,"sum":sum,"vat_p":vat_p,"act":act}
 			n_list+=1
 		}
-		if( n_list==0&&editable){alert(n_list+"*"+editable)
+		if( n_list==0&&editable){//alert(n_list+"*"+editable)
 			alert("ไม่มีสินค้านำเข้า คุณยังไม่ได้เลือก")
 		}else if(!error){
 			let note=null
-			let formData = new FormData()
+			/*let formData = new FormData()
 			formData.append("a","bills")			
 			formData.append("submith","clicksubmit")		
 			formData.append("c","bills_in")				
-			formData.append("product",JSON.stringify(dt))		
+			formData.append("product",JSON.stringify(dt))	*/
+			let payu=this.getPayuOb()
+			let dt2={"data":{"a":"bills","submith":"clicksubmit","c":"bills_in","product":JSON.stringify(dt),
+				"bill_no":f.bill_no.value,"pn":f.pn.value,
+				"bill_date":f.bill_date.value,"bill_type":f.bill_type.value,"note":f.note.value,"payu":JSON.stringify(payu),
+				"b":"fill"},
+				"result":Bi.billsinSaveResult,"error":Bi.billsinSaveError}	
 			M.l(dt)
 			let patt = /^([1-9])[0-9]{3}-(0|1)[0-9]-(0|1|2|3)[0-9]$/g;
 			let date_result = patt.test(f.bill_date.value);
+			let sumPay1=this.getPay1()
+			let sumPay2=this.getPay2()
 			if(f.bill_no.value.trim().length==0){
 				alert("เลขที่ใบเสร็จ คุณว่าง")
 			}else if(!date_result){
 				alert("วันที่ในใบเสร็จ ไม่ถูกต้อง หรือ ว่าง")
 			}else if(f.bill_type.value!="c"&&f.bill_type.value!="v1"&&f.bill_type.value!="v0"){
 				alert("ค่ารูปแบบใบเสร็จไม่ถูกต้อง")
+			}else if(sumPay1<sumPay2){
+				alert("ยอดเงินรวม ในรูปแบบการชำระ น้อยกว่า ยอดราคารวมสินค้า")
+			}else{
+				this.setFec(dt2)
 			}
-			alert(f.bill_date.value)
 			/*if(f.note!=undefined){
 				note=confirm("คุณยืยยันที่จะแกไข\n"+f.note.value)
 				if(note){
@@ -492,14 +503,28 @@ class billsin extends main{
 			}*/
 		}
 	}
-	sumPayu(){
+	getPay1(){
 		let re=0
 		let f=document.forms.billsin
-		let payu_has = f.payu_list.value.substring(1, f.payu_list.value.length-1).split(",,")
+		//let payu_has = f.payu_list.value.substring(1, f.payu_list.value.length-1).split(",,")
+		let payu_has=F.valueListToArray(f.payu_list.value)
 		for(let i=0;i<payu_has.length;i++){
 			re+=f["payu_"+payu_has[i]].value*1
 		}
-		alert(re)
+		return re
+	}
+	getPayuOb(){
+		let re={}
+		let f=document.forms.billsin
+		let payu_has=F.valueListToArray(f.payu_list.value)
+		for(let i=0;i<payu_has.length;i++){
+			re["payu_"+payu_has[i]]=f["payu_"+payu_has[i]].value*1
+		}
+		return re
+	}
+	getPay2(){
+		let r=this.setDisplayTV()
+		return r.pv1
 	}
 	billsinSaveResult(re,form,bt){
 		if(re["result"]){

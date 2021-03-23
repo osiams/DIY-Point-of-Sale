@@ -19,8 +19,8 @@ class bills_in extends bills{
 			}
 			if($t=="fill"){
 				$q=["po","partner"];
-				if(isset($_GET["group"])&&in_array($_GET["group"],$q)){
-					if($_GET["group"]=="partner"
+				if(isset($_GET["pn_partner"])&&in_array($_GET["pn_partner"],$q)){
+					if($_GET["pn_partner"]=="partner"
 						&&isset($_GET["sku_root"])
 						&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku_root"])){
 						$this->billsinPage("partner",$_GET["sku_root"]);
@@ -229,14 +229,41 @@ class bills_in extends bills{
 	}
 	private function fetchBillsinInsert():array{
 		$note=$this->getStringSqlSet($_POST["note"]);
+		$pn=$this->getStringSqlSet($_POST["pn"]);
+		$bill_no=$this->getStringSqlSet($_POST["bill_no"]);
+		$bill_type=$this->getStringSqlSet($_POST["bill_type"]);
+		$bill_date=$this->getStringSqlSet($_POST["bill_date"]." 00:00:00");
 		$user=$this->getStringSqlSet($_SESSION["sku_root"]);
+		$bill_type=$this->getStringSqlSet($_POST["bill_type"]);
+		$payu_json=$this->getStringSqlSet($_POST["payu"]);
 		$pd=json_decode($_POST["product"],true);
 		$n=0;
 		$sum=0;
+		$vat=0;
 		foreach($pd as $k=>$v){
-			$n+=1;
-			$sum+=$v["sum"];
+			$n+=1;			
+			$vt=0;
+			if($bill_type=='"v0"'){
+				$vt=((float) $v["vat_p"]/100)* (float) $v["sum"];
+				$vat+=$vt;
+				$sum+=$v["sum"]+$vt;
+			}else{
+				$vt= (float) $v["sum"] - ((float) $v["sum"]*100/(100+(float) $v["vat_p"]));
+				$vat+=$vt;
+				$sum+=$v["sum"];
+			}
 		}
+		$py=json_decode($_POST["payu"],true);
+		$py_n=0;
+		$py_sum=0;
+		
+		foreach($py as $k=>$v){
+			if($v>0){
+				$py_n+=1;
+				$py_sum+=$v;
+			}
+		}
+		//echo $bill_type."*".$n."*".$sum."*".$vat;
 		$sku=$this->getStringSqlSet($this->key("key",7));
 		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$jspd=$this->getStringSqlSet($_POST["product"]);
@@ -246,15 +273,28 @@ class bills_in extends bills{
 			@sku:=".$sku.",
 			@jspd:=".$jspd.",
 			@pd_length:=0,
+			@bill_no:=".$bill_no.",
+			@bill_type:=".$bill_type.",
+			@bill_date:=".$bill_date.",
+			@payu_json:=".$payu_json.",
+			@vat_n:=".$vat.",
 			@note:=".$note.",
+			@pn:=".$pn.",
 			@n:=".$n.",
+			@py_n:=".$py_n.",
+			@py_sum:=".$py_sum.",
 			@sum:=".$sum.",
 			@stkey:='proot',
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
+		//print_r($sql);exit;
 		$sql["check"]="
 			IF @n = 0 THEN 
 				SET @message_error='เกิดขอผิดพลาด จำนวนรายการสินค้า ที่ส่งมา 0 รายการ';
+			ELSEIF (@py_sum - @sum) >= @py_n*0.99 THEN
+				SET @message_error=CONCAT('เกิดขอผิดพลาด จำนวนที่ชำระ(',@py_sum,') มากกว่า ราคารวมสินค้า (',@sum,')');
+			ELSEIF (@sum - @py_sum) >= @py_n*0.99 THEN
+				SET @message_error=CONCAT('เกิดขอผิดพลาด จำนวนที่ชำระ(',@py_sum,') น้อยกว่า ราคารวมสินค้า (',@sum,')');
 			END IF;			
 		";
 		$sql["run"]="BEGIN NOT ATOMIC 
@@ -268,7 +308,10 @@ class bills_in extends bills{
 				SET @stkey=(SELECT sku_key FROM  it WHERE sku_root='proot');
 				SET @pd_length=JSON_LENGTH(@jspd);
 				FOR i IN 0..(@pd_length-1) DO
-					INSERT  INTO `bill_in_list`  (`stkey`,`stroot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,`name`,`s_type`,`n`,balance,`n_wlv`,`balance_wlv`,`sum`,`unit_sku_key`,`unit_sku_root`) 
+					INSERT  INTO `bill_in_list`  (
+						`stkey`				,`stroot`		,`bill_in_sku`			,`product_sku_key`		,`product_sku_root`,
+						`name`				,`s_type`		,`n`						,balance						,`n_wlv`,
+						`balance_wlv`	,`sum`			,`unit_sku_key`		,`unit_sku_root`) 
 					SELECT @stkey, 'proot',@sku,`product`.`sku_key`,`product`.`sku_root`,
 						JSON_VALUE(@jspd,CONCAT('$[',i,'].name')),
 						`product`.`s_type`,
@@ -296,8 +339,16 @@ class bills_in extends bills{
 					SET __r=r__;
 				END IF;
 				IF r__>0 THEN
-					INSERT INTO `bill_in`  (in_type,sku,lot_from,lot_root,n,sum,user,note,r_,_r,date_reg) 
-					VALUES ('b',@sku,NULL,@sku,@n,@sum,@user,@note,r__,__r,@dateandtime);
+					INSERT INTO `bill_in`  (
+						in_type		,sku			,lot_from		,lot_root		,n			,sum,
+						pn				,bill_no		,bill_type		,payu_json		,user				,note	,
+						vat_n		,bill_date,
+						r_				,_r			,date_reg) 
+					VALUES (
+						'b'				,@sku		,NULL			,@sku			,@n		,@sum,
+						@pn			,@bill_no	,@bill_type	,@payu_json	,@user		,@note,
+						@vat_n		,@bill_date,
+						r__			,__r			,@dateandtime);
 				END IF;
 				SET @result=1;
 			END IF;
@@ -411,7 +462,7 @@ class bills_in extends bills{
 		echo 'Fsl.selectPartnerListValue("product","'.$id.'","'.$product_list_id.'");';
 		echo '</script>';
 	}
-	private function  jsD(string  $t):string{
+	private function jsD(string  $t):string{
 		$t=str_replace('\\','\\\\',$t);
 		$t=str_replace('"','\"',$t);
 		$t=str_replace("\n","",$t);
@@ -453,14 +504,31 @@ class bills_in extends bills{
 	}
 	private function billsinCheck(string $type="insert"):array{
 		$re=["result"=>false,"message_error"=>""];
+		$se=$this->checkSet("bill_in",["post"=>["bill_no","bill_type"]],"post");
 		if(!isset($_POST["product"])){
 			$re["message_error"]="ไม่มีสินค้าที่เลือก";
-		}else if(!isset($_POST["note"])){
-			$re["message_error"]="ไม่มรายละเอียดอย่างย่อ";
+		}else if(empty(trim($_POST["bill_no"]))){
+			$re["message_error"]="เลขที่ใบเสร็จต้องไม่ว่าง";
 		}else if(gettype(json_decode($_POST["product"],true))!="array"){
 			$re["message_error"]="สินค้าที่เลือกหรือข้อมูลที่ส่งมาไม่อยู่ในรูปแบบ";
 		}else if(strlen($_POST["note"])>$this->fills["note"]["length_value"]-3){
-			$re["message_error"]="รายละเอียดอย่างย่อ ยาวเกินไป";
+			$re["message_error"]="หมายเหตุ ยาวเกินไป";
+		}else if(isset($_POST["pn"])&&!preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["pn"])){
+			$re["message_error"]="ใบนำเข้าหรือ คู่ค้าไม่ถูกต้อง";
+		}else if(isset($_POST["bill_date"])&&!preg_match("/^([1-9])[0-9]{3}-(0|1)[0-9]-(0|1|2|3)[0-9]$/",$_POST["bill_date"])){
+			$re["message_error"]="วันที่ ไม่อยู่ในรูปแบบ  yyy-mm-dd";
+		}else if(
+			!isset($_POST["payu"])
+			||
+			(
+				isset($_POST["payu"]) 
+				&& 
+				!is_object(json_decode ($_POST["payu"]))
+			)
+		){
+			$re["message_error"]="รูปแบบการชำระที่ส่งมาไม่ถูกต้อง";
+		}else if(!$se["result"]){
+			$re["message_error"]=$se["message_error"];
 		}else if(!isset($_POST["sku"])&&$type=="edit"){
 			$re["message_error"]="ไม่พบใบนำเข้าที่ส่งมา";
 		}else if(isset($_POST["sku"])&&strlen(trim($_POST["sku"]))==0&&$type=="edit"){
@@ -489,10 +557,13 @@ class bills_in extends bills{
 		$product=(isset($_POST["product"]))?htmlspecialchars($_POST["product"]):"";
 		$payu_list_id=$this->key("key",7);
 		$product_list_id=$this->key("key",7);
+		$pop=["po","partner"];
+		$po_partner=(isset($_GET["po_partner"])&&in_array($_GET["po_partner"],$pop))?htmlspecialchars($_GET["po_partner"]):"partner";
 		echo '<form class="form100"  name="billsin" method="post">
 			<input type="hidden" name="sku_root" value="" />
 			<input type="hidden" id="'.$payu_list_id.'" name="payu_list" value="'.$payu.'" />
 			<input type="hidden" id="'.$product_list_id.'" name="product_list" value="'.$product.'" />
+			<input type="hidden" name="po_partner" value="'.$po_partner.'" />
 			<div class="billinhead">
 				<div>
 					<p><span>ใบสั่งซื้อ/คู่ค้า</span></p>
