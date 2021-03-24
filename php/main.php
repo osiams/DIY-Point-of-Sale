@@ -33,7 +33,7 @@ class main{
 			"bill_in"=>[
 				"name"=>"bill_in",
 				"column"=>["id","in_type","sku","lot_from","lot_root","bill","n",
-				"bill_po_sku","pn","bill_no","bill_date","bill_type","payu_json","icon_arr","vat_n",
+				"bill_po_sku","pn_key","pn_root","bill_no","bill_date","bill_type","payu_json","payu_key_json","icon_arr","vat_n",
 				"sum","changto","user","user_edit","note","stkey_","stroot_",
 				"r_","_r","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
@@ -324,11 +324,13 @@ class main{
 			//"partner2"=>["name"=>"คู่ค้า2","type"=>"CHAR","length_value"=>255],
 			//"partner3"=>["name"=>"คู่ค้า3","type"=>"CHAR","length_value"=>255],
 			"payu_json"=>["name"=>"รูปแบบการชำระ","type"=>"VARCHAR","length_value"=>1024],
+			"payu_key_json"=>["name"=>"รูปแบบการชำระอ้างอิง","type"=>"VARCHAR","length_value"=>1024],
 			"partner"=>["name"=>"คู่ค้า","type"=>"TEXT","length_value"=>65535],
 			"password"=>["name"=>"รหัสผ่าน","type"=>"CHAR","length_value"=>64],
 			//--"b"=>"ใบดำ บัญชีดำ","r"=>หยุดขาย ,"y"=>นำเข้ามาขายแต่ต้องระวังและตรวจสอบเป็นพิเศษ,"c"=>ขายปกติ
 			"pdstat"=>["name"=>"สถานะ","type"=>"ENUM","length_value"=>["b","r","y","c"]],
-			"pn"=>["name"=>"คู่ค้า1","type"=>"CHAR","length_value"=>25],
+			"pn_root"=>["name"=>"คู่ค้า1ราก","type"=>"CHAR","length_value"=>25],
+			"pn_key"=>["name"=>"คู่ค้า1อ้างอิง","type"=>"CHAR","length_value"=>25],
 			"pn_type"=>["name"=>"ประเภทคู่ค้า","type"=>"ENUM","length_value"=>["s","n"]],
 			"post_no"=>["name"=>"รหัสไปรษณี","type"=>"CHAR","length_value"=>25],
 			"price"=>["name"=>"ราคา","type"=>"FLOAT","length_value"=>[15,2]],

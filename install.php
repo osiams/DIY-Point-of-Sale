@@ -722,6 +722,35 @@ class install extends main{
 			RETURN re;
 			END ;
 		";
+		$sql["set_get_payu_arr_ref"]="CREATE OR REPLACE FUNCTION `GetPayuArrRef_`(
+				json_payu_ TEXT CHARACTER SET 'ascii'
+			) RETURNS TEXT CHARACTER SET 'ascii' 
+			BEGIN
+				DECLARE re TEXT CHARACTER SET 'ascii' DEFAULT '{}';
+				DECLARE r ROW (
+					sku_key VARCHAR(25) CHARACTER SET 'ascii'
+				);
+				DECLARE key_ TEXT CHARACTER SET 'ascii' DEFAULT JSON_KEYS(json_payu_);
+				DECLARE len INT(10);
+				DECLARE TEST VARCHAR(1000) CHARACTER SET 'ascii' DEFAULT 'start';
+				SET len=JSON_LENGTH(json_payu_);
+				#SET TEST=CONCAT(TEST,';','len=',len);
+				FOR i IN 0..(len-1) DO
+					SET @k=JSON_VALUE(key_,	CONCAT('$[',i,']')	);
+					SELECT `sku_key` INTO r
+					FROM `payu` 
+					WHERE `sku_root`=@k;
+					IF r.sku_key IS NOT NULL THEN
+						SET TEST=CONCAT(TEST,';','r.sku_key=',r.sku_key);
+						SET re=JSON_INSERT(
+							re, 
+							CONCAT('$.',r.sku_key),
+							CAST(JSON_VALUE(json_payu_,	CONCAT('$.',@k)) AS DECIMAL(15,4))
+						);						
+					END IF;
+				END FOR;	
+			RETURN re;
+		END ";
 		$se=$this->metMnSql($sql,[]);
 		return $se;
 	}

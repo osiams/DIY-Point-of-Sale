@@ -666,11 +666,14 @@ class F{
 	static  fileUploadShow(e,n,icon_id,max=1920,maxdisplay=116,type="",divuploadpre="",icon_load_id=null) {//-https://stackoverflow.com/questions/30902360/resize-image-before-sending-to-base64-without-using-img-element
 		let ic=null
 		let icon_ref=null
+		let icon_id_str=null
+		let idr=M.rid()
 		if(typeof(icon_id)=="object"){
-			let idr=M.rid()
 			icon_id[idr]=""
 			ic=icon_id
 			icon_ref=idr
+			icon_id_str=icon_id.toString()
+			alert(icon_id_str)
 		}else{
 			ic=M.id(icon_id)
 			icon_ref=ic.id
@@ -683,7 +686,8 @@ class F{
 		let div_id=M.rid()
 		let cv=M.ce("canvas",{"id":canvas_id,"width":"50px","height":"50px","style":"display:none"})
 		let dv =M.ce("div",{"id":div_id,"data-canvas_id":canvas_id})
-		let dvl=M.ce("div",{"title":"ลบออก","onclick":`F.fileUploadDel(this,'${div_id}','${icon_ref}','${canvas_id}')`})
+		
+		let dvl=M.ce("div",{"title":"ลบออก","onclick":`F.fileUploadDel(this,'${div_id}','${icon_ref}','${canvas_id}','${icon_id_str}')`})
 		if(e!=null){
 			if(e.target.files[0].type!="image/png"&&e.target.files[0].type!="image/jpeg"&&e.target.files[0].type!="image/gif"&&e.target.files[0].type!="image/webp"){
 				alert("ไฟล์ที่เลือก ไม่รองรับ สำหรับการเลือก\nไฟล์คุณ "+ e.target.files[0].type)
@@ -725,7 +729,11 @@ class F{
 			ctx.imageSmoothingEnabled=true;
 			ctx.imageSmoothingQuality="height";
 			ctx.drawImage(img,0,0,iwScaled,ihScaled)
-			ic.value=canvas.toDataURL()
+			if(typeof(icon_id)=="object"){
+				ic[idr]=canvas.toDataURL()
+			}else{
+				ic.value=canvas.toDataURL()
+			}
 			//alert(canvas.toDataURL())
 			//alert(canvas)
 			//document.getElementById("im").src=canvas.toDataURL()
@@ -744,11 +752,12 @@ class F{
 	
 		//img.src = "https://i.ytimg.com/vi/HLt7Ze-JUPM/hqdefault.jpg?sqp=-oaymwEiCNIBEHZIWvKriqkDFQgBFQAAAAAYASUAAMhCPQCAokN4AQ==&rs=AOn4CLCT1cUDWu32RiYDo8r9qKFv03MENw"
 	}
-	static fileUploadDel(did,div_id,icon_id,canvas_id){
-		if(M.id(icon_id)!=undefined){
+	static fileUploadDel(did,div_id,icon_id,canvas_id,icon_id_=null){
+		alert(icon_id_)
+		if(M.id(icon_id)!=undefined){alert(33)
 			M.id(icon_id).value=""
-		}else if(Bi.icon.hasOwnProperty(icon_id)){
-			delete Bi.icon[icon_id]
+		}else if(icon_id_!=null &&typeof(icon_id_)=="object" &&icon_id_.hasOwnProperty(icon_id)){alert(88)
+			delete icon_id_[icon_id]
 		}	
 		M.id(div_id).parentNode.removeChild(M.id(div_id))
 		M.id(canvas_id).parentNode.removeChild(M.id(canvas_id))

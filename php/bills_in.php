@@ -235,7 +235,8 @@ class bills_in extends bills{
 		$bill_date=$this->getStringSqlSet($_POST["bill_date"]." 00:00:00");
 		$user=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$bill_type=$this->getStringSqlSet($_POST["bill_type"]);
-		$payu_json=$this->getStringSqlSet($_POST["payu"]);
+		$payu_json0=$this->cutPerfix($_POST["payu"]);
+		$payu_json=$this->getStringSqlSet($payu_json0);
 		$pd=json_decode($_POST["product"],true);
 		$n=0;
 		$sum=0;
@@ -276,10 +277,12 @@ class bills_in extends bills{
 			@bill_no:=".$bill_no.",
 			@bill_type:=".$bill_type.",
 			@bill_date:=".$bill_date.",
+			@payu_json0:='".$payu_json0."',
 			@payu_json:=".$payu_json.",
 			@vat_n:=".$vat.",
 			@note:=".$note.",
-			@pn:=".$pn.",
+			@pn_root:=".$pn.",
+			@pn_key:='',
 			@n:=".$n.",
 			@py_n:=".$py_n.",
 			@py_sum:=".$py_sum.",
@@ -305,7 +308,9 @@ class bills_in extends bills{
 				SET @dateandtime=NOW();
 				#SET @yyyymm=CONCAT(YEAR(@dateandtime),LPAD(MONTH(@dateandtime),2,'0'));
 				#CALL BILED_ (@dateandtime,@BILED_error);
+				SET @payu_key_json=GetPayuArrRef_(@payu_json0);
 				SET @stkey=(SELECT sku_key FROM  it WHERE sku_root='proot');
+				SET @pn_key=(SELECT sku_key FROM  partner WHERE sku_root=@pn_root);
 				SET @pd_length=JSON_LENGTH(@jspd);
 				FOR i IN 0..(@pd_length-1) DO
 					INSERT  INTO `bill_in_list`  (
@@ -340,13 +345,13 @@ class bills_in extends bills{
 				END IF;
 				IF r__>0 THEN
 					INSERT INTO `bill_in`  (
-						in_type		,sku			,lot_from		,lot_root		,n			,sum,
-						pn				,bill_no		,bill_type		,payu_json		,user				,note	,
+						in_type		,sku			,lot_from		,lot_root		,n							,sum,
+						pn_root		,pn_key		,bill_no		,bill_type		,payu_json					,payu_key_json		,user				,note	,
 						vat_n		,bill_date,
 						r_				,_r			,date_reg) 
 					VALUES (
-						'b'				,@sku		,NULL			,@sku			,@n		,@sum,
-						@pn			,@bill_no	,@bill_type	,@payu_json	,@user		,@note,
+						'b'				,@sku		,NULL			,@sku			,@n						,@sum,
+						@pn_root	,@pn_key	,@bill_no	,@bill_type		,@payu_json			,@payu_key_json	,@user		,@note,
 						@vat_n		,@bill_date,
 						r__			,__r			,@dateandtime);
 				END IF;
@@ -357,6 +362,20 @@ class bills_in extends bills{
 		$se=$this->metMnSql($sql,["result"]);
 		//print_r($se);
 		return $se;
+	}
+	private function cutPerfix(string $json):string{
+		$re=[];
+		$a=json_decode($json,true);
+		
+		foreach($a as $k=>$v){
+			$re[substr($k,5)]=$v;
+		}
+		if(count($re)==0){
+			$re='{}';
+		}else{
+			$re=json_encode($re);
+		}
+		return $re;
 	}
 	private function deleteBillsIn():void{
 		$error="";
@@ -680,8 +699,9 @@ class bills_in extends bills{
 		$se=$sea["row"];
 		echo '<form class="form100" name="billsin" method="post">
 			<input type="hidden" name="sku" value="" />
-			<table id="billsin"><tr><th>ที่</th>
-			<th>บันทึกย่อ</th>
+			<table id="billin_view"><tr><th>ที่</th>
+			<th>รูป</th>
+			<th>คู่ค้า</th>
 			<th>รก.</th>
 			<th>จำนวนเงิน</th>
 			<th>ผู้บันทึก</th>
@@ -704,9 +724,14 @@ class bills_in extends bills{
 			}else if($se[$i]["in_type"]=="b"){
 				$tx=$this->billNote("b",''.$se[$i]["note"],'');
 			}
+			$sn=mb_substr(trim($se[$i]["partner_name"]),0,15);
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
+				<td class="l"><div class="img48"><img src="img/gallery/64x64_'.$se[$i]["partner_icon"].'"  alt="'.$sn.'"  onerror="this.src=\'img/pos/64x64_null.png\'" /></div></td>
 				<td class="l">
-					<div><a href="?a=bills&amp;b=view&amp;c=in&amp;sku='.$se[$i]["sku"].'">'.$tx.'</a></div>
+					<div>
+						<a href="?a=partner&b=details&sku_root='.$se[$i]["pn_root"].'">'.htmlspecialchars($se[$i]["partner_name"]).'</a>
+						<span><a href="?a=bills&amp;b=view&amp;c=in&amp;sku='.$se[$i]["sku"].'">🧾 '.$se[$i]["bill_no"].'</a></span>
+					</div>
 					<div>'.$se[$i]["user_name"].' '.substr($se[$i]["date_reg"],0,-3).'</div>
 				</td>
 				<td class="r">'.$se[$i]["n"].'</td>
@@ -742,12 +767,16 @@ class bills_in extends bills{
 		$re=[];
 		$sql=[];
 		$sql["count"]="SELECT @count:=COUNT(*) FROM bill_in WHERE bill_in.in_type='b' ";
-		$sql["get"]="SELECT  `bill_in`.`id`  AS  `id`,`bill_in`.`in_type`  AS  `in_type`,`bill_in`.`sku`  AS  `sku`,IFNULL(`bill_in`.`bill`,bill_in.id)  AS  `bill`,IFNULL(`bill_in`.`note`,'')  AS  `note`, 
+		$sql["get"]="SELECT  `bill_in`.`id`  AS  `id`,`bill_in`.`in_type`  AS  `in_type`,`bill_in`.`sku`  AS  `sku`,IFNULL(`bill_in`.`bill`,bill_in.id)  AS  `bill`,
+				`bill_in`.`bill_no`  AS  `bill_no`,`bill_in`.`pn_root`  AS  `pn_root`,IFNULL(`bill_in`.`note`,'')  AS  `note`, 
 				SUM(`bill_in`.`n`) AS `n`, SUM(`bill_in`.`sum`) AS `sum`, `bill_in`.`date_reg` AS `date_reg`,
-				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`
+				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
+				`partner_ref`.`name` AS `partner_name`,`partner_ref`.`icon` AS `partner_icon`
 			FROM `bill_in` 
 			LEFT JOIN `user_ref`
 			ON( `bill_in`.`user`=`user_ref`.`sku_key`)
+			LEFT JOIN `partner_ref`
+			ON (`bill_in`.`pn_root`=`partner_ref`.`sku_key`)
 			WHERE bill_in.in_type='b' 
 			GROUP BY bill_in.date_reg
 			ORDER BY `bill_in`.`id` DESC LIMIT ".(($this->page-1)*$this->per).",".$this->per."";
@@ -756,6 +785,7 @@ class bills_in extends bills{
 		if($se["result"]){
 			$re=["row"=>$se["data"]["get"],"count"=>$se["data"]["result"][0]["count"]];
 		}
+		//print_r($se);
 		return $re;
 	}
 	private function view():void{
