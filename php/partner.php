@@ -78,7 +78,7 @@ class partner extends main{
 		$note=(isset($_POST["note"]))?htmlspecialchars($_POST["note"]):"";
 		$sku_root=(isset($_POST["sku_root"]))?htmlspecialchars($_POST["sku_root"]):"";
 		$this->addDir("","แก้ไขคู่ค้า");
-		$this->pageHead(["title"=>"แก้ไขคู่ค้า DIYPOS","js"=>["partner","Pn"],"run"=>["Pn"],"css"=>["partner"]]);
+		$this->pageHead(["title"=>"แก้ไขคู่ค้า DIYPOS","js"=>["partner","Pn","fileupload","Ful"],"run"=>["Pn"],"css"=>["partner","fileupload"]]);
 		echo '<div class="content">
 			<div class="form">
 				<h1 class="c">แก้ไขคู่ค้า</h1>';
@@ -148,10 +148,10 @@ class partner extends main{
 			<div><input id="note" type="text" value="'.$note.'"  name="note" autocomplete="off"  /></div>
 			<div>
 				<div id="div_fileuploadpre" class="fileuploadpre1"></div>
-				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" style="display:none" name="picture" onchange="F.fileUploadShow(event,1,\'icon_id\',1024,160)" />
-				<label for="upload_pic" style="border-radius: 2px 2px 2px 2px;text-align: center;line-height:32px;display:block;background-image: linear-gradient(to bottom right, #bbbbbb, #888888);color:#ffffff;;width:100%;height:32px;">+เลือกรูปภาพ</label>
+				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" class="fuif" name="picture" onchange="Ful.fileUploadShow(event,1,\'icon_id\',1024,160)" />
+				<label for="upload_pic"  class="fubs">+เลือกรูปภาพ</label>
 			</div>	
-			<script type="text/javascript">F.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\',\'icon_load_id\')</script>
+			<script type="text/javascript">Ful.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\',\'icon_load_id\')</script>
 		';			
 		echo '</table>
 					<br />
@@ -481,7 +481,7 @@ class partner extends main{
 		$post_no=(isset($_POST["post_no"]))?htmlspecialchars($_POST["post_no"]):"";
 		$note=(isset($_POST["note"]))?htmlspecialchars($_POST["note"]):"";
 		$this->addDir("","เพิ่มคู่ค้า");
-		$this->pageHead(["title"=>"เพิ่มคู่ค้า DIYPOS","js"=>["partner","Pn"],"run"=>["Pn"],"css"=>["partner"]]);
+		$this->pageHead(["title"=>"เพิ่มคู่ค้า DIYPOS","js"=>["partner","Pn","fileupload","Ful"],"run"=>["Pn"],"css"=>["partner","fileupload"]]);
 		echo '<div class="content">
 			<div class="form">
 				<h1 class="c">เพิ่มคู่ค้า</h1>';
@@ -549,10 +549,10 @@ class partner extends main{
 			<div><input id="note" type="text" value="'.$note.'"  name="note" autocomplete="off"  /></div>
 			<div>
 				<div id="div_fileuploadpre" class="fileuploadpre1"></div>
-				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" style="display:none" name="picture" onchange="F.fileUploadShow(event,1,\'icon_id\',1024,160)" />
-				<label for="upload_pic" style="border-radius: 2px 2px 2px 2px;text-align: center;line-height:32px;display:block;background-image: linear-gradient(to bottom right, #bbbbbb, #888888);color:#ffffff;;width:100%;height:32px;">+เลือกรูปภาพ</label>
+				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" class="fuif" name="picture" onchange="Ful.fileUploadShow(event,1,\'icon_id\',1024,160)" />
+				<label for="upload_pic"  class="fubs">+เลือกรูปภาพ</label>
 			</div>	
-			<script type="text/javascript">F.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')</script>
+			<script type="text/javascript">Ful.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')</script>
 		';			
 		echo '</table>
 					<br />

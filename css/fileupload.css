@@ -1,0 +1,21 @@
+.fileuploadpre1{display:grid;grid-template-columns:100%;grid-gap:0px;padding:5px 5px;margin:10px auto;height:160px;width:160px;background-image:url('../img/pos/64x64_null.png')}
+.fileuploadpre1 > div {display:inline-block;border:1px dashed gray;}
+.fileuploadpre1 > div >div{background-color:red;color:white;display:block;float:right;width:20px;height:20px;border-radius: 10px 10px 10px 10px;border:1px solid white;line-height:20px;font-size:20px;text-align:center;cursor:pointer}
+.fileuploadpres{display:block;padding:5px 0px;margin:0px auto;background-image:url('../img/pos/64x64_null.png');min-height:160px;}
+.fileuploadpres > div {display:inline-block;border:2px dashed gray;height:160px;width:160px;margin:5px;}
+.fileuploadpres > div >div{background-color:red;color:white;display:block;float:right;width:20px;height:20px;border-radius: 10px 10px 10px 10px;border:1px solid white;line-height:20px;font-size:20px;text-align:center;cursor:pointer}
+
+.fuif{display:none}
+.fubs{border-radius: 2px 2px 2px 2px;text-align: center;line-height:32px;display:block;background-image: linear-gradient(to bottom right, #bbbbbb, #888888);color:#ffffff;;width:100%;height:32px;}
+.furp{display:grid;align-content:center;justify-content:center;position:absolute;z-index:1000;top:0px;left:0px;width:100%;height:100%;background-color:transparent;}
+.furo{display:none}
+.furp > div >p{font-size:1.5em;font-weight:bold;}
+.furp > div{display:grid;align-content:center;justify-content:center;border-radius: 80px 80px 80px 80px;padding:20px;height:100px;width:100px;background-color:#eeeeee;animation-name:ranbg;animation-duration:1s;animation-iteration-count:infinite;box-shadow: 3px 3px 15px #000000;}
+
+@keyframes ranbg {
+	0%   {transform:scale(1,1)}
+	25%   {transform:scale(1,1.2)}
+	25%   {transform:scale(1,1.2)}
+	75%   {transform:scale(1.2,1)}
+	100%   {transform:scale(1,1)}
+}

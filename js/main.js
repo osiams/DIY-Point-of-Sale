@@ -357,6 +357,21 @@ class gpu extends main {
 		super()
 		this.load={"id":{"has":0,"get":0}}
 	}
+	view(did){
+		let a=did.src.split("_")
+		let b=a.length>1?a[a.length-1]:"64x64_null.png"
+		let u="img/gallery/"+b
+		this.b.style.overflow="hidden"
+		let ct=this.ce("div",{"class":"vifs","style":"top:"+window.scrollY+"px"})
+			let cl=this.ce("div",{})
+			this.end(cl,[this.cn("×")])
+			let dm=this.ce("div",{})
+				let im=this.ce("img",{"src":u})
+			this.end(dm,[im])
+		this.end(ct,[cl,dm])
+		this.end(this.b,[ct])
+		alert(4)
+	}
 	loading(id,start,has=0,get=0,loadname,percent=null,listen=null){
 		if(start=="start"){
 			if(this.load.hasOwnProperty(id)){
@@ -662,134 +677,6 @@ class F{
 		str = str.replace(/"/g, "&quot;");
 		str = str.replace(/'/g, "&#039;");
 		return str;
-	}
-	static  fileUploadShow(e,n,icon_id,max=1920,maxdisplay=116,type="",divuploadpre="",icon_load_id=null) {//-https://stackoverflow.com/questions/30902360/resize-image-before-sending-to-base64-without-using-img-element
-		let ic=null
-		let icon_ref=null
-		let icon_id_str=null
-		let idr=M.rid()
-		if(typeof(icon_id)=="object"){
-			icon_id[idr]=""
-			ic=icon_id
-			icon_ref=idr
-			icon_id_str=icon_id.toString()
-			alert(icon_id_str)
-		}else{
-			ic=M.id(icon_id)
-			icon_ref=ic.id
-		}
-		if(icon_load_id!=null){
-			ic=M.id(icon_load_id)
-		}
-		let canvas_id=M.rid()
-		let img_id=M.rid()
-		let div_id=M.rid()
-		let cv=M.ce("canvas",{"id":canvas_id,"width":"50px","height":"50px","style":"display:none"})
-		let dv =M.ce("div",{"id":div_id,"data-canvas_id":canvas_id})
-		
-		let dvl=M.ce("div",{"title":"ลบออก","onclick":`F.fileUploadDel(this,'${div_id}','${icon_ref}','${canvas_id}','${icon_id_str}')`})
-		if(e!=null){
-			if(e.target.files[0].type!="image/png"&&e.target.files[0].type!="image/jpeg"&&e.target.files[0].type!="image/gif"&&e.target.files[0].type!="image/webp"){
-				alert("ไฟล์ที่เลือก ไม่รองรับ สำหรับการเลือก\nไฟล์คุณ "+ e.target.files[0].type)
-				return false
-			}
-			if(n==1){
-				M.rmc_all(e.target.parentNode.childNodes[1])
-			}
-			e.target.parentNode.childNodes[1].appendChild(cv)
-			e.target.parentNode.childNodes[1].appendChild(dv)
-				dv.appendChild(dvl)
-					dvl.appendChild(M.cn("\u00D7"))
-		}else if(type=="load"&&divuploadpre!=""&&M.id(divuploadpre)!=undefined&&ic.value!=""){
-			M.id(divuploadpre).appendChild(cv)
-			M.id(divuploadpre).appendChild(dv)
-				dv.appendChild(dvl)
-					dvl.appendChild(M.cn("\u00D7"))
-		}else{
-			M.id(divuploadpre).appendChild(cv)
-		}
-		let canvas=document.getElementById(canvas_id)
-		let ctx=canvas.getContext("2d")
-		let cw=canvas.width
-		let ch=canvas.height
-		let maxW=max//1920
-		let maxH=max//1920
-		let img = new Image()
-		img.onload = function() {
-			let iw=img.width
-			let ih=img.height
-			let scale=Math.min((maxW/iw),(maxH/ih))
-			if(iw<maxW&&ih<maxH){
-				scale=1
-			}
-			let iwScaled=iw*scale
-			let ihScaled=ih*scale
-			canvas.width=iwScaled
-			canvas.height=ihScaled
-			ctx.imageSmoothingEnabled=true;
-			ctx.imageSmoothingQuality="height";
-			ctx.drawImage(img,0,0,iwScaled,ihScaled)
-			if(typeof(icon_id)=="object"){
-				ic[idr]=canvas.toDataURL()
-			}else{
-				ic.value=canvas.toDataURL()
-			}
-			//alert(canvas.toDataURL())
-			//alert(canvas)
-			//document.getElementById("im").src=canvas.toDataURL()
-			setTimeout(F.fileUploadPain,0,div_id,n,canvas_id,max,maxdisplay)
-		}
-		if(e!=null){
-			//document.getElementById(img_id).src=URL.createObjectURL(e.target.files[0]);
-			img.src = URL.createObjectURL(e.target.files[0]);	
-		}else if(type=="load" && ic.value!=""){
-			img.src = ic.value
-		}
-		//alert(img.src)
-		//document.getElementById(img_id).src=canvas.toDataURL()
-		//setTimeout(F.fileUploadPain,10,div_id,canvas_id)
-		
-	
-		//img.src = "https://i.ytimg.com/vi/HLt7Ze-JUPM/hqdefault.jpg?sqp=-oaymwEiCNIBEHZIWvKriqkDFQgBFQAAAAAYASUAAMhCPQCAokN4AQ==&rs=AOn4CLCT1cUDWu32RiYDo8r9qKFv03MENw"
-	}
-	static fileUploadDel(did,div_id,icon_id,canvas_id,icon_id_=null){
-		alert(icon_id_)
-		if(M.id(icon_id)!=undefined){alert(33)
-			M.id(icon_id).value=""
-		}else if(icon_id_!=null &&typeof(icon_id_)=="object" &&icon_id_.hasOwnProperty(icon_id)){alert(88)
-			delete icon_id_[icon_id]
-		}	
-		M.id(div_id).parentNode.removeChild(M.id(div_id))
-		M.id(canvas_id).parentNode.removeChild(M.id(canvas_id))
-	}
-	static fileUploadPain(div_id,n,canvas_id,max,maxdisplay){
-		document.getElementById(div_id).style.backgroundImage="url(\""+document.getElementById(canvas_id).toDataURL()+"\")"
-		document.getElementById(div_id).style. backgroundRepeat="no-repeat"
-		document.getElementById(div_id).style.backgroundPosition="center center"
-		
-		let wi=document.getElementById(canvas_id).width
-		let hi=document.getElementById(canvas_id).height
-		let h=0
-		let w=0
-		if((wi==max||hi==max)
-			||(wi>=maxdisplay||hi>=maxdisplay)){
-			if(wi>=hi){
-				h=maxdisplay
-				w=(wi/hi)*h
-			}else{
-				w=maxdisplay
-				h=(hi/wi)*w
-			}
-		}else{
-			if(wi>=hi){
-				h=hi
-				w=(wi/hi)*h
-			}else{
-				w=wi
-				h=(hi/wi)*w
-			}
-		}
-		document.getElementById(div_id).style.backgroundSize=w+"px "+h+"px"
 	}
 	static valueListToArray(value){
 		let re=[]

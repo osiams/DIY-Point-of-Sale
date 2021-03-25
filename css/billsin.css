@@ -1,11 +1,12 @@
+.billinarr_icon{width:256px;text-align:center;display:inline-block;margin:5px;border:1px solid gray;box-shadow: 3px 5px 10px gray;}
 tr.billsin_add{background-color:PaleGreen}
 tr.billsin_edit{background-color:Orange}
 tr.billsin_delete{background-color:IndianRed}
 tr.ed{background-color:LightGreen}
 td{vertical-align: middle;}
 .content > div{display:inline-block;margin:0px auto;padding:0px;}
-.billinbalance{background-color:#F3E2A9;}
-.billinbalancei2{background-color:#F5DA81;}
+.billinbalance{background-color:rgba(240, 230, 140,0.5);}
+.billinbalancei2{background-color:rgba(240, 230, 140,0.5);}
 div.billsin_note_edit{margin:0 auto;}
 div.billsin_note_edit > input{width:98%;text-align:center}
 #billsin{width:calc(100vw - 20px);max-width:800px;}
@@ -99,7 +100,7 @@ div.billsin_note_edit > input{width:98%;text-align:center}
 
 
 #billin_view  tr > th:nth-child(2){width:48px}
-#billin_view  tr > td:nth-child(3) >  div:nth-child(1) > span{display:block;padding-left:20px;}
+#billin_view  tr > td:nth-child(3) >  div:nth-child(1) > span{text-align:right;display:block;padding-left:2px;}
 #billin_view  tr > td:nth-child(3) > div:nth-child(2){display:none;font-size:12px;color:#555555;text-align:right;padding-right:2px;}
 
 

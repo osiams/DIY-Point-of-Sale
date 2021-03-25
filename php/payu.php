@@ -60,7 +60,7 @@ class payu extends main{
 		$note=(isset($_POST["note"]))?htmlspecialchars($_POST["note"]):"";
 		$sku_root=(isset($_POST["sku_root"]))?htmlspecialchars($_POST["sku_root"]):"";
 		$this->addDir("","แก้ไข".$this->title.' '.$name );
-		$this->pageHead(["title"=>"แก้ไข".$this->title." DIYPOS","js"=>["partner","Pn"],"run"=>["Pn"],"css"=>["partner"]]);
+		$this->pageHead(["title"=>"แก้ไข".$this->title." DIYPOS","js"=>["partner","Pn","fileupload","Ful"],"run"=>["Pn"],"css"=>["partner"]]);
 		echo '<div class="content">
 			<div class="form">
 				<h1 class="c">แก้ไข'.$this->title.'</h1>';
@@ -89,10 +89,10 @@ class payu extends main{
 			<div><input id="note" type="text" value="'.$note.'"  name="note" autocomplete="off"  /></div>
 			<div>
 				<div id="div_fileuploadpre" class="fileuploadpre1"></div>
-				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" style="display:none" name="picture" onchange="F.fileUploadShow(event,1,\'icon_id\',1024,160)" />
-				<label for="upload_pic" style="border-radius: 2px 2px 2px 2px;text-align: center;line-height:32px;display:block;background-image: linear-gradient(to bottom right, #bbbbbb, #888888);color:#ffffff;;width:100%;height:32px;">+เลือกรูปภาพ</label>
+				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" class="fuif" name="picture" onchange="Ful.fileUploadShow(event,1,\'icon_id\',1024,160)" />
+				<label for="upload_pic" class="fubs">+เลือกรูปภาพ</label>
 			</div>	
-			<script type="text/javascript">F.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\',\'icon_load_id\')</script>
+			<script type="text/javascript">Ful.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\',\'icon_load_id\')</script>
 		';			
 		echo '</table>
 					<br />
@@ -129,7 +129,7 @@ class payu extends main{
 			}else{
 				$key=$this->key("key",7);
 				 $qe=$this->editPayuUpdate($key,$img,$mime);
-				 print_r($qe);
+				 //print_r($qe);
 				if(!$qe["result"]){
 					$error=$qe["message_error"];
 				}else if($qe["data"]["result"][0]["result"]==0){
@@ -200,7 +200,7 @@ class payu extends main{
 			IF LENGTH(@message_error) = 0 THEN
 				UPDATE `payu` SET  
 					`sku`	=	".$sku."				,`sku_key`=".$sku_key."	,`name`= ".$name." ,
-					`money_type`=".$money_type."	,`note`= ".$note."	
+					`money_type`=".$money_type."		".$icon_tx."	,`note`= ".$note."	
 				WHERE `sku_root`=".$sku_root.";
 				IF @img_set=1 THEN
 					INSERT  INTO `gallery` (
@@ -214,10 +214,10 @@ class payu extends main{
 				SET @result=1;
 			END IF;
 		";
-		$sql["ref"]=$this->ref("partner","sku_key",$skuk);
+		$sql["ref"]=$this->ref("payu","sku_key",$skuk);
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`";
 		$se=$this->metMnSql($sql,["result"]);
-		print_r($sql);
+		//print_r($sql);
 		return $se;
 	}
 	private function editPayuOldData(string $sku_root):array{
@@ -362,7 +362,7 @@ class payu extends main{
 		$money_type = (isset($_POST["money_type"]))?htmlspecialchars($_POST["money_type"]):"ca";
 		$note=(isset($_POST["note"]))?htmlspecialchars($_POST["note"]):"";
 		$this->addDir("","เพิ่มคู่ค้า");
-		$this->pageHead(["title"=>"เพิ่ม".$this->title." DIYPOS","js"=>["payu","Py"],"run"=>["Py"],"css"=>["payu"]]);
+		$this->pageHead(["title"=>"เพิ่ม".$this->title." DIYPOS","js"=>["payu","Py","fileupload","Ful"],"run"=>["Py"],"css"=>["payu"]]);
 		echo '<div class="content">
 			<div class="form">
 				<h1 class="c">เพิ่ม'.$this->title.'</h1>';
@@ -389,10 +389,10 @@ class payu extends main{
 			<div><input id="note" type="text" value="'.$note.'"  name="note" autocomplete="off"  /></div>
 			<div>
 				<div id="div_fileuploadpre" class="fileuploadpre1"></div>
-				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" style="display:none" name="picture" onchange="F.fileUploadShow(event,1,\'icon_id\',1024,160)" />
-				<label for="upload_pic" style="border-radius: 2px 2px 2px 2px;text-align: center;line-height:32px;display:block;background-image: linear-gradient(to bottom right, #bbbbbb, #888888);color:#ffffff;;width:100%;height:32px;">+เลือกรูปภาพ</label>
+				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" class="fuif" name="picture" onchange="Ful.fileUploadShow(event,1,\'icon_id\',1024,160)" />
+				<label for="upload_pic"  class="fubs">+เลือกรูปภาพ</label>
 			</div>	
-			<script type="text/javascript">F.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')</script>
+			<script type="text/javascript">Ful.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')</script>
 		';			
 		echo '</table>
 					<br />

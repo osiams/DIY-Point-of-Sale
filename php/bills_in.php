@@ -559,7 +559,7 @@ class bills_in extends bills{
 	}
 	private function billsinPage(string $group="",string $sku_root=""){
 		$this->addDir("?a=bills&amp;b=fill&amp;c=in","นำเข้าสินค้า ");
-		$this->pageHead(["title"=>"นำเข้า สินค้า DIYPOS","js"=>["billsin","Bi","form_selects","Fsl"],"css"=>["billsin","form_selects"],"run"=>["Fsl"]]);
+		$this->pageHead(["title"=>"นำเข้า สินค้า DIYPOS","js"=>["billsin","Bi","form_selects","Fsl","fileupload","Ful"],"css"=>["billsin","form_selects","fileupload"],"run"=>["Fsl"]]);
 			echo '<div class="content">
 				<div class="form">
 					<h1 class="c">นำเข้าสินค้า</h1>';
@@ -665,8 +665,8 @@ class bills_in extends bills{
 				<p><span>รูปภาพใบเสร็จ</span></p>
 				<div>
 					<div id="div_fileuploadpre" class="fileuploadpres"></div>
-					<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" style="display:none" name="picture" onchange="F.fileUploadShow(event,20,Bi.icon,1024,160)" />
-					<label for="upload_pic" style="border-radius: 2px 2px 2px 2px;text-align: center;line-height:32px;display:block;background-image: linear-gradient(to bottom right, #bbbbbb, #888888);color:#ffffff;width:calc(100% - 0px) ;height:32px;">+เลือกรูปภาพ</label>
+					<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" class="fuif" name="picture" onchange="Ful.fileUploadShow(event,20,Bi.icon,1024,160)" />
+					<label for="upload_pic"  class="fubs">+เลือกรูปภาพ</label>
 				</div>
 			</div>	
 			<script type="text/javascript">/*F.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')*/</script>
@@ -823,7 +823,7 @@ class bills_in extends bills{
 				$tx=$this->billNote("b",''.$dt[0]["note"],'');
 				$c="in";
 			}
-			$txdir=$tx.'';
+			$txdir=htmlspecialchars($dt[0]["partner_name"]." 🧾".$dt[0]["bill_no"]);
 			if(count($dt)>0){
 				$this->addDir("?a=bills&amp;b=view&amp;c=in&amp;sku=".$dt[0]["sku"],"".$txdir);
 			}
@@ -855,11 +855,13 @@ class bills_in extends bills{
 	private function writeContentVeiew(array $dt,string $aut=""):void{
 		//print_r($dt);
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
-		echo '<div>
+		$icon_arr=json_decode($dt[0]["icon_arr"]);
+		echo '<div style="max-width:800px;">
 			'.$aut.'
 			<table class="page r"><tr><td>บันทึกโดย : '.$dt[0]["user_name"].' วันที่ '.$dt[0]["date_reg"].'
 				<br />⏳ผ่านมาแล้ว '.$this->ago(time()-strtotime($dt[0]["date_reg"])).'
-				</td></tr><tr><td>
+				</td></tr>';
+		echo '<tr><td>
 			<table  id="billinlist" class="l"><tr>
 				<th>ที่</th>
 				<th>ป.</th>
@@ -882,7 +884,7 @@ class bills_in extends bills{
 			echo '<tr'.$cl.'><td>'.($i+1).'</td>
 			<td class="pwlv">'.$this->s_type[$dt[$i]["s_type"]]["icon"].'</td>
 			<td class="l">'.$dt[$i]["barcode"].'</td>
-			<td><div>'.htmlspecialchars($dt[$i]["name"]).'</div>
+			<td><div><a href="?a=product&amp;b=details&amp;sku_root='.$dt[$i]["sku_root"].'">'.htmlspecialchars($dt[$i]["name"]).'</a></div>
 				<div>'.$dt[$i]["barcode"].'</div>
 			</td>
 			<td class="r"><div>'.($dt[$i]["n"]*1).'</div>
@@ -895,8 +897,17 @@ class bills_in extends bills{
 			</tr>';
 		}
 		$tltx=number_format($tl, 2, '.', ',');
-		echo '</td></tr></table></td</tr>
-			<tr><td>จำนวน '.count($dt).' รายการ , รวมเงิน <b>'.$tltx.'</b> บ.</td></tr></table>
+		echo '</table>
+			<tr><td>จำนวน '.count($dt).' รายการ , รวมเงิน <b>'.$tltx.'</b> บ.</td></tr>';
+		if(count($icon_arr)>0){
+			echo '<tr colspan="6"><td class="c">
+				<h3><b>รูปภาพใบเสร็จ</b></h3>';
+			for($i=0;$i<count($icon_arr);$i++){
+				echo '<div class="billinarr_icon"><img src="img/gallery/256x256_'.$icon_arr[$i].'" onclick="G.view(this)"></div>';
+			}
+			echo '</td></tr>';
+		}
+		echo '</table>
 			</div>';
 		
 	}
@@ -910,13 +921,15 @@ class bills_in extends bills{
 		$sql["get"]="BEGIN NOT ATOMIC 
 			DECLARE r ROW (r__ INT,__r INT);
 			SELECT r_,_r INTO r.r__,r.__r FROM bill_in WHERE sku=@sku LIMIT 1;
-			SELECT  `bill_in`.`id`  AS  `id`,`bill_in`.`in_type`  AS  `in_type`,`bill_in`.`sku`  AS  `sku`,IFNULL(`bill_in`.`note`,'')  AS  `note`, 
-				`bill_in`.`bill`  AS  `bill`,`bill_in`.`n` AS `n_list`, `bill_in`.`sum` AS `sum`, `bill_in`.`date_reg` AS `date_reg`,
+			SELECT  `bill_in`.`id`  AS  `id`,`bill_in`.`bill_no`  AS  `bill_no`,`bill_in`.`in_type`  AS  `in_type`,`bill_in`.`sku`  AS  `sku`,IFNULL(`bill_in`.`note`,'')  AS  `note`, 
+				`bill_in`.`bill`  AS  `bill`,`bill_in`.`n` AS `n_list`, `bill_in`.`sum` AS `sum`, 
+				IFNULL(`bill_in`.`icon_arr`,'[]') AS `icon_arr`, `bill_in`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
 				bill_in_list.id AS bill_in_list_id,bill_in_list.product_sku_key  AS `pd_sku_root`,bill_in_list.product_sku_root,bill_in_list.product_sku_root AS sku_root ,
 				IF(`bill_in_list`.`s_type`='p',bill_in_list.n,bill_in_list.n_wlv) AS `n` ,
 				IF(`bill_in_list`.`s_type`='p',bill_in_list.balance,bill_in_list.balance_wlv) AS `balance`,bill_in_list.sum ,bill_in_list.name,
 				IFNULL(SUM(IF(`bill_in_list2`.`s_type`='p',bill_in_list2.balance,bill_in_list2.balance_wlv)),0) AS `sum_balance`,
+				partner_ref.name AS partner_name,
 				unit_ref.name AS unit_name,
 				product_ref.barcode AS barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`,
 				product.price,product.cost
@@ -927,8 +940,8 @@ class bills_in extends bills{
 			ON(IF(bill_in_list2.s_type='p',bill_in_list2.balance,bill_in_list2.balance_wlv)>0 AND bill_in_list.product_sku_root=bill_in_list2.product_sku_root  AND bill_in_list2.stroot='proot')			
 			LEFT JOIN `user_ref`
 			ON( `bill_in`.`user`=`user_ref`.`sku_key`)
-			
-
+			LEFT JOIN partner_ref
+			ON(bill_in.pn_key=partner_ref.sku_key)
 			LEFT JOIN unit_ref
 			ON(bill_in_list.unit_sku_key=unit_ref.sku_key)
 			LEFT JOIN product_ref

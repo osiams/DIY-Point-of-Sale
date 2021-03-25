@@ -1,0 +1,214 @@
+"use strict"
+class fileupload extends main{
+	fileUploadShow(e,n,icon_id,max=1920,maxdisplay=116,type="",divuploadpre="",icon_load_id=null) {//-https://stackoverflow.com/questions/30902360/resize-image-before-sending-to-base64-without-using-img-element
+		let ic=null
+		let icon_ref=null
+		let icon_id_str=null
+		let idr=M.rid()
+		if(typeof(icon_id)=="object"){
+			icon_id[idr]=""
+			ic=icon_id
+			icon_ref=idr
+			icon_id_str=icon_id.toString()
+			//alert(icon_id_str)
+		}else{
+			ic=M.id(icon_id)
+			icon_ref=ic.id
+		}
+		if(icon_load_id!=null){
+			ic=M.id(icon_load_id)
+		}
+		let canvas_id=M.rid()
+		let img_id=M.rid()
+		let div_id=M.rid()
+		let cv=M.ce("canvas",{"id":canvas_id,"width":"50px","height":"50px","style":"display:none"})
+		let dv =M.ce("div",{"id":div_id,"data-canvas_id":canvas_id})
+		
+		let dvl=M.ce("div",{"title":"ลบออก","onclick":`Ful.fileUploadDel(this,'${div_id}','${icon_ref}','${canvas_id}','${icon_id_str}')`})
+		if(e!=null){
+			if(e.target.files[0].type!="image/png"&&e.target.files[0].type!="image/jpeg"&&e.target.files[0].type!="image/gif"&&e.target.files[0].type!="image/webp"){
+				alert("ไฟล์ที่เลือก ไม่รองรับ สำหรับการเลือก\nไฟล์คุณ "+ e.target.files[0].type)
+				return false
+			}
+			if(n==1){
+				M.rmc_all(e.target.parentNode.childNodes[1])
+			}
+			e.target.parentNode.childNodes[1].appendChild(cv)
+			e.target.parentNode.childNodes[1].appendChild(dv)
+				dv.appendChild(dvl)
+					dvl.appendChild(M.cn("\u00D7"))
+		}else if(type=="load"&&divuploadpre!=""&&M.id(divuploadpre)!=undefined&&ic.value!=""){
+			M.id(divuploadpre).appendChild(cv)
+			M.id(divuploadpre).appendChild(dv)
+				dv.appendChild(dvl)
+					dvl.appendChild(M.cn("\u00D7"))
+		}else{
+			M.id(divuploadpre).appendChild(cv)
+		}
+		let canvas=document.getElementById(canvas_id)
+		let ctx=canvas.getContext("2d")
+		let cw=canvas.width
+		let ch=canvas.height
+		let maxW=max//1920
+		let maxH=max//1920
+		let img = new Image()
+		img.onload = function() {
+			let iw=img.width
+			let ih=img.height
+			let scale=Math.min((maxW/iw),(maxH/ih))
+			if(iw<maxW&&ih<maxH){
+				scale=1
+			}
+			let iwScaled=iw*scale
+			let ihScaled=ih*scale
+			canvas.width=iwScaled
+			canvas.height=ihScaled
+			ctx.imageSmoothingEnabled=true;
+			ctx.imageSmoothingQuality="height";
+			ctx.drawImage(img,0,0,iwScaled,ihScaled)
+			if(typeof(icon_id)=="object"){
+				ic[idr]=canvas.toDataURL()
+			}else{
+				ic.value=canvas.toDataURL()
+			}
+			//alert(canvas.toDataURL())
+			//alert(canvas)
+			//document.getElementById("im").src=canvas.toDataURL()
+			setTimeout(Ful.fileUploadPain,0,div_id,n,canvas_id,max,maxdisplay)
+		}
+		if(e!=null){
+			//document.getElementById(img_id).src=URL.createObjectURL(e.target.files[0]);
+			img.src = URL.createObjectURL(e.target.files[0]);	
+		}else if(type=="load" && ic.value!=""){
+			img.src = ic.value
+		}
+		//alert(img.src)
+		//document.getElementById(img_id).src=canvas.toDataURL()
+		//setTimeout(F.fileUploadPain,10,div_id,canvas_id)
+		
+	
+		//img.src = "https://i.ytimg.com/vi/HLt7Ze-JUPM/hqdefault.jpg?sqp=-oaymwEiCNIBEHZIWvKriqkDFQgBFQAAAAAYASUAAMhCPQCAokN4AQ==&rs=AOn4CLCT1cUDWu32RiYDo8r9qKFv03MENw"
+	}
+	fileUploadDel(did,div_id,icon_id,canvas_id,icon_id_=null){
+		//alert(icon_id_)
+		if(M.id(icon_id)!=undefined){
+			M.id(icon_id).value=""
+		}else if(icon_id_!=null &&typeof(icon_id_)=="object" &&icon_id_.hasOwnProperty(icon_id)){
+			delete icon_id_[icon_id]
+		}	
+		M.id(div_id).parentNode.removeChild(M.id(div_id))
+		M.id(canvas_id).parentNode.removeChild(M.id(canvas_id))
+	}
+	fileUploadPain(div_id,n,canvas_id,max,maxdisplay){
+		document.getElementById(div_id).style.backgroundImage="url(\""+document.getElementById(canvas_id).toDataURL()+"\")"
+		document.getElementById(div_id).style. backgroundRepeat="no-repeat"
+		document.getElementById(div_id).style.backgroundPosition="center center"
+		
+		let wi=document.getElementById(canvas_id).width
+		let hi=document.getElementById(canvas_id).height
+		let h=0
+		let w=0
+		if((wi==max||hi==max)
+			||(wi>=maxdisplay||hi>=maxdisplay)){
+			if(wi>=hi){
+				h=maxdisplay
+				w=(wi/hi)*h
+			}else{
+				w=maxdisplay
+				h=(hi/wi)*w
+			}
+		}else{
+			if(wi>=hi){
+				h=hi
+				w=(wi/hi)*h
+			}else{
+				w=wi
+				h=(hi/wi)*w
+			}
+		}
+		document.getElementById(div_id).style.backgroundSize=w+"px "+h+"px"
+	}
+	fileUploadImgs(table,key,data,obj_str,url_to,url_key){
+		let obj=eval(obj_str)
+		let count=Object.keys(obj).length
+		//alert()
+		//alert(window.scrollY)
+		if(count>0){
+			this.fileUploadImgsPc(1,count)
+			this.fileUploadImgsSend(table,key,data,obj_str,url_to,url_key,count,0)
+		}
+	}
+	fileUploadImgsSend(table,key,data,obj_str,url_to,url_key,count,index){
+		let i=-1;
+		let icon=""
+		let obj=eval(obj_str)
+		for(let prop in obj){
+			i+=1
+			if(i==index){
+				icon=obj[prop]
+				break;
+			}
+		}
+		let dt={"data":{"a":"fileupload","table":table,"key":key,"data":data,"icon":icon,"index":index,"obj_str":obj_str,
+			"url_to":url_to,"url_key":url_key,"count":count},"result":Ful.uploadResult,"error":Ful.uploadError}		
+		this.setFec(dt)
+	}
+	fileUploadImgsPc(s,count){
+		if(s==1){
+			this.b.style.overflow="hidden"
+			let top=window.scrollY
+			let ct=this.ce("div",{"id":"fileuploadpc","class":"furp","style":"top:"+top+"px"})
+			let d=this.ce("div",{})
+				let p1=this.ce("p",{})
+					let s1=this.ce("span",{"id":"fileuploadfinish"})
+					this.end(s1,[this.cn("0")])
+					let s2=this.ce("span",{})
+					this.end(s2,[this.cn("/"+count)])
+				this.end(p1,[s1,s2])	
+			this.end(d,[p1,this.cn("กำลังอัปโหลดรูป อย่าปิดหน้านี้")])
+			this.end(ct,[d])
+			this.end(M.b,[ct])		
+		}else if(s==0){
+			this.b.style.overflow="auto"
+			this.id("fileuploadpc").className="furo"
+		}
+	}
+	uploadResult(re,form,bt){
+		if(re["result"]){
+			let table=form.get("table")
+			let key=form.get("key")
+			let obj_str=form.get("obj_str")
+			let url_to=form.get("url_to")
+			let url_key=form.get("url_key")
+			let count=form.get("count")*1
+			let index=form.get("index")*1
+			let data=form.get("data")
+			let idx=index+1
+			Ful.setUpResult(count,index,form)
+			if(idx<count){
+				Ful.fileUploadImgsSend(table,key,data,obj_str,url_to,url_key,count,idx)
+			}else{
+				Ful.fileUploadImgsPc(0,count)
+			}
+		}else{
+			Ful.uploadError(re,form,bt)
+		}
+	}
+	uploadError(re,form,bt){
+		let index=form.get("index")
+		alert("รูปที่ "+(index*1+1)+" เกิดข้อผิดพลาด")
+		//Gp.ctSelectProp(re,form,bt)
+	}
+	setUpResult(count,index,form){
+		this.id("fileuploadfinish").innerHTML=(index+1)
+		if(index==count-1){
+			let data=form.get("data")
+			let url_to=form.get("url_to")
+			let url_key=form.get("url_key")
+			alert("สำเร็จ")
+			location.href=url_to+"&"+url_key+"="+data
+		}else{
+			
+		}
+	}
+}

@@ -474,13 +474,14 @@ class billsin extends main{
 			let date_result = patt.test(f.bill_date.value);
 			let sumPay1=this.getPay1()
 			let sumPay2=this.getPay2()
+			//alert(sumPay1+""+sumPay2)
 			if(f.bill_no.value.trim().length==0){
 				alert("เลขที่ใบเสร็จ คุณว่าง")
 			}else if(!date_result){
 				alert("วันที่ในใบเสร็จ ไม่ถูกต้อง หรือ ว่าง")
 			}else if(f.bill_type.value!="c"&&f.bill_type.value!="v1"&&f.bill_type.value!="v0"){
 				alert("ค่ารูปแบบใบเสร็จไม่ถูกต้อง")
-			}else if(sumPay1<sumPay2){
+			}else if(sumPay1+0.99<sumPay2){
 				alert("ยอดเงินรวม ในรูปแบบการชำระ น้อยกว่า ยอดราคารวมสินค้า")
 			}else{
 				this.setFec(dt2)
@@ -528,9 +529,13 @@ class billsin extends main{
 	}
 	billsinSaveResult(re,form,bt){
 		if(re["result"]){
-			alert("สำเร็จ")
+			let data=re["data"]["sku"]
+			let url_to="?a=bills&c=in"
+			let url_key=form.get("url_key")
+			Ful.fileUploadImgs('bill_in','sku',data,'Bi.icon',url_to,'ed')
+			/*alert("สำเร็จ")
 			let ed=re["data"]["sku"]
-			location.href="?a=bills&c=in&ed="+ed
+			location.href="?a=bills&c=in&ed="+ed*/
 		}else{
 			Bi.billsinSaveError(re,form,bt)
 		}

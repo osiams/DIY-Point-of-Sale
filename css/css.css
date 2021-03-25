@@ -207,12 +207,10 @@ div.page{margin:2px auto;}
 	100%  {background-color:rgba(0,0,0,0.1);}
 }
 
-/**/
+/* */
 .pwlv{font-size:1.5em;}
 
-.fileuploadpre1{display:grid;grid-template-columns:100%;grid-gap:0px;padding:5px 5px;margin:10px auto;height:160px;width:160px;background-image:url('../img/pos/64x64_null.png')}
-.fileuploadpre1 > div {display:inline-block;border:1px dashed gray;}
-.fileuploadpre1 > div >div{background-color:red;color:white;display:block;float:right;width:20px;height:20px;border-radius: 10px 10px 10px 10px;border:1px solid white;line-height:20px;font-size:20px;text-align:center;cursor:pointer}
-.fileuploadpres{display:block;padding:5px 0px;margin:0px auto;background-image:url('../img/pos/64x64_null.png');min-height:160px;}
-.fileuploadpres > div {display:inline-block;border:2px dashed gray;height:160px;width:160px;margin:5px;}
-.fileuploadpres > div >div{background-color:red;color:white;display:block;float:right;width:20px;height:20px;border-radius: 10px 10px 10px 10px;border:1px solid white;line-height:20px;font-size:20px;text-align:center;cursor:pointer}
+/*view image*/
+.vifs{/*display:grid;align-content:center;justify-content:center;*/position:absolute;z-index:1001;top:0px;left:0px;width:100%;height:100%;background-color:black;}
+.vifs >div:nth-child(1){display:grid;align-content:center;justify-content:center;position:absolute;z-index:1003;top:5px;right:5px;width:40px;height:40px;color:rgba(255,255,255,0.5);font-size:3em;cursor:pointer;text-shadow: 2px 2px rgba(0,0,0,0.8);}
+.vifs >div:nth-child(2){display:grid;grid-template-rows:100%;grid-template-columns:100%;align-content:center;justify-content:center;text-align:center;position:absolute;z-index:1002;top:0px;left:0px;width:100%;height:100%;overflow:auto}
