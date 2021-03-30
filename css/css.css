@@ -33,7 +33,7 @@ tr{background-color:#f9f9f9;}
 .i1{background-color:#f9f9f9;}
 .i2{background-color:#dfdfdf;}
 tr.ed{background-color:LightGreen}
-tr:hover{ background:linear-gradient(0deg,#b6c6d7,#cdd5de)}
+tr:not(.nohover):hover{ background:linear-gradient(0deg,#b6c6d7,#cdd5de)}
 td{padding:3px;vertical-align: middle;}
 
 .i1i2:hover{ background:linear-gradient(0deg,#b6c6d7,#cdd5de)}
@@ -211,6 +211,12 @@ div.page{margin:2px auto;}
 .pwlv{font-size:1.5em;}
 
 /*view image*/
+.viewimage{cursor:pointer;}
 .vifs{/*display:grid;align-content:center;justify-content:center;*/position:absolute;z-index:1001;top:0px;left:0px;width:100%;height:100%;background-color:black;}
-.vifs >div:nth-child(1){display:grid;align-content:center;justify-content:center;position:absolute;z-index:1003;top:5px;right:5px;width:40px;height:40px;color:rgba(255,255,255,0.5);font-size:3em;cursor:pointer;text-shadow: 2px 2px rgba(0,0,0,0.8);}
-.vifs >div:nth-child(2){display:grid;grid-template-rows:100%;grid-template-columns:100%;align-content:center;justify-content:center;text-align:center;position:absolute;z-index:1002;top:0px;left:0px;width:100%;height:100%;overflow:auto}
+.vifs >div:nth-child(1){display:grid;align-content:center;justify-content:center;position:absolute;z-index:1003;
+	top:20px;right:20px;width:50px;height:40px;
+	color:rgba(255,255,255,0.5);font-size:3em;cursor:pointer;
+	background-color:rgba(255,0,0,0.5);padding-bottom:7px;border-radius: 25px 25px 25px 25px; }
+.vifs >div:nth-child(2){position:relative;z-index:1002;top:0px;left:0px;width:100%;height:100%;overflow:auto;text-align:center;}
+.vifs > div:nth-child(2) > table{height:100%;width:100%;border-spacing:0px;border:0px;}
+.vifs > div:nth-child(2) > table td{background-color:transparent;padding:0px;font-size:0px;background-image:url('../img/pos/64x64_nullb.png')}

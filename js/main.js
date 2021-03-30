@@ -363,14 +363,23 @@ class gpu extends main {
 		let u="img/gallery/"+b
 		this.b.style.overflow="hidden"
 		let ct=this.ce("div",{"class":"vifs","style":"top:"+window.scrollY+"px"})
-			let cl=this.ce("div",{})
+			let cl=this.ce("div",{"onclick":"G.viewClose(this)","title":"ปิดภาพ"})
 			this.end(cl,[this.cn("×")])
 			let dm=this.ce("div",{})
-				let im=this.ce("img",{"src":u})
-			this.end(dm,[im])
+				let tb=this.ce("table",{})
+					let tr=this.ce("tr",{"class":"nohover"})
+						let td=this.ce("td",{})
+							let im=this.ce("img",{"src":u})
+						this.end(td,[im])
+					this.end(tr,[td])
+				this.end(tb,[tr])
+			this.end(dm,[tb])
 		this.end(ct,[cl,dm])
 		this.end(this.b,[ct])
-		alert(4)
+	}
+	viewClose(did){
+		did.parentNode.parentNode.removeChild(did.parentNode)
+		this.b.style.overflow="auto"
 	}
 	loading(id,start,has=0,get=0,loadname,percent=null,listen=null){
 		if(start=="start"){

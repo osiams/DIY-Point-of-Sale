@@ -27,6 +27,7 @@ class billsin extends main{
 		let name=o.cells[1].childNodes[0]
 		let n=o.cells[2].childNodes[0].childNodes[0]
 		let sum=o.cells[4].childNodes[0]
+
 		
 		let name_old=name.getAttribute("data-old")
 		let balance=n.getAttribute("data-balance")
@@ -42,7 +43,12 @@ class billsin extends main{
 			if(bill_type=="v0"){
 				per1=per1*100/(100+(this.pd[sku_root]["vat_p"]*1))
 			}
-		}
+		}/*else{
+			if(this.pd[sku_root]["sum_edit"]==0){
+				per1=sum.value/n_old
+				this.pd[sku_root]["sum_edit"]=sum.value
+			}
+		}*/
 		if(sum.value==this.pd[sku_root]["sum_edit"]){
 			sum.value=per1*n.value
 		}
@@ -133,8 +139,8 @@ class billsin extends main{
 				if(this.pd[root]==undefined){
 					this.pd[root]=data[i]
 					this.pd[root]["name_edit"]=this.pd[root]["name"]
-					this.pd[root]["n_edit"]=0
-					this.pd[root]["sum_edit"]=0
+					this.pd[root]["n_edit"]=this.pd[root]["n"]
+					this.pd[root]["sum_edit"]=this.pd[root]["sum"]
 					this.pd[root]["display_id"]=id
 					this.pd[root]["partner_list_id"]=product_list_id
 				}
@@ -147,6 +153,26 @@ class billsin extends main{
 			Bi.productSelect(data[i],editable)
 		}
 		Fsl.setPartnerOld(id)
+	}
+	insertDataPrompt(data,editable,id=null,product_list_id){
+		if(Fsl.partner[id]==undefined){
+			Fsl.partner[id]={}
+			Fsl.partner_old[id]={}
+		}
+		for(let i=0;i<data.length;i++){
+			if(id!=null){
+				let root=data[i]["sku_root"]
+				if(this.pd[root]==undefined){
+					this.pd[root]=data[i]
+					this.pd[root]["name_edit"]=this.pd[root]["name"]
+					this.pd[root]["n_edit"]=this.pd[root]["n"]
+					this.pd[root]["sum_edit"]=this.pd[root]["sum"]
+					this.pd[root]["display_id"]=id
+					this.pd[root]["partner_list_id"]=product_list_id
+				}
+			}
+		}
+		//Fsl.setPartnerOld(id)
 	}
 	billsinSelect(did,sku_root,cost){
 		let o=did.parentNode.parentNode
@@ -271,7 +297,7 @@ class billsin extends main{
 		if(a.s_type!="p"){
 			step="any"
 		}
-		M.l(a)
+		//M.l(a)
 		let	balance=a.balance
 		if(M.id(a.sku_root)!=undefined){
 			alert("❌\n"+a.name+"\nเลือกไปแล้ว อยู่อันดับที่ "+M.id(a.sku_root).innerHTML)
@@ -279,10 +305,13 @@ class billsin extends main{
 		}
 		let t=M.id("billsin")
 		let l=t.rows.length
-		let ls=l-2
+		
+		Bi.at+=1
+		let ls=Bi.at
+		/*let ls=l-2
 		if(!editable){
 			ls=l
-		}
+		}*/
 
 		let row=t.insertRow(ls)
 		
@@ -294,7 +323,7 @@ class billsin extends main{
 		let cell5 = row.insertCell(5)
 		cell0.innerHTML=ls+"."
 		cell0.setAttribute("id",a.sku_root);
-		cell3.innerHTML=a.unit
+		cell3.innerHTML=a.unit+"xxxx"
 		//let p1=M.ce("p",{"class":"l","contenteditable":"true"})
 		let ipn=M.ce("input",{"class":"wwp","data-old":a.name,"type":"text","onchange":"Bi.setAct(this)","onfocus":"this.classList.replace('wwp', 'wpp')","onblur":"this.classList.replace('wpp', 'wwp')","value":a.name})
 		//p1.appendChild(ipn)
@@ -371,6 +400,12 @@ class billsin extends main{
 			ip.setAttribute("readonly","readony")
 			ip2.setAttribute("readonly","readony")
 		}
+		
+		if(ls%2==0){
+			row.className="i2 ty"
+		}else{
+			row.className="ty"
+		}
 		row.id=this.rid()
 		let row_an=t.insertRow(ls+1)
 		row_an.id=row.id+"_an"
@@ -405,6 +440,7 @@ class billsin extends main{
 			delete Fsl.partner[display_id][sku_root]
 			Bi.at-=1
 			Fsl.setPartnerOld(display_id)
+
 			Fsl.selectPartnerListValue("product",display_id,partner_list_id)
 			
 			this.setDisplayTV()

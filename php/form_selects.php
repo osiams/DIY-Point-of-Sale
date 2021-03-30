@@ -92,7 +92,7 @@ class form_selects extends main{
 		header('Content-type: application/json');
 		echo json_encode($this->re);
 	}
-	public function writeForm(){
+	public function writeForm(string $json_value="{}"){
 		if($this->a=="partner"){
 			echo '<table id="'.$this->id.'" class="table_select_partner">
 				<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\'partner\',null,\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
@@ -104,7 +104,7 @@ class form_selects extends main{
 					<input type="button" value="เพิ่ม/แก้ไข"  onclick="Fsl.ctAddPartner(\'payu\',null,\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')">
 				</td></tr>
 			</table>';
-			echo '<script type="text/javascript">Fsl.setLoadPartner(\'payu\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')</script>';
+			echo '<script type="text/javascript">let value='.$json_value.';Fsl.setLoadPartner(\'payu\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\',value)</script>';
 		}else if($this->a=="product"){
 			echo '<input type="button" value="เพิ่ม/แก้ไขสินค้า"  onclick="Fsl.ctAddPartner(\'product\',\'Bi\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')">';
 		}
@@ -121,6 +121,12 @@ class form_selects extends main{
 			$re=$se["data"]["get"];
 		}
 		return $re;
+	}
+	public function writeSetValue(string $display_id,$json_value):void{
+		echo '<script type="text/javascript">
+			let json_value='.$json_value.';
+			Fsl.loadSetValue("'.$display_id.'",json_value)
+		</script>';
 	}
 	protected function setPropR(string $prop):string{
 		$ar = [];

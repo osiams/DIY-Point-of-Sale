@@ -15,7 +15,11 @@ class bills_in extends bills{
 			$t=$_GET["b"];
 			if($t=="fill"||$t=="edit"){
 				$file = "php/form_selects.php";
-				require($file);			
+				require($file);		
+				if($t=="edit"){
+					$gall = "php/gallery.php";
+					require($gall);	
+				}
 			}
 			if($t=="fill"){
 				$q=["po","partner"];
@@ -438,22 +442,25 @@ class bills_in extends bills{
 			$error=$se["message_error"];
 		}else{
 			$dt=$this->getDataView1($_POST["sku"]);
+			//echo $_POST["sku"];
+			//print_r($dt);
 				if(count($dt)>0){
-					$this->addDir("","แก้ไข ".htmlspecialchars($dt[0]["note"]));
-					$this->pageHead(["title"=>"แก้ไขนำเข้า สินค้า DIYPOS","js"=>["billsin","Bi"],"css"=>["billsin"]]);
+					$this->addDir("","แก้ไขใบนำเข้าสินค้า ".htmlspecialchars($dt[0]["partner_name"])." 🧾".$dt[0]["bill_no"]);
+					$this->pageHead(["title"=>"แก้ไขนำเข้า สินค้า DIYPOS","js"=>["billsin","Bi","form_selects","Fsl","fileupload","Ful","gallery","Gl"],"css"=>["billsin","form_selects","fileupload","gallery"],"run"=>["Fsl"]]);
 						$editable=true;
 						if($dt[0]["in_type"]=="c"||$dt[0]["in_type"]=="r"||$dt[0]["in_type"]=="m"){
 							$editable=false;
 						}
 						echo '<div class="content">
 							<div class="form">
-								<h2 class="c">แก้ไข '.htmlspecialchars($dt[0]["note"]).'</h2>';
-						$this->writeContentInBillsinEdit($_POST["sku"],$dt[0]["note"],$editable);
+								<h2 class="c">แก้ไข '.htmlspecialchars($dt[0]["partner_name"])." 🧾".$dt[0]["bill_no"].'</h2>';
+						$this->writeContentInBillsinEdit($_POST["sku"],$dt,$editable);
 						echo '<br /><p class="c">
 							
 						</p>';
 						echo '</div></div>';
-						$this->writeJsDataEdit($dt,$editable,null);
+						//$this->writeJsDataEdit($pd,$editable,$sku_root,$id,$product_list_id);
+						//$this->writeJsDataEdit($dt,$editable,null);
 						$this->pageFoot();
 				}else{
 					$this->addDir("","แก้ไข");
@@ -481,16 +488,88 @@ class bills_in extends bills{
 		echo 'Fsl.selectPartnerListValue("product","'.$id.'","'.$product_list_id.'");';
 		echo '</script>';
 	}
+	private function writeJsDataEditPrompt(array $dt,bool $editable=true,string $partner=null,string $id=null,string $product_list_id=null):void{
+		$tid=($id!=null)?"\"".$id."\"":"null";
+		$pid=($product_list_id!=null)?"\"".$product_list_id."\"":"null";
+		$br="\n";
+		$edb=($editable)?"true":"false";
+		echo '<script type="text/javascript">Bi.insertDataPrompt([';
+		for($i=0;$i<count($dt);$i++){
+			$name=$this->jsD((string) $dt[$i]["name"]);
+			$unit=$this->jsD((string) $dt[$i]["unit_name"]);
+			echo  $br.'{"name":"'.$name.'","n":"'.intval($dt[$i]["n"]).'","balance":"'.intval($dt[$i]["balance"]).'","sum":"'.number_format($dt[$i]["sum"],2,".","").'","bcsku":"'.$dt[$i]["barcode"].' , '.$dt[$i]["product_sku"].'","sku_root":"'.$dt[$i]["sku_root"].'","unit":"'.$unit.'","s_type":"'.$dt[$i]["s_type"].'","price":"'.$dt[$i]["price"].'","cost":"'.$dt[$i]["cost"].'","vat_p":"'.number_format($dt[$i]["vat_p"],2,".","").'"},';
+		}
+		echo '],'.$edb.','.$tid.','.$pid.');';
+		if($partner!=null){
+			echo 'Bi.partner="'.$partner.'";';
+		}
+		echo 'Fsl.selectPartnerListValue("product","'.$id.'","'.$product_list_id.'");';
+		echo '</script>';
+	}
 	private function jsD(string  $t):string{
 		$t=str_replace('\\','\\\\',$t);
 		$t=str_replace('"','\"',$t);
 		$t=str_replace("\n","",$t);
 		return $t;
 	}
-	private function writeContentInBillsinEdit(string $sku,string $note,bool $editable=true):void{
+	private function writeContentInBillsinEdit(string $sku,array $dt,bool $editable=true):void{
+		//print_r($dt);
+		$payu=$this->payu_jsonToFromValue($dt[0]["payu_json"]);
+		$gallery=$this->propToFromValue($dt[0]["icon_arr"]);
+		$gallery_gl=$this->propToFromValue($dt[0]["icon_gl"]);
+		$product_arr=[];
+		$payu_json=$dt[0]["payu_json"];
+		for($i=0;$i<count($dt);$i++){
+			array_push($product_arr,$dt[$i]["product_sku_key"]);
+		}
+		$product_str="[,".implode(",,",$product_arr).",]";
+		$product=$this->propToFromValue($product_str);
+		$payu_list_id=$this->key("key",7);
+		$product_list_id=$this->key("key",7);
+		$gallery_list_id=$this->key("key",7);
+		$gallery_gl_list_id=$this->key("key",7);
 		echo '<form class="form100"  name="billsin" method="post">
 			<input type="hidden" name="sku" value="'.htmlspecialchars($sku).'" />
-			<div class="billsin_note_edit"><input type="text" name="note" value="'.htmlspecialchars($note).'" /></div>
+			<input type="hidden" id="'.$payu_list_id.'" name="payu_list" value="'.$payu.'" />
+			<input type="hidden" id="'.$product_list_id.'" name="product_list" value="'.$product.'" />
+			<input type="hidden" id="'.$gallery_list_id.'" name="gallery_list" value="'.$gallery.'" />
+			<input type="hidden" id="'.$gallery_gl_list_id.'" name="gallery_gl_list" value="'.$gallery_gl.'" />
+			<input type="hidden"  name="pn" value="'.$dt[0]["partner_sku_root"].'" />
+			<div class="billinhead">
+				<div>
+					<p><span>ใบสั่งซื้อ/คู่ค้า</span></p>
+					<input name="pn_name" type="text" value="'.htmlspecialchars($dt[0]["partner_name"]).'" readonly/>
+				</div>
+				<div>
+					<p><span>เลขที่ใบเสร็จ</span></p>
+					<input name="bill_no" type="text" value="'.htmlspecialchars($dt[0]["bill_no"]).'" />
+				</div>
+				<div>
+					<p><span>วันที่ในใบเสร็จ (ค.ศ.)</span></p>
+					<input name="bill_date" type="date" value="'.substr($dt[0]["bill_date"],0,10).'" />
+				</div>
+				<div>
+					<p><span>รูปแบบใบเสร็จ</span></p>
+					<select name="bill_type" onchange="Bi.setDisplayTV()">
+						<option value="c"'.($dt[0]["bill_type"]=="c"?" selected":"").'>ใบเงินสด</option>
+						<option value="v1"'.($dt[0]["bill_type"]=="v1"?" selected":"").'>ใบกำกับภาษี รวมภาษีในราคาสินค้าแล้ว</option>
+						<option value="v0"'.($dt[0]["bill_type"]=="v0"?" selected":"").'>ใบกำกับภาษี ยังไม่รวมภาษีในราคาสินค้า</option>
+					</select>
+				</div>
+				<div>
+					<p><span>รูปแบบการชำระ</span></p>
+				<div>';
+			$display_id=$this->key("key",7);
+			$this->form_py=new form_selects("payu","คู่ค้า","billsin",$display_id,$payu_list_id);	
+			$this->form_py->writeForm($payu_json);
+		echo '</div>
+				</div>
+				<div>
+					<p><span>หมายเหตุ</span></p>
+					<input type="text" name="note" value="'.htmlspecialchars($dt[0]["note"]).'" />
+				</div>
+			</div>
+			
 			<table id="billsin" data-type="edit"><tr><th>ที่</th>
 			<th>ชื่อ</th>
 			<th>จำนวน</th>
@@ -498,7 +577,7 @@ class bills_in extends bills{
 			<th>ราคารวม<br />ราคาต่อชิ้น</th>
 			<th>กระ<br />ทำ</th>
 			</tr>';
-		if($editable){		
+		/*if($editable){		
 			echo '<tr>
 				<td colspan="6">
 					<label>
@@ -515,10 +594,40 @@ class bills_in extends bills{
 			echo '<tr><td colspan="6" style="font-size:0px;padding:0px;">
 				<div class="iframe"><iframe id="iframeproductin" title="เลือกสินค้า" src="?a=product&amp;b=select&amp;for=billsin" class="iframe_product_in"></iframe></div>
 				</td></tr>';
-		}
+		}*/
+	//$this->writeJsDataEdit($pd,$editable,$sku_root,$id,$product_list_id);
+		
 		$et=($editable)?"true":"false";
 		echo '</table>
-		<br />
+			<div class="billinvat">
+				<div class="r">ราคารวม ยังไม่บวกภาษี</div>
+				<div class="r bold" id="billin_tv0">0.00</div>
+				<div class="r">ภาษีรวม</div>
+				<div class="r bold" id="billin_tv1">0.00</div>
+				<div class="r">ราคารวม บวกภาษีรวม</div>
+				<div class="r bold" id="billin_tv2">0.00</div>
+			</div>';
+		//<div><input type="button" value="เลือก/แก้ไข สินค้า" /></div>
+		$id=$this->key("key",7);
+		$this->form_pd=new form_selects("product","สินค้า","billsin",$id,$product_list_id);	
+		$this->form_pd->writeForm("billsin");	
+		$this->writeJsDataEdit($dt,$editable,$dt[0]["partner_sku_root"],$id,$product_list_id);
+		
+		$sku_root=$dt[0]["partner_sku_root"];
+		$pn=$this->getPartnerAll();
+		if($group="partner"){
+			$pd=$this->loadProductPartner($sku_root);
+			for($i=0;$i<count($pd);$i++){
+				$pd[$i]["n"]=0;
+				$pd[$i]["balance"]=0;
+				$pd[$i]["sum"]=0;
+			}
+			$this->writeJsDataEditPrompt($pd,true,$sku_root,$id,$product_list_id);
+		}
+		$gal_id=$this->key("key",7);
+		$this->gall=new gallery("bill_in",$dt[0]["sku"],"billsin",$gal_id,$gallery_list_id,$gallery_gl_list_id);	
+		$this->gall->writeForm();	
+		echo '
 		<input type="button" onclick="Bi.billsinSumit('.$et.')" value="แก้ไข นำเข้าสินค้า" /></form>';
 	}
 	private function billsinCheck(string $type="insert"):array{
@@ -922,16 +1031,18 @@ class bills_in extends bills{
 			DECLARE r ROW (r__ INT,__r INT);
 			SELECT r_,_r INTO r.r__,r.__r FROM bill_in WHERE sku=@sku LIMIT 1;
 			SELECT  `bill_in`.`id`  AS  `id`,`bill_in`.`bill_no`  AS  `bill_no`,`bill_in`.`in_type`  AS  `in_type`,`bill_in`.`sku`  AS  `sku`,IFNULL(`bill_in`.`note`,'')  AS  `note`, 
-				`bill_in`.`bill`  AS  `bill`,`bill_in`.`n` AS `n_list`, `bill_in`.`sum` AS `sum`, 
-				IFNULL(`bill_in`.`icon_arr`,'[]') AS `icon_arr`, `bill_in`.`date_reg` AS `date_reg`,
+				`bill_in`.`bill`  AS  `bill`,`bill_in`.`n` AS `n_list`, `bill_in`.`sum` AS `sum`,`bill_in`.`bill_type`  AS  `bill_type`,
+				`bill_in`.`pn_root`  AS  `partner_sku_root`,`bill_in`.`payu_json`  AS  `payu_json`,IFNULL(`bill_in`.`note`,'')  AS  `note`,
+				IFNULL(`bill_in`.`icon_arr`,'[]') AS `icon_arr`,IFNULL(`bill_in`.`icon_gl`,'[]') AS `icon_gl`,  
+				`bill_in`.`bill_date` AS `bill_date`, `bill_in`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
-				bill_in_list.id AS bill_in_list_id,bill_in_list.product_sku_key  AS `pd_sku_root`,bill_in_list.product_sku_root,bill_in_list.product_sku_root AS sku_root ,
+				bill_in_list.id AS bill_in_list_id,bill_in_list.product_sku_key  AS `product_sku_key`,bill_in_list.product_sku_root,bill_in_list.product_sku_root AS sku_root ,
 				IF(`bill_in_list`.`s_type`='p',bill_in_list.n,bill_in_list.n_wlv) AS `n` ,
 				IF(`bill_in_list`.`s_type`='p',bill_in_list.balance,bill_in_list.balance_wlv) AS `balance`,bill_in_list.sum ,bill_in_list.name,
 				IFNULL(SUM(IF(`bill_in_list2`.`s_type`='p',bill_in_list2.balance,bill_in_list2.balance_wlv)),0) AS `sum_balance`,
 				partner_ref.name AS partner_name,
 				unit_ref.name AS unit_name,
-				product_ref.barcode AS barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`,
+				product_ref.barcode AS barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`,product_ref.vat_p,
 				product.price,product.cost
 			FROM `bill_in` 
 			LEFT JOIN bill_in_list 
@@ -977,6 +1088,20 @@ class bills_in extends bills{
 			$re=$se["data"]["product"];
 		}
 		return $re;
+	}
+	private function propToFromValue(string $prop):string{
+		$t = str_replace("\",\"",",,",substr($prop,1,-1));
+		$t = str_replace("\"",",",$t);
+		//echo $t;
+		return $t;
+	}
+	private function payu_jsonToFromValue(string $payu_json):string{
+		$t="";
+		$q=json_decode($payu_json,true);
+		foreach($q as $k=>$v){
+			$t.=",".$k.",";
+		}
+		return $t;
 	}
 }
 ?>

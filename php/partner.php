@@ -658,7 +658,7 @@ class partner extends main{
 		$se=$dt["get"];
 		echo '<form class="form100" name="'.$this->a.'" method="post">
 			<input type="hidden" name="sku_root" value="" />';
-		echo '	<table style="width:100%;">
+		echo '	<table class="partnerview" "style="width:100%;">
 				<tr><th>ที่</th>
 				<th>รูป</th>
 				<th>รหัสภายใน</th>
@@ -687,7 +687,7 @@ class partner extends main{
 			}
 			$sn=strlen(trim($se[$i]["sku"]))>0?substr(trim($se[$i]["sku"]),0,15):(mb_substr(trim($se[$i]["name"]),0,15));
 			echo '<tr'.$cm.'><td class="r">'.($se[$i]["id"]).'</td>
-				<td class="l"><div class="img48"><img src="img/gallery/64x64_'.$se[$i]["icon"].'"  alt="'.$sn.'" /></div></td>
+				<td class="l"><div class="img48"><img  class="viewimage" src="img/gallery/64x64_'.$se[$i]["icon"].'"  alt="'.$sn.'" onclick="G.view(this)"  title="เปิดดูภาพ" /></div></td>
 				<td class="l">'.$sku.'</td>
 				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a></td>
 				<td class="action">

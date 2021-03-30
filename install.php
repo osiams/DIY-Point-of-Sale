@@ -118,8 +118,8 @@ class install extends main{
 				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`d1`='defaultroot',`name`='_ไม่ระบุ';
 			";
 			$sql["default_payu"]="
-				INSERT INTO `payu` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`money_type`,`icon`) VALUES (1,'default','defaultroot','defaultroot','เงินสด','ca','__default_payu_defaultroot.png') 
-				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`name`='เงินสด',`money_type`='ca',`icon`='__default_payu_defaultroot.png';
+				INSERT INTO `payu` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`money_type`,`icon`) VALUES (1,'default','defaultroot','defaultroot','เงินสด','ca','defaultpayudefaultroot.png') 
+				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`name`='เงินสด',`money_type`='ca',`icon`='defaultpayudefaultroot.png';
 			";
 			$pw=password_hash("12345678", PASSWORD_DEFAULT);
 			$sql["default_user"]="BEGIN NOT ATOMIC
@@ -746,6 +746,46 @@ class install extends main{
 							re, 
 							CONCAT('$.',r.sku_key),
 							CAST(JSON_VALUE(json_payu_,	CONCAT('$.',@k)) AS DECIMAL(15,4))
+						);						
+					END IF;
+				END FOR;	
+			RETURN re;
+		END ";
+		$sql["set_get_payu_arr_data_ref"]="CREATE OR REPLACE FUNCTION `GetPayuArrRefData_`(
+				json_payu_ TEXT CHARACTER SET 'ascii'
+			) RETURNS  TEXT CHARACTER SET 'utf8' COLLATE 'utf8_bin'
+			BEGIN
+				DECLARE re TEXT CHARACTER SET 'utf8' DEFAULT '{}';
+				DECLARE r ROW (
+					sku_key VARCHAR(25) CHARACTER SET 'ascii',
+					sku_root VARCHAR(25) CHARACTER SET 'ascii',
+					name VARCHAR(255) CHARACTER SET 'utf8',
+					icon CHAR(255) 
+				);
+				DECLARE key_ TEXT CHARACTER SET 'ascii' DEFAULT JSON_KEYS(json_payu_);
+				DECLARE len INT(10);
+				DECLARE TEST VARCHAR(1000) CHARACTER SET 'ascii' DEFAULT 'start';
+				SET len=JSON_LENGTH(json_payu_);
+				#SET TEST=CONCAT(TEST,';','len=',len);
+				FOR i IN 0..(len-1) DO
+					SET @k=JSON_VALUE(key_,	CONCAT('$[',i,']')	);
+					SELECT `sku_key`,`sku_root`,name,icon INTO r
+					FROM `payu_ref` 
+					WHERE `sku_key`=@k;
+					IF r.sku_key IS NOT NULL THEN
+						SET TEST=CONCAT(TEST,';','r.sku_key=',r.sku_key);
+						SET @d=JSON_OBJECT(	\"sku_root\", r.sku_root, 
+							\"name\", r.name,
+							\"icon\",r.icon,
+							\"value\",CAST(JSON_VALUE(json_payu_,CONCAT('$.',@k)) AS DECIMAL(15,4))
+						);
+						SET re=JSON_INSERT(
+							re, 
+							CONCAT('$.',r.sku_key),
+							JSON_OBJECT(	\"sku_root\", r.sku_root, 
+								\"name\", r.name,
+								\"icon\",r.icon,
+								\"value\",CAST(JSON_VALUE(json_payu_,CONCAT('$.',@k)) AS DECIMAL(15,4)))
 						);						
 					END IF;
 				END FOR;	

@@ -60,7 +60,7 @@ class payu extends main{
 		$note=(isset($_POST["note"]))?htmlspecialchars($_POST["note"]):"";
 		$sku_root=(isset($_POST["sku_root"]))?htmlspecialchars($_POST["sku_root"]):"";
 		$this->addDir("","แก้ไข".$this->title.' '.$name );
-		$this->pageHead(["title"=>"แก้ไข".$this->title." DIYPOS","js"=>["partner","Pn","fileupload","Ful"],"run"=>["Pn"],"css"=>["partner"]]);
+		$this->pageHead(["title"=>"แก้ไข".$this->title." DIYPOS","js"=>["payu","Pn","fileupload","Ful"],"run"=>["Pn"],"css"=>["payu","fileupload"]]);
 		echo '<div class="content">
 			<div class="form">
 				<h1 class="c">แก้ไข'.$this->title.'</h1>';
@@ -349,7 +349,7 @@ class payu extends main{
 				SET @result=1;
 			END IF;
 		";
-		$sql["ref"]=$this->ref("partner","sku_key",$key);
+		$sql["ref"]=$this->ref("payu","sku_key",$key);
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`";
 		$se=$this->metMnSql($sql,["result"]);
 		//print_r($se);exit;
@@ -362,7 +362,7 @@ class payu extends main{
 		$money_type = (isset($_POST["money_type"]))?htmlspecialchars($_POST["money_type"]):"ca";
 		$note=(isset($_POST["note"]))?htmlspecialchars($_POST["note"]):"";
 		$this->addDir("","เพิ่มคู่ค้า");
-		$this->pageHead(["title"=>"เพิ่ม".$this->title." DIYPOS","js"=>["payu","Py","fileupload","Ful"],"run"=>["Py"],"css"=>["payu"]]);
+		$this->pageHead(["title"=>"เพิ่ม".$this->title." DIYPOS","js"=>["payu","Py","fileupload","Ful"],"run"=>["Py"],"css"=>["payu","fileupload"]]);
 		echo '<div class="content">
 			<div class="form">
 				<h1 class="c">เพิ่ม'.$this->title.'</h1>';
@@ -482,7 +482,7 @@ class payu extends main{
 		}
 	}
 	protected function pageSearch(int $row):void{
-		$href='?a=partner&amp;fl='.$this->fl.'&amp;tx='.$this->txsearch.'&amp;page=';
+		$href='?a=payu&amp;fl='.$this->fl.'&amp;tx='.$this->txsearch.'&amp;page=';
 		if($this->page>1){
 			echo '<a onclick="history.back()">⬅️ก่อนหน้า</a>';
 		}
@@ -526,7 +526,7 @@ class payu extends main{
 			$mg=$se[$i]["money_type"];
 			$mn=($mg !="" && isset($this->money_type[$mg]))?$this->money_type[$mg]["name"]:"";
 			echo '<tr'.$cm.'><td class="r">'.($se[$i]["id"]).'</td>
-				<td class="l"><div class="img48"><img src="img/gallery/64x64_'.$se[$i]["icon"].'"  alt="'.$sn.'" /></div></td>
+				<td class="l"><div class="img48"><img src="img/gallery/64x64_'.$se[$i]["icon"].'"  alt="'.$sn.'" class="viewimage"  onclick="G.view(this)"  title="เปิดดูภาพ"/></div></td>
 				<td class="l">'.$sku.'</td>
 				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a></td>
 				<td class="l">'.$mn.'</td>
@@ -542,7 +542,7 @@ class payu extends main{
 		//print_r($dt);
 		$count=(isset($dt["count"][0]["count"]))?$dt["count"][0]["count"]:0;
 		if($this->txsearch==""){
-			$this->page($count,$this->per,$this->page,"?a=partner&amp;page=");
+			$this->page($count,$this->per,$this->page,"?a=payu&amp;page=");
 		}else{
 			$this->pageSearch(count($se));
 		}
