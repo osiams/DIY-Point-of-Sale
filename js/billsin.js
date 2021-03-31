@@ -172,6 +172,7 @@ class billsin extends main{
 				}
 			}
 		}
+		this.setDisplayTV()
 		//Fsl.setPartnerOld(id)
 	}
 	billsinSelect(did,sku_root,cost){

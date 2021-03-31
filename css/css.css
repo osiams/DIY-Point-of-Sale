@@ -72,6 +72,8 @@ form >  fieldset  >  div{direction:ltr;text-align:left;}
 .img32 > img{max-height:32px;max-width:32px;}
 .img48{width:48px;height:48px;display:grid;align-content:center;justify-content:center;font-size:1em;word-break: break-all;}
 .img48 > img{max-height:48px;max-width:48px;}
+.img96{width:48px;height:96px;display:grid;align-content:center;justify-content:center;font-size:1em;word-break: break-all;}
+.img96 > img{max-height:96px;max-width:96px;}
 .size11{font-size:11px}
 .size12{font-size:12px}
 .size14{font-size:14px}
@@ -214,9 +216,9 @@ div.page{margin:2px auto;}
 .viewimage{cursor:pointer;}
 .vifs{/*display:grid;align-content:center;justify-content:center;*/position:absolute;z-index:1001;top:0px;left:0px;width:100%;height:100%;background-color:black;}
 .vifs >div:nth-child(1){display:grid;align-content:center;justify-content:center;position:absolute;z-index:1003;
-	top:20px;right:20px;width:50px;height:40px;
-	color:rgba(255,255,255,0.5);font-size:3em;cursor:pointer;
-	background-color:rgba(255,0,0,0.5);padding-bottom:7px;border-radius: 25px 25px 25px 25px; }
+	top:20px;right:20px;width:50px;height:50px;
+	color:rgba(255,255,255,0.5);font-size:2em;cursor:pointer;
+	background-color:rgba(255,0,0,0.5);border-radius: 25px 25px 25px 25px; }
 .vifs >div:nth-child(2){position:relative;z-index:1002;top:0px;left:0px;width:100%;height:100%;overflow:auto;text-align:center;}
 .vifs > div:nth-child(2) > table{height:100%;width:100%;border-spacing:0px;border:0px;}
 .vifs > div:nth-child(2) > table td{background-color:transparent;padding:0px;font-size:0px;background-image:url('../img/pos/64x64_nullb.png')}

@@ -15,10 +15,13 @@ class gallery extends main{
 		}
 	}
 	public function writeForm(string $json_value="{}"):void{
-		echo '<div>
-			<p><span>ห้องแสดงภาพ</span></p>
-			<div class="gallery_file_set" id="'.$this->display_id.'"></div>
+		echo '
+			<p><label>ห้องแสดงภาพ</label></p>
+			<div class="gallery_file_set">
+				<div id="'.$this->display_id.'"></div>
+				<div><input type="button" value="เพิ่ม/แก้ไข" onclick="Gl.ctAddGallery(\''.$this->table.'\',\''.$this->key.'\',\''.$this->form_name.'\',dialog_id=null,\''.$this->display_id.'\',\''.$this->gallery_list.'\',\''.$this->gallery_gl_list.'\')" /></div>
+			</div>
 			<script type="text/javascript">Gl.setLoadGallery(\''.$this->table.'\',\''.$this->key.'\',\'billsin\',dialog_id=null,\''.$this->display_id.'\',\''.$this->gallery_list.'\',\''.$this->gallery_gl_list.'\')</script>
-		</div>';
+		';
 	}
 }

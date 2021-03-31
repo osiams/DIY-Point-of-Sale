@@ -1,2 +1,20 @@
-.gallery_file_set{border:1px solid red;font-size:0px;background-color:red;min-height:32px;text-align:left}
-.gallery_file_set > div{display:inline-block;margin:5px;}
+.gallery_file_set{border:1px solid gray;font-size:0px;background-image:url('../img/pos/64x64_null.png');border-radius: 3px 3px 3px 3px;width:calc(100% - 8px);margin:0 auto;padding:2px;background-color:transparent;min-height:32px;text-align:left}
+.gallery_file_set > div:nth-child(1){}
+.gallery_file_set > div:nth-child(1) > div{display:inline-block;margin:2px;}
+.gallery_file_set > div:nth-child(2){text-align:right;margin:2px;}
+
+.selects_list_gallery{width:100%;background-color:red;}
+.selects_list_gallery > div{display:grid;grid-template-columns:30px 96px auto 38px;grid-gap:0px;padding:5px 5px;border-bottom:1px solid gray;}
+.selects_list_gallery > div:hover{background-color:LightGreen}
+.selects_list_gallery > div > div:nth-child(2){width:96px;overflow:hidden;min-height:96px;background-image:url('../img/pos/64x64_null.png');}
+.selects_list_gallery > div > label:nth-child(3){text-align:left;cursor:pointer}
+.selects_list_gallery > div > div:nth-child(4){display:grid;align-content: center;justify-content: center;height:30px;width:30px;background-color:gray;color:white;cursor:pointer;border-radius: 15px 15px 15px 15px;margin:0 auto;}
+.selects_list_gallery > div > div:nth-child(4):hover{background-color:green;}
+.selected_list_gallery{width:100%;user-select:none;}
+.selected_list_gallery > div{display:grid;grid-template-columns:20px 96px auto 38px 38px;grid-gap:0px;padding:5px 5px;border-bottom:1px solid gray;}
+.selected_list_gallery > div > div:nth-child(2){background-image:url('../img/pos/64x64_null.png');width:100%;}
+.selected_list_gallery > div > div:nth-child(3){cursor:default;}
+.selected_list_gallery > div > div:nth-child(4){display:grid;align-content: center;justify-content: center;height:30px;width:30px;background-color:gray;color:white;cursor:pointer;border-radius: 15px 15px 15px 15px;margin:0 auto;}
+.selected_list_gallery > div > div:nth-child(4):hover{background-color:orange;}
+.selected_list_gallery > div > div:nth-child(5){display:grid;align-content: center;justify-content: center;height:30px;width:30px;background-color:gray;color:white;cursor:pointer;border-radius: 15px 15px 15px 15px;margin:0 auto;}
+.selected_list_gallery > div > div:nth-child(5):hover{background-color:red;}

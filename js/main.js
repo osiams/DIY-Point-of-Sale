@@ -357,13 +357,13 @@ class gpu extends main {
 		super()
 		this.load={"id":{"has":0,"get":0}}
 	}
-	view(did){
+	view(did,overflow=0){
 		let a=did.src.split("_")
 		let b=a.length>1?a[a.length-1]:"64x64_null.png"
 		let u="img/gallery/"+b
 		this.b.style.overflow="hidden"
 		let ct=this.ce("div",{"class":"vifs","style":"top:"+window.scrollY+"px"})
-			let cl=this.ce("div",{"onclick":"G.viewClose(this)","title":"ปิดภาพ"})
+			let cl=this.ce("div",{"onclick":"G.viewClose(this,"+overflow+")","title":"ปิดภาพ"})
 			this.end(cl,[this.cn("×")])
 			let dm=this.ce("div",{})
 				let tb=this.ce("table",{})
@@ -377,9 +377,11 @@ class gpu extends main {
 		this.end(ct,[cl,dm])
 		this.end(this.b,[ct])
 	}
-	viewClose(did){
+	viewClose(did,overflow){
 		did.parentNode.parentNode.removeChild(did.parentNode)
-		this.b.style.overflow="auto"
+		if(overflow==1){
+			this.b.style.overflow="auto"
+		}
 	}
 	loading(id,start,has=0,get=0,loadname,percent=null,listen=null){
 		if(start=="start"){

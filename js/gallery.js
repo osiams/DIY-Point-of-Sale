@@ -10,129 +10,104 @@ class gallery{
 	run(){
 
 	}
-	xxxxctAddPartner(a,callback=null,form_name,dialog_id=null,display_id,partner_list_id,get_type="new",page=1,oshid=null,ipshid=null,lid=0,fl="name",tx=""){
-		if(this.partner[display_id]==undefined){
-			this.partner[display_id]={}
-			this.search[display_id]={}
+	ctAddGallery(table,key,form_name,dialog_id=null,display_id,gallery_list_id,gallery_gl_list_id,get_type="new"){
+		let a="gallery"
+		if(this.gallery[display_id]==undefined){
+			this.gallery[display_id]={}
 		}else{
-			if(this.partner_old[display_id]==undefined){
-				this.partner_old[display_id]={}
+			if(this.gallery_old[display_id]==undefined){
+				this.gallery_old[display_id]={}
 			}else{
-				this.partner[display_id]=Object.assign({}, this.partner_old[display_id]);
+				this.gallery[display_id]=Object.assign({}, this.gallery_old[display_id]);
 			}
 		}
 		dialog_id=(dialog_id==null)?this.main.rid():dialog_id
-		let partner_list=document.forms[form_name][partner_list_id].value
-		
-		let dt={"data":{"a":"form_selects","b":a,"callback":callback,"dialog_id":dialog_id,"display_id":display_id,
-				"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"get_type":get_type,"page":page,
-				"oshid":oshid,"ipshid":ipshid,"lid":lid,"fl":fl,"tx":tx},"result":Fsl.getListPartnerResult,"error":Fsl.getListPartnerError}		
-		if(a=="product"){
-			if((eval(callback)).partner!=null){
-				dt.data.partner=eval(callback).partner
-			}
-		}
+		let gallery_list=document.forms[form_name][gallery_list_id].value
+		let gallery_gl_list=document.forms[form_name][gallery_gl_list_id].value
+		let dt={"data":{"a":a,"table":table,"key":key,"dialog_id":dialog_id,"display_id":display_id,"get_type":get_type,
+				"from_name":form_name,"gallery_list":gallery_list,"gallery_gl_list":gallery_gl_list,
+				"gallery_list_id":gallery_list_id,"gallery_gl_list_id":gallery_gl_list_id},
+				"result":Gl.getListGalleryResult,"error":Gl.getListGalleryError}		
 		this.main.setFec(dt)
 	}
 	setGalleryOld(display_id){
 		this.gallery_old[display_id]=Object.assign({}, this.gallery[display_id]);
 	}
-	xxxxxxxxgetListPartnerResult(re,form,bt){
+	getListGalleryResult(re,form,bt){
+		/*
 		if(re["result"]){
 			Fsl.ctSelectPartner(re,form,bt)
 		}else{
 			Fsl.getListPartnerError(re,form,bt)
-		}
+		}*/
 	}
-	xxxxgetListPartnerError(re,form,bt){
-		alert("error 9999999999")
-		//Gp.ctSelectProp(re,form,bt)
+	getListGalleryError(re,form,bt){
+		Gl.ctSelectGallery(re,form,bt)
 	}
-	xxxxxxxxctSelectPartner(re,form,bt){
-		let a=form.get("b")
+	ctSelectGallery(re,form,bt){
+		let a=form.get("a")
 		let callback=form.get("callback")
-		let title_bar={"partner":"เลือกคู่ค้า","payu":"เลือกรูปแบบการชำระ","product":"เลือกสินค้า"}
-		let tsh_prop={"partner":{"name":"ชื่อ","brand_name":"ชื่อการค้า","sku":"รหัสภายใน"},
-			"payu":{"name":"ชื่อ","sku":"รหัสภายใน"},
-			"product":{"name":"ชื่อ","sku":"รหัสภายใน","barcode":"รหัสแท่ง"}
-		}
-		if(a!=null&&!title_bar.hasOwnProperty(a)){
-			return false
-		}else{
-			
-		}
+		let title_bar="เลือกรูปภาพ"
 
 		let rid = form.get("dialog_id")
-		let arr = re.data["get"]
-
+		
+		let arr =F.valueListToArray(this.main.id(form.get("gallery_gl_list_id")).value)
+		//let arr = re.data["get"]
+		let get_type=form.get("get_type")
 		let display_id = form.get("display_id")
 		let dialog_id = form.get("dialog_id")
-		let partner_list_id = form.get("partner_list_id")
+		let gallery_list_id = form.get("gallery_list_id")
+		let gallery_gl_list_id = form.get("gallery_gl_list_id")
 		let form_name = form.get("from_name")
-		let get_type=form.get("get_type")
-		let partner_list = form.get("partner_list")
-		let tsh=tsh_prop[a]
-		let cpn=this.main.ce("div",{"id":"cpn0_partner_"+display_id,"class":"selected_list_partner_search"})
-			let oshid="option_search_partner_id_"+display_id
-			let pn_sh=this.main.ce("select",{"id":oshid})
-				for (let prop in tsh) {
-					let op_sh=this.main.ce("option",{"value":prop})
-					let op_tx=this.main.cn(tsh[prop])
-					this.main.end(op_sh,[op_tx])
-					this.main.end(pn_sh,[op_sh])
-				}
-			let ipshid="input_search_partner_id_"+display_id
-			let its=this.main.ce("input",{"id":ipshid,"type":"text"})
-			let ibs=this.main.ce("input",{"type":"button","value":"🔍","onclick":"Fsl.selectPartnerSearch('"+a+"','"+callback+"','"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"')"})		
-		this.main.end(cpn,[pn_sh,its,ibs])
-		let ct=this.main.ce("div",{})
-			let ct0 = this.main.ce("div",{"id":"ct0_partner_"+display_id})
-			let fron = this.main.ce("form",{"name":rid,"style":"width:100%;text-align:center;"})
-			let d1 = this.main.ce("div",{"class":"selects_list_partner"})
 
-			let lid=form.get("lid")
+		let gallery_list = form.get("gallery_list")
+
+		let ct=this.main.ce("div",{})
+			let ct0 = this.main.ce("div",{"id":"ct0_gallery_"+display_id})
+			let fron = this.main.ce("form",{"name":rid,"style":"width:100%;text-align:center;"})
+			let d1 = this.main.ce("div",{"class":"selects_list_gallery"})
+
 					
-			let partner_has = F.valueListToArray(partner_list)
+			let gallery_has = F.valueListToArray(gallery_list)
 										
 				for(let i=0;i<arr.length;i++){
-					let ckrid = "checkboxid_"+arr[i]["sku_root"]
+					let ckrid = "checkboxid_"+arr[i]
 					let div1=this.main.ce("div",{"class":"i"+((i%2)+1)})
-						let ck = this.main.ce("input",{"type":"checkbox","id":ckrid,"name":"checkbox_"+rid,"data-icon":arr[i]["icon"],"data-name":arr[i]["name"],"value":arr[i]["sku_root"],"onchange":"Fsl.selectCkPartner(this,'"+display_id+"')"})
+						let ck = this.main.ce("input",{"type":"checkbox","id":ckrid,"name":"checkbox_"+rid,"data-icon":arr[i],"value":arr[i],"onchange":"Gl.selectCkGallery(this,'"+display_id+"')"})
 				
-						if(partner_has.includes(arr[i]["sku_root"]) || this.partner[display_id].hasOwnProperty(arr[i]["sku_root"]) ){
+						if(gallery_has.includes(arr[i]) || this.gallery[display_id].hasOwnProperty(arr[i]) ){
 							ck.checked = true
 						}	
-						let div_img=this.main.ce("div",{"class":"img32"})
-							let img=this.main.ce("img",{"src":"img/gallery/32x32_"+arr[i]["icon"],"alt":arr[i]["name"],"onerror":"this.src='img/pos/64x64_null.png'"})	
+						let div_img=this.main.ce("div",{"class":"img96"})
+							let img=this.main.ce("img",{"class":"viewimage","src":"img/gallery/128x128_"+arr[i],"alt":"","onerror":"this.src='img/pos/64x64_null.png'","onclick":"G.view(this,0)"})	
 						this.main.end(div_img,[img])	
 						let boc = this.main.ce("label",{"for":ckrid})		
-							let tn = this.main.cn(arr[i]["name"])
+							let tn = this.main.cn("")
 						this.main.end(boc,[tn])
-						let s=this.main.ce("div",{"data-rid_close":rid,"onclick":"Fsl.select1Partner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')"})
+						let s=this.main.ce("div",{"data-rid_close":rid,"onclick":"Gl.select1Gallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"')"})
 						this.main.end(s,[this.main.cn("⬆")])
 					this.main.end(div1,[ck,div_img,boc,s])
 					this.main.end(d1,[div1])
-					lid=arr[i]["id"]
 				}
 			this.main.end(fron,[d1])						
-			let div_page=this.ctPage(re,form,form_name,dialog_id,display_id,partner_list_id,lid)
+
 			
-			this.main.end(ct0,[fron,div_page])	
-			let ct1 = this.main.ce("div",{"id":"ct1_partner_"+display_id})
+			this.main.end(ct0,[fron])	
+			let ct1 = this.main.ce("div",{"id":"ct1_gallery_"+display_id})
 		this.main.end(ct,[ct0,ct1])	
 
-		let count=Object.keys(this.partner[display_id]).length
+		let count=Object.keys(this.gallery[display_id]).length
 
 		let bts = [
-			{"value":"⬅ เลือกเพิ่ม","style":"visibility:hidden","id":"bt_back_select_"+display_id,"onclick":"Fsl.backSelectPartner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')"},
-			{"value":"ดูที่เลือก ("+count+")","rid_close":rid,"id":"bt_select_n_"+display_id,"onclick":"Fsl.viewSlectedPartner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')"}
+			{"value":"➕เพิ่มiรูป","style":"display:inline-block","id":"bt_add_select_"+display_id,"onclick":"Gl.addImgGallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"','"+gallery_gl_list_id+"')"},
+			{"value":"⬅ เลือกเพิ่ม","style":"display:none","id":"bt_back_select_"+display_id,"onclick":"Gl.backSelectGallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"','"+gallery_gl_list_id+"')"},
+			{"value":"ดูที่เลือก ("+count+")","rid_close":rid,"id":"bt_select_n_"+display_id,"onclick":"Gl.viewSlectedGallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"','"+gallery_gl_list_id+"')"}
 		]
 		if(get_type=="new"){
-			
-			M.dialog({"rid":rid,"display":1,"pn":cpn,"ct":ct,"bts":bts,"title":title_bar[a],"width":"250"})
+			M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":title_bar,"width":"250"})
 		}else if(get_type=="update"){
-			this.main.rmc_all(this.main.id("ct0_partner_"+display_id))
-			this.main.end(this.main.id("ct0_partner_"+display_id),[fron,div_page])	
+			this.main.rmc_all(this.main.id("ct0_gallery_"+display_id))
+			this.main.end(this.main.id("ct0_gallery_"+display_id),[fron,div_page])	
 			//this.main.id("ct0_partner_"+display_id).appenChild()
 		}
 	}
@@ -197,86 +172,85 @@ class gallery{
 	xxxxpartnerGoPage(did,a,callback,form_name,dialog_id,display_id,partner_list_id){
 		this.ctAddPartner(a,callback,form_name,dialog_id,display_id,partner_list_id,"update",did.value)
 	}
-	xxxxselectCkPartner(did,display_id){
+	selectCkGallery(did,display_id){
 		let sku_root=did.value
 		let name=did.getAttribute("data-name")
 		let icon=did.getAttribute("data-icon")		
 		if(did.checked){
-			if(!this.partner[display_id].hasOwnProperty(sku_root)){
-				this.partner[display_id][sku_root]={
+			if(!this.gallery[display_id].hasOwnProperty(sku_root)){
+				this.gallery[display_id][sku_root]={
 					"icon":icon,
-					"name":name,
-					"value":0
+					"name":name
 				}
 			}
 		}else{
-			if(this.partner[display_id].hasOwnProperty(sku_root)){
-				delete this.partner[display_id][sku_root]
+			if(this.gallery[display_id].hasOwnProperty(sku_root)){
+				delete this.gallery[display_id][sku_root]
 			}
 		}
-		let count=Object.keys(this.partner[display_id]).length
+		let count=Object.keys(this.gallery[display_id]).length
 		this.main.id("bt_select_n_"+display_id).value="ดูที่เลือก ("+count+")"
 	}
-	xxxxviewSlectedPartner(did,a,callback,display_id,partner_list_id){
-		this.main.id("ct0_partner_"+display_id).style.display="none"
-		this.main.id("cpn0_partner_"+display_id).style.display="none"
-		this.main.id("ct1_partner_"+display_id).style.display="block"
-		this.viewPartnerSlected(did,display_id)
-		this.main.id("bt_back_select_"+display_id).style.visibility="visible"
+	viewSlectedGallery(did,a,display_id,gallery_list_id,gallery_gl_list_id){
+		this.main.id("ct0_gallery_"+display_id).style.display="none"
+		this.main.id("ct1_gallery_"+display_id).style.display="block"
+		this.viewGallerySlected(did,display_id)
+		this.main.id("bt_back_select_"+display_id).style.display="inline-block"
+		this.main.id("bt_add_select_"+display_id).style.display="none"
 		did.value="ยืนยันที่เลือก"
-		did.setAttribute("onclick","Fsl.selectPartnerOK(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')")
+		did.setAttribute("onclick","Gl.selectGalleryOK(this,'"+a+"','"+display_id+"','"+gallery_list_id+"')")
 		did.parentNode.parentNode.click()
 	}
-	xxxxbackSelectPartner(did,a,callback,display_id,partner_list_id){
-		this.main.id("ct0_partner_"+display_id).style.display="block"
-		this.main.id("cpn0_partner_"+display_id).style.display="grid"
-		this.main.id("ct1_partner_"+display_id).style.display="none"
-		did.style.visibility="hidden"
-		let count=Object.keys(this.partner[display_id]).length
+	backSelectGallery(did,a,display_id,gallery_list_id){
+		this.main.id("ct0_gallery_"+display_id).style.display="block"
+		this.main.id("ct1_gallery_"+display_id).style.display="none"
+		did.style.display="none"
+		this.main.id("bt_add_select_"+display_id).style.display="inline-block"
+		let count=Object.keys(this.gallery[display_id]).length
 		this.main.id("bt_select_n_"+display_id).value="ดูที่เลือก ("+count+")"
-		this.main.id("bt_select_n_"+display_id).setAttribute("onclick","Fsl.viewSlectedPartner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')")
+		this.main.id("bt_select_n_"+display_id).setAttribute("onclick","Gl.viewSlectedGallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"')")
 	}
-	xxxxviewPartnerSlected(did,display_id){
-		let ct=this.main.id("ct1_partner_"+display_id)
+	viewGallerySlected(did,display_id){
+		let ct=this.main.id("ct1_gallery_"+display_id)
 		this.main.rmc_all(ct)
 		let i=-1
-		for (let prop in this.partner[display_id]) {
+		for (let prop in this.gallery[display_id]) {
 			i=i+1
-			let d1 = this.main.ce("div",{"class":"selected_list_partner"})
+			let d1 = this.main.ce("div",{"class":"selected_list_gallery"})
 				let d2 = this.main.ce("div",{"data-sku_root":prop,"id":"select_at_"+i,"class":"i"+((i%2)+1)})
 					let div_at=this.main.ce("div",{})
 					this.main.end(div_at,[this.main.cn(i+1)])	
-					let div_img=this.main.ce("div",{"class":"img32"})
-						let img=this.main.ce("img",{"src":"img/gallery/32x32_"+this.partner[display_id][prop]["icon"],"alt":this.partner[display_id][prop]["name"],"onerror":"this.src='img/pos/64x64_null.png'"})	
+					let div_img=this.main.ce("div",{"class":"img96"})
+						let img=this.main.ce("img",{"class":"viewimage","src":"img/gallery/128x128_"+this.gallery[display_id][prop]["icon"],"alt":"","onerror":"this.src='img/pos/64x64_null.png'","onclick":"G.view(this,0)"})	
 					this.main.end(div_img,[img])	
 					let div_name=this.main.ce("div",{})
-					this.main.end(div_name,[this.main.cn(this.partner[display_id][prop]["name"])])	
-					let div_move=this.main.ce("div",{"onclick":"Fsl.selectPartnerMove(this,'"+display_id+"',"+i+")"})
+					this.main.end(div_name,[this.main.cn("")])	
+					let div_move=this.main.ce("div",{"onclick":"Gl.selectGalleryMove(this,'"+display_id+"',"+i+")"})
 					this.main.end(div_move,[this.main.cn("⇅")])
-					let div_del=this.main.ce("div",{"onclick":"Fsl.deletePartner(this,'"+display_id+"','"+prop+"')","title":"ลบออก"})
+					let div_del=this.main.ce("div",{"onclick":"Gl.deleteGallery(this,'"+display_id+"','"+prop+"')","title":"ลบออก"})
 					this.main.end(div_del,[this.main.cn("×")])	
 				this.main.end(d2,[div_at,div_img,div_name,div_move,div_del])	
 			this.main.end(d1,[d2])	
 			this.main.end(ct,[d1])	
 		}
 	}
-	xxxxselectPartnerMove(did,display_id,index){
-		let a=this.main.id("ct1_partner_"+display_id)
+	selectGalleryMove(did,display_id,index){
+		let a=this.main.id("ct1_gallery_"+display_id)
 		for(let i=0;i<a.childNodes.length;i++){
 			let b=a.childNodes[i].childNodes[0].childNodes[3]
 			if(i!=index){
 				b.innerHTML="🚩"
 				b.style.backgroundColor="LightGreen"
-				b.setAttribute("onclick","Fsl.selectPartnerMoveSet(this,'"+display_id+"',"+index+","+i+")")
+				b.setAttribute("onclick","Gl.selectGalleryMoveSet(this,'"+display_id+"',"+index+","+i+")")
 				b.onmouseover=()=>{}
 				b.onmouseout=()=>{}
 			}
 		}
 	}
-	xxxxselectPartnerMoveSet(did,display_id,index_from,index_to){
+	selectGalleryMoveSet(did,display_id,index_from,index_to){
 		let no={}//Object.assign({}, this.partner[display_id])
 		
-		let a=this.main.id("ct1_partner_"+display_id)
+		let a=this.main.id("ct1_gallery_"+display_id)
 		let newnode=a.childNodes[index_from].cloneNode(true);
 		a.insertBefore(newnode, a.childNodes[index_to])
 		if(index_to<index_from){
@@ -286,35 +260,28 @@ class gallery{
 		}		
 		for(let i=0;i<a.childNodes.length;i++){
 			let k=a.childNodes[i].childNodes[0].getAttribute("data-sku_root")
-			console.log(k)
-			no[k]=this.partner[display_id][k]
+			no[k]=this.gallery[display_id][k]
 			let b=a.childNodes[i].childNodes[0].childNodes[3]
 			a.childNodes[i].childNodes[0].childNodes[0].innerHTML=i+1
 			b.innerHTML="⇅"
 			b.style.backgroundColor="gray"
-			b.setAttribute("onclick","Fsl.selectPartnerMove(this,'"+display_id+"',"+i+")")
+			b.setAttribute("onclick","Gl.selectGalleryMove(this,'"+display_id+"',"+i+")")
 			b.onmouseover=()=>{b.style.backgroundColor="orange"}
 			b.onmouseout=()=>{b.style.backgroundColor="gray"}
 		}
-		this.partner[display_id]=no
+		this.gallery[display_id]=no
 	}
-	xxxxselectPartnerOK(did,a,callback,display_id,partner_list_id){
+	selectGalleryOK(did,a,display_id,gallery_list_id){
 		this.setEmptyTable(display_id)
 		let rid_close=did.getAttribute("data-rid_close")
-		this.selectPartnerListValue(a,display_id,partner_list_id)
-		if(a=="partner"){
-			this.selectPartnerOKAppend(a,display_id)
-		}else if(a=="payu"){
-			this.selectPayuOKAppend(a,display_id)
-		}else if(a=="product"){
-			eval(callback).selectPartnerOK(display_id,partner_list_id)
-		}
-		
-		this.partner_old[display_id]=Object.assign({}, this.partner[display_id]);
+		this.selectGalleryListValue(a,display_id,gallery_list_id)
+		this.selectGalleryOKAppend(display_id)
+		this.gallery_old[display_id]=Object.assign({}, this.gallery[display_id]);
 		M.dialogClose(rid_close)
 	}
 	selectGalleryOKAppend(display_id){
 		let d=this.main.id(display_id)
+		alert(display_id)
 		M.l(this.gallery[display_id])
 		for (let prop in this.gallery[display_id]) {
 			let div_img=this.main.ce("div",{})
@@ -449,42 +416,38 @@ class gallery{
 			this.partner[display_id][prop]["value"]=did.value
 		}
 	}
-	xxxxsetEmptyTable(display_id){
+	setEmptyTable(display_id){
 		if(this.main.id(display_id)!=undefined){
 			let t=this.main.id(display_id)
-			let len=t.rows.length
-			for(let i=len-2;i>=0;i--){
-				t.deleteRow(i)
-			}
+			this.main.rmc_all(t)
 		}
 	}
-	xxxxselectPartnerListValue(a,display_id,partner_list_id){
-		let v=this.main.id(partner_list_id)
+	selectGalleryListValue(a,display_id,gallery_list_id){
+		let v=this.main.id(gallery_list_id)
 		v.value=""
-		for (let prop in this.partner[display_id]) {
+		for (let prop in this.gallery[display_id]) {
 			v.value+=","+prop+","
 		}
 	}
-	xxxxselect1Partner(did,a,callback,display_id,partner_list_id){
+	select1Gallery(did,a,display_id,gallery_list_id){
 		let d=did.parentNode.childNodes[0]
 		let sku_root=d.value
 		let name=d.getAttribute("data-name")
 		let icon=d.getAttribute("data-icon")		
-		this.partner[display_id]={}
-		this.partner[display_id][sku_root]={
+		this.gallery[display_id]={}
+		this.gallery[display_id][sku_root]={
 					"icon":icon,
-					"name":name,
-					"value":0
+					"name":name
 				}
-		let count=Object.keys(this.partner[display_id]).length
-		this.partner_old[display_id]=Object.assign({}, this.partner[display_id]);
+		let count=Object.keys(this.gallery[display_id]).length
+		this.gallery_old[display_id]=Object.assign({}, this.gallery[display_id]);
 		this.main.id("bt_select_n_"+display_id).value="ดูที่เลือก ("+count+")"
-		this.selectPartnerOK(did,a,callback,display_id,partner_list_id)
+		this.selectGalleryOK(did,a,display_id,gallery_list_id)
 	}
-	xxxxdeletePartner(did,display_id,sku_root){
+	deleteGallery(did,display_id,sku_root){
 		did.parentNode.parentNode.removeChild(did.parentNode)
-		if(this.partner[display_id][sku_root]!=undefined){
-			delete this.partner[display_id][sku_root]
+		if(this.gallery[display_id][sku_root]!=undefined){
+			delete this.gallery[display_id][sku_root]
 		}
 		if(this.main.id("checkboxid_"+sku_root)!=undefined){
 			this.main.id("checkboxid_"+sku_root).checked=false
@@ -527,7 +490,7 @@ class gallery{
 		let dt=F.valueListToArray(this.main.id(form.get("gallery_list_id")).value)
 		let dt_gl=F.valueListToArray(this.main.id(form.get("gallery_gl_list_id")).value)
 		for (let i=0;i<dt.length;i++) {
-			this.gallery[display_id][i]={
+			this.gallery[display_id][dt[i]]={
 				"icon":dt[i],
 				"name":null
 			}
