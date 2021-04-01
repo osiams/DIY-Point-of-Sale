@@ -10,7 +10,7 @@ class gallery{
 	run(){
 
 	}
-	ctAddGallery(table,key,form_name,dialog_id=null,display_id,gallery_list_id,gallery_gl_list_id,get_type="new"){
+	ctAddGallery(table,key,data_key,form_name,dialog_id=null,display_id,gallery_list_id,gallery_gl_list_id,get_type="new",icon_ob=null){alert(icon_ob+"****")
 		let a="gallery"
 		if(this.gallery[display_id]==undefined){
 			this.gallery[display_id]={}
@@ -26,7 +26,7 @@ class gallery{
 		let gallery_gl_list=document.forms[form_name][gallery_gl_list_id].value
 		let dt={"data":{"a":a,"table":table,"key":key,"dialog_id":dialog_id,"display_id":display_id,"get_type":get_type,
 				"from_name":form_name,"gallery_list":gallery_list,"gallery_gl_list":gallery_gl_list,
-				"gallery_list_id":gallery_list_id,"gallery_gl_list_id":gallery_gl_list_id},
+				"gallery_list_id":gallery_list_id,"gallery_gl_list_id":gallery_gl_list_id,"icon_ob":icon_ob},
 				"result":Gl.getListGalleryResult,"error":Gl.getListGalleryError}		
 		this.main.setFec(dt)
 	}
@@ -48,6 +48,10 @@ class gallery{
 		let a=form.get("a")
 		let callback=form.get("callback")
 		let title_bar="เลือกรูปภาพ"
+
+		let table=form.get("table")
+		let key=form.get("key")
+		let icon_ob=form.get("icon_ob")
 
 		let rid = form.get("dialog_id")
 		
@@ -97,9 +101,9 @@ class gallery{
 		this.main.end(ct,[ct0,ct1])	
 
 		let count=Object.keys(this.gallery[display_id]).length
-
+alert(icon_ob)
 		let bts = [
-			{"value":"➕เพิ่มiรูป","style":"display:inline-block","id":"bt_add_select_"+display_id,"onclick":"Gl.addImgGallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"','"+gallery_gl_list_id+"')"},
+			{"value":"➕เพิ่มiรูป","style":"display:inline-block","id":"bt_add_select_"+display_id,"onclick":"Gl.addImgGallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"','"+gallery_gl_list_id+"','"+table+"','"+key+"','"+icon_ob+"')"},
 			{"value":"⬅ เลือกเพิ่ม","style":"display:none","id":"bt_back_select_"+display_id,"onclick":"Gl.backSelectGallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"','"+gallery_gl_list_id+"')"},
 			{"value":"ดูที่เลือก ("+count+")","rid_close":rid,"id":"bt_select_n_"+display_id,"onclick":"Gl.viewSlectedGallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"','"+gallery_gl_list_id+"')"}
 		]
@@ -281,7 +285,7 @@ class gallery{
 	}
 	selectGalleryOKAppend(display_id){
 		let d=this.main.id(display_id)
-		alert(display_id)
+		//alert(display_id)
 		M.l(this.gallery[display_id])
 		for (let prop in this.gallery[display_id]) {
 			let div_img=this.main.ce("div",{})
@@ -453,7 +457,7 @@ class gallery{
 			this.main.id("checkboxid_"+sku_root).checked=false
 		}
 	}
-	setLoadGallery(table,key,form_name,dialog_id=null,display_id,gallery_list_id,gallery_gl_list_id){
+	setLoadGallery(table,key,data_key,form_name,dialog_id=null,display_id,gallery_list_id,gallery_gl_list_id){
 		let a="gallery"
 		let a_get={"gallery":"gallery_get"}
 		
@@ -468,7 +472,7 @@ class gallery{
 		dialog_id=(dialog_id==null)?this.main.rid():dialog_id
 		let gallery_list=document.forms[form_name][gallery_list_id].value
 		let gallery_gl_list=document.forms[form_name][gallery_gl_list_id].value
-		let dt={"data":{"a":a,"table":table,"key":key,"dialog_id":dialog_id,"display_id":display_id,
+		let dt={"data":{"a":a,"table":table,"key":key,"data_key":data_key,"dialog_id":dialog_id,"display_id":display_id,
 			"from_name":form_name,"gallery_list":gallery_list,"gallery_gl_list":gallery_gl_list,
 			"gallery_list_id":gallery_list_id,"gallery_gl_list_id":gallery_gl_list_id},
 			"result":Gl.getListGalleryLoadResult,"error":Gl.getListGalleryLoadError
@@ -498,6 +502,13 @@ class gallery{
 		this.setGalleryOld(display_id)
 		this.selectGalleryOKAppend(display_id)	
 	}
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+	addImgGallery(did,a,display_id,gallery_list_id,table,key,key_data,icon_ob){alert(icon_ob)
+		let ct=Ful.ctFileUploadsDialog(icon_ob)
+		let title_bar="เพิ่มรูปรูปภาพ"
+		let bts = [
+			{"value":"+ไฟล์รูปภาพ","onclick":"document.getElementById('upload_pic').click()"},
+			{"value":"ยืนยัน","onclick":"Ful.fileUploadImgs('"+table+"','"+key+"','"+key_data+"','"+icon_ob+"')"}
+		]
+		M.dialog({"display":1,"ct":ct,"bts":bts,"title":title_bar,"width":"250","ofc":0})
+	}
 }

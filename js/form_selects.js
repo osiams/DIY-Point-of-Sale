@@ -512,9 +512,11 @@ class form_selects{
 	}
 	loadSetPartner(re,form,bt){
 		let a=form.get("b")
+		let partner_list=form.get("partner_list")
 		let ob_value=JSON.parse(form.get("js_value"))
 		let display_id = form.get("display_id")
 		let dt=re["data"]
+		let st=F.valueListToArray(partner_list)
 		for (let i=0;i<dt.length;i++) {
 			let value=ob_value[dt[i]["sku_root"]]!=undefined?ob_value[dt[i]["sku_root"]]:0
 			this.partner[display_id][dt[i]["sku_root"]]={

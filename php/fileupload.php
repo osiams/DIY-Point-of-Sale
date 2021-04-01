@@ -69,7 +69,7 @@ class fileupload extends main{
 			IF 1<2 THEN
 				SET @icon_json=JSON_ARRAY_APPEND(@icon_json, '$', @icon);
 				UPDATE `".$table."` SET  
-					`icon_arr`	=	@icon_json	
+					`icon_arr`	=	@icon_json,`icon_gl`	=	@icon_json	
 				WHERE `".$key."`='".$data."';
 				INSERT  INTO `gallery` (
 					`sku_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,

@@ -11,7 +11,7 @@ class fileupload extends main{
 			icon_ref=idr
 			icon_id_str=icon_id.toString()
 			//alert(icon_id_str)
-		}else{
+		}else{alert(88)
 			ic=M.id(icon_id)
 			icon_ref=ic.id
 		}
@@ -79,6 +79,7 @@ class fileupload extends main{
 		if(e!=null){
 			//document.getElementById(img_id).src=URL.createObjectURL(e.target.files[0]);
 			img.src = URL.createObjectURL(e.target.files[0]);	
+
 		}else if(type=="load" && ic.value!=""){
 			img.src = ic.value
 		}
@@ -210,5 +211,13 @@ class fileupload extends main{
 		}else{
 			
 		}
+	}
+	ctFileUploadsDialog(icon_ob_str){
+		let ct=this.ce("div",{})
+			let p=this.ce("p",{})
+			let d1=this.ce("div",{"class":"fileuploadpres c","id":"div_fileuploadpre"})
+			let ip=this.ce("input",{"id":"upload_pic","type":"file","acept":"image/png,image/gif,image/jpeg,image/webp","class":"fuif","name":"picture","onchange":"Ful.fileUploadShow(event,20,"+icon_ob_str+",1024,160)"})
+		this.end(ct,[p,d1,ip])
+		return ct
 	}
 }

@@ -522,8 +522,10 @@ class bills_in extends bills{
 		for($i=0;$i<count($dt);$i++){
 			array_push($product_arr,$dt[$i]["product_sku_key"]);
 		}
-		$product_str="[,".implode(",,",$product_arr).",]";
+		$product_str="[\"".implode(",,",$product_arr)."\"]";
+		$product_str=str_replace(",,","\",\"",$product_str);
 		$product=$this->propToFromValue($product_str);
+		
 		$payu_list_id=$this->key("key",7);
 		$product_list_id=$this->key("key",7);
 		$gallery_list_id=$this->key("key",7);
@@ -625,7 +627,7 @@ class bills_in extends bills{
 			$this->writeJsDataEditPrompt($pd,true,$sku_root,$id,$product_list_id);
 		}
 		$gal_id=$this->key("key",7);
-		$this->gall=new gallery("bill_in",$dt[0]["sku"],"billsin",$gal_id,$gallery_list_id,$gallery_gl_list_id);	
+		$this->gall=new gallery("bill_in","sku",$dt[0]["sku"],"billsin",$gal_id,$gallery_list_id,$gallery_gl_list_id,"Bi.icon");	
 		$this->gall->writeForm();	
 		echo '
 		<input type="button" onclick="Bi.billsinSumit('.$et.')" value="แก้ไข นำเข้าสินค้า" /></form>';
@@ -725,8 +727,9 @@ class bills_in extends bills{
 				<div>
 					<p><span>รูปแบบการชำระ</span></p>
 				<div>';
+			$payu_json='{"defaultroot":0}';
 			$this->form_py=new form_selects("payu","คู่ค้า","billsin",$this->key("key",7),$payu_list_id);	
-			$this->form_py->writeForm("billsin");
+			$this->form_py->writeForm($payu_json);
 		echo '</div>
 				</div>
 				<div>
@@ -1090,9 +1093,8 @@ class bills_in extends bills{
 		return $re;
 	}
 	private function propToFromValue(string $prop):string{
-		$t = str_replace("\",\"",",,",substr($prop,1,-1));
-		$t = str_replace("\"",",",$t);
-		//echo $t;
+		$t=implode(",,",json_decode($prop));
+		$t=(strlen(trim($t))>0)?",".$t.",":"";
 		return $t;
 	}
 	private function payu_jsonToFromValue(string $payu_json):string{

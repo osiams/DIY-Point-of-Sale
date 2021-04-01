@@ -270,11 +270,12 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 			let title= data.hasOwnProperty("title") ?data.title:"..."
 			let width= data.hasOwnProperty("width") ?"width:"+data.width+"px;":""
 			let rid = data.hasOwnProperty("rid") ?data.rid:this.rid()
+			let ofc = data.hasOwnProperty("ofc") ?data.ofc:1
 			let dialog = this.ce("div",{"class":"dialog dialog_active1","id":rid+"_dialog","onmousedown":"this.style.transitionDuration='0s'","onmouseup":"M.setDialogSize(this)","style":width})
 				let bar = this.ce("div",{})
 					let barname= this.ce("div",{})
 					this.end(barname,[this.cn(title)])
-					let barclose= this.ce("div",{"title":"กดเพื่อปิด","onclick":"M.dialogClose('"+rid+"')"})
+					let barclose= this.ce("div",{"title":"กดเพื่อปิด","onclick":"M.dialogClose('"+rid+"',"+ofc+")"})
 					this.end(barclose,[this.cn("×")])
 				this.end(bar,[barname,barclose])
 				let pn=this.ce("div",{})
@@ -346,10 +347,12 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 			did.classList.add("dialog_active1");
 		}
 	}
-	dialogClose(id){
+	dialogClose(id,ofc=1){
 		this.id(id).parentNode.removeChild(this.id(id))
 		this.id(id+"_dialog").parentNode.removeChild(this.id(id+"_dialog"))
-		this.b.style.overflow = "auto"
+		if(ofc==1){
+			this.b.style.overflow = "auto"
+		}
 	}
 }
 class gpu extends main {
