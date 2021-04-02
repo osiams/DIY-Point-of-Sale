@@ -129,17 +129,17 @@ class fileupload extends main{
 		}
 		document.getElementById(div_id).style.backgroundSize=w+"px "+h+"px"
 	}
-	fileUploadImgs(table,key,data,obj_str,url_to,url_key){
+	fileUploadImgs(uploadtype="new",table,key,data,obj_str,url_to=null,url_key=null,callbackresult=null,callbackerror=null){
 		let obj=eval(obj_str)
 		let count=Object.keys(obj).length
 		//alert()
 		//alert(window.scrollY)
 		if(count>0){
 			this.fileUploadImgsPc(1,count)
-			this.fileUploadImgsSend(table,key,data,obj_str,url_to,url_key,count,0)
+			this.fileUploadImgsSend(uploadtype,table,key,data,obj_str,url_to,url_key,callbackresult,callbackerror,count,0)
 		}
 	}
-	fileUploadImgsSend(table,key,data,obj_str,url_to,url_key,count,index){
+	fileUploadImgsSend(uploadtype,table,key,data,obj_str,url_to,url_key,callbackresult,callbackerror,count,index){
 		let i=-1;
 		let icon=""
 		let obj=eval(obj_str)
@@ -150,8 +150,9 @@ class fileupload extends main{
 				break;
 			}
 		}
+		//alert(icon)
 		let dt={"data":{"a":"fileupload","table":table,"key":key,"data":data,"icon":icon,"index":index,"obj_str":obj_str,
-			"url_to":url_to,"url_key":url_key,"count":count},"result":Ful.uploadResult,"error":Ful.uploadError}		
+			"url_to":url_to,"url_key":url_key,"count":count,"uploadtype":uploadtype,"callbackresult":callbackresult,"callbackerror":callbackerror},"result":Ful.uploadResult,"error":Ful.uploadError}		
 		this.setFec(dt)
 	}
 	fileUploadImgsPc(s,count){
@@ -170,8 +171,12 @@ class fileupload extends main{
 			this.end(ct,[d])
 			this.end(M.b,[ct])		
 		}else if(s==0){
-			this.b.style.overflow="auto"
+			if(count!=0){
+				this.b.style.overflow="auto"
+			}
 			this.id("fileuploadpc").className="furo"
+			this.id("fileuploadpc").parentNode.removeChild(this.id("fileuploadpc"))
+			
 		}
 	}
 	uploadResult(re,form,bt){
@@ -184,10 +189,12 @@ class fileupload extends main{
 			let count=form.get("count")*1
 			let index=form.get("index")*1
 			let data=form.get("data")
+			let callbackresult=form.get("callbackresult")
+			let callbackerror=form.get("callbackerror")
 			let idx=index+1
 			Ful.setUpResult(count,index,form)
 			if(idx<count){
-				Ful.fileUploadImgsSend(table,key,data,obj_str,url_to,url_key,count,idx)
+				Ful.fileUploadImgsSend(uploadtype,table,key,data,obj_str,url_to,url_key,callbackresult,callbackerror,count,idx)
 			}else{
 				Ful.fileUploadImgsPc(0,count)
 			}
@@ -197,8 +204,15 @@ class fileupload extends main{
 	}
 	uploadError(re,form,bt){
 		let index=form.get("index")
-		alert("รูปที่ "+(index*1+1)+" เกิดข้อผิดพลาด")
-		//Gp.ctSelectProp(re,form,bt)
+		let obj_str=form.get("obj_str")
+		let callbackerror=form.get("callbackerror")
+		eval(obj_str+"={}")
+
+		let n=index*1+1
+		alert("รูปที่ "+(n)+" เกิดข้อผิดพลาด\nไม่สามารถ ส่งไฟล์ไปยัง \n"+window.location.origin+"\n*รูปภาพถูกส่งสำเร็จแล้ว "+(n-1)+" รูป")
+		Ful.fileUploadImgsPc(0,0)
+		alert(callbackerror)
+		eval(callbackerror)
 	}
 	setUpResult(count,index,form){
 		this.id("fileuploadfinish").innerHTML=(index+1)
@@ -206,8 +220,16 @@ class fileupload extends main{
 			let data=form.get("data")
 			let url_to=form.get("url_to")
 			let url_key=form.get("url_key")
+			let callbackresult=form.get("callbackresult")
 			alert("สำเร็จ")
-			location.href=url_to+"&"+url_key+"="+data
+			if(url_to!=null){
+				location.href=url_to+"&"+url_key+"="+data
+			}else if(callbackresult!=null){
+				let obj_str=form.get("obj_str")
+				eval(obj_str+"={}")
+				Ful.fileUploadImgsPc(0,0)
+				eval(callbackresult)
+			}
 		}else{
 			
 		}

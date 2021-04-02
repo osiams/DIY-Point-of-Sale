@@ -31,12 +31,22 @@ class fileupload extends main{
 									$mime=$a[1];
 									$this->re["result"]=true;
 									$this->re["data"]='{"mime":"'.$mime.'"}';
-									$se=$this->setIconArr($_POST["table"],$_POST["key"],$_POST["data"],$key,$img,$mime);
-									if($se["result"]){
-										$this->re["result"]=true;
-										$this->img->imgSave($img,$key);
-									}else{
-										$this->re["message_error"]=$se["message_error"];
+									if(isset($_POST["uploadtype"])&&$_POST["uploadtype"]=="new"){
+										$se=$this->setIconArr($_POST["table"],$_POST["key"],$_POST["data"],$key,$img,$mime);
+										if($se["result"]){
+											$this->re["result"]=true;
+											$this->img->imgSave($img,$key);
+										}else{
+											$this->re["message_error"]=$se["message_error"];
+										}
+									}else if(isset($_POST["uploadtype"])&&$_POST["uploadtype"]=="add"){
+										$se=$this->addIconGl($_POST["table"],$_POST["key"],$_POST["data"],$key,$img,$mime);
+										if($se["result"]){
+											$this->re["result"]=true;
+											$this->img->imgSave($img,$key);
+										}else{
+											$this->re["message_error"]=$se["message_error"];
+										}
 									}
 								}
 							}
@@ -48,6 +58,48 @@ class fileupload extends main{
 		
 		header('Content-type: application/json');
 		echo json_encode($this->re);
+	}
+	private function addIconGl(string $table,string $key,string $data,string $icon_key,array $img,string $mime=""):array{echo "ttttt";exit;
+		$re=["result"=>false,"message_error"=>"","icon_name"=>""];
+		$mimefull=$this->getStringSqlSet($img["mime"]);
+		$md5=$this->getStringSqlSet(md5($img["file"]));
+		$user=$this->getStringSqlSet($_SESSION["sku_root"]);
+		$size=(int) $img["size"];
+		$width=(int) $img["width"];
+		$height=(int) $img["height"];
+		$sql=[];
+		$sql["set"]="SELECT @result:=0,
+			@message_error:='',
+			@icon_key:='".$icon_key."',
+			@sku_key:='".$icon_key."',
+			@icon:='".$icon_key."".($mime!=""?".".$mime:"")."',
+			@icon_json:=(SELECT IFNULL(`icon_arr`,'[]')  FROM `".$table."` WHERE `".$key."`='".$data."' );
+		";
+		$sql["run"]="
+			IF 1<2 THEN
+				SET @icon_json=JSON_ARRAY_APPEND(@icon_json, '$', @icon);
+				UPDATE `".$table."` SET  
+					`icon_gl`	=	@icon_json	
+				WHERE `".$key."`='".$data."';
+				INSERT  INTO `gallery` (
+					`sku_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,
+					`user`			,`size`			,`width`		,`height`
+				) VALUES (
+					@sku_key		,\"".$data."\"		,'billin'		,".$mimefull."				,".$md5.",
+					".$user."		,".$size."		,".$width."		,".$height."
+				);
+				SET @result=1;
+			END IF;
+		";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@iconname AS `icon_name`";
+		$se=$this->metMnSql($sql,["result"]);
+		//print_r($se);
+		if($se["result"]){
+			$re["result"]=$se["data"]["result"][0]["result"];
+			$re["message_error"]=$se["data"]["result"][0]["message_error"];
+			$re["icon_name"]=$se["data"]["result"][0]["icon_name"];
+		}
+		return $re;
 	}
 	private function setIconArr(string $table,string $key,string $data,string $icon_key,array $img,string $mime=""):array{
 		$re=["result"=>false,"message_error"=>""];

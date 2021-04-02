@@ -360,7 +360,7 @@ class gpu extends main {
 		super()
 		this.load={"id":{"has":0,"get":0}}
 	}
-	view(did,overflow=0){
+	view(did,overflow=1){
 		let a=did.src.split("_")
 		let b=a.length>1?a[a.length-1]:"64x64_null.png"
 		let u="img/gallery/"+b
