@@ -105,15 +105,76 @@ class gallery{
 		let bts = [
 			{"value":"➕เพิ่มiรูป","style":"display:inline-block","id":"bt_add_select_"+display_id,"onclick":"Gl.addImgGallery(this,'"+a+"','"+display_id+"','"+dialog_id+"','"+gallery_list_id+"','"+gallery_gl_list_id+"','"+table+"','"+key+"','"+key_data+"','"+icon_ob+"')"},
 			{"value":"⬅ เลือกเพิ่ม","style":"display:none","id":"bt_back_select_"+display_id,"onclick":"Gl.backSelectGallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"','"+gallery_gl_list_id+"')"},
+			{"value":"🗑️ลบ","rid_close":rid,"style":"display:none","id":"bt_delete_"+display_id,"onclick":"Gl.deleteSlectedGallery('"+a+"','"+display_id+"','"+dialog_id+"','"+gallery_list_id+"','"+gallery_gl_list_id+"','"+table+"','"+key+"','"+key_data+"','"+icon_ob+"')"},
 			{"value":"ดูที่เลือก ("+count+")","rid_close":rid,"id":"bt_select_n_"+display_id,"onclick":"Gl.viewSlectedGallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"','"+gallery_gl_list_id+"')"}
 		]
 		if(get_type=="new"){
-			M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":title_bar,"width":"250"})
+			M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":title_bar,"width":"355"})
 		}else if(get_type=="update"){
 			this.main.rmc_all(this.main.id("ct0_gallery_"+display_id))
 			this.main.end(this.main.id("ct0_gallery_"+display_id),[fron,div_page])	
 			//this.main.id("ct0_partner_"+display_id).appenChild()
 		}
+	}
+	deleteSlectedGallery(a,display_id,dialog_id,gallery_list_id,gallery_gl_list_id,table,key,key_data,icon_ob){
+		let count=Object.keys(this.gallery[display_id]).length
+		let rid=this.main.rid()
+		let dt={"rid":rid,"title":"คุณต้องการ?","msg":"คุณต้องการลบรูป "+count+" รายการ  ที่ได้เลือกไว้ อย่างถาวร","ofc":0,
+			"callback":"Gl.deleteSlectedGalleryOK(\'"+rid+"\',\'"+a+"\',\'"+display_id+"\',\'"+dialog_id+"\',\'"+gallery_list_id+"\',\'"+gallery_gl_list_id+"\',\'"+table+"\',\'"+key+"\',\'"+key_data+"\',\'"+icon_ob+"\')"
+		}
+		this.main.dialogConfirm(dt)
+	}
+	deleteSlectedGalleryOK(acp_id,a,display_id,dialog_id,gallery_list_id,gallery_gl_list_id,table,key,key_data,icon_ob){
+		
+		this.main.dialogClose(acp_id,0)
+		let dt={
+			"table":table			,"display_id":display_id		,"key":key		,"key_data":key_data,
+			"obj_str":icon_ob	,"gl_obj_str":"Gl.gallery['"+display_id+"']",
+			"callbackresult":'Gl.deleteImgGalleryResult(form,icon_name,\''+display_id+'\',\''+gallery_list_id+'\',\''+gallery_gl_list_id+'\')',
+			"calbackerror":'Gl.deleteImgGalleryError(form,icon_name,\'"+display_id+"\',\'"+dialog_id+"\\\',\'"+rid+"\')'
+		}
+		Ful.fileDeleteImgs(dt)
+	}
+	deleteImgGalleryResult(form,icon_name,display_id,gallery_list_id,gallery_gl_list_id){
+		//alert("icon_name="+icon_name+";display_id="+display_id+";gallery_list_id="+gallery_list_id+";gallery_gl_list_id="+gallery_gl_list_id);
+		//alert(8888)
+		let d=this.main.id("checkboxid_"+icon_name)
+		//alert(777)
+		////////////////////////////////////////--1
+		if(d!=undefined){
+			d.parentNode.parentNode.removeChild(d.parentNode)
+		}
+		////////////////////////////////////////--2
+		let e=this.main.id("selected_"+icon_name)
+		if(e!=undefined){
+			e.parentNode.removeChild(e)
+		}
+		////////////////////////////////////////--3
+		let gl_val=this.main.id(gallery_gl_list_id)
+		//alert("gl_val="+gl_val.value)
+		let gl=F.valueListToArray(gl_val.value)
+		//M.l(gl)
+		let val=""
+		for(let i=0;i<gl.length;i++){
+			if(gl[i]!=icon_name){
+				val+=","+gl[i]+","
+			}
+		}
+		gl_val.value=val
+		//alert("gl_val="+gl_val.value)
+		////////////////////////////////////////--4
+		if(Gl.gallery[display_id]!=undefined){
+			if(Gl.gallery[display_id][icon_name]!=undefined){
+				delete Gl.gallery[display_id][icon_name]
+			}
+		}
+		////////////////////////////////////////--5
+		this.selectGalleryOKAppend(display_id)
+		//let display_id=form.get("display_id")
+		//alert(";display_id="+display_id)
+	}
+	deleteImgGalleryError(re,form,bt){
+		alert("deleteImgGalleryError")
 	}
 	xxxxselectPartnerSearch(a,callback,option_search_id,input_search_id,form_name,dialog_id,display_id,partner_list_id,page=1,lid=0){
 		let fl=this.main.id(option_search_id).value
@@ -200,6 +261,7 @@ class gallery{
 		this.main.id("ct1_gallery_"+display_id).style.display="block"
 		this.viewGallerySlected(did,display_id)
 		this.main.id("bt_back_select_"+display_id).style.display="inline-block"
+		this.main.id("bt_delete_"+display_id).style.display="inline-block"
 		this.main.id("bt_add_select_"+display_id).style.display="none"
 		did.value="ยืนยันที่เลือก"
 		did.setAttribute("onclick","Gl.selectGalleryOK(this,'"+a+"','"+display_id+"','"+gallery_list_id+"')")
@@ -210,6 +272,7 @@ class gallery{
 		this.main.id("ct1_gallery_"+display_id).style.display="none"
 		did.style.display="none"
 		this.main.id("bt_add_select_"+display_id).style.display="inline-block"
+		this.main.id("bt_delete_"+display_id).style.display="none"
 		let count=Object.keys(this.gallery[display_id]).length
 		this.main.id("bt_select_n_"+display_id).value="ดูที่เลือก ("+count+")"
 		this.main.id("bt_select_n_"+display_id).setAttribute("onclick","Gl.viewSlectedGallery(this,'"+a+"','"+display_id+"','"+gallery_list_id+"')")
@@ -220,7 +283,7 @@ class gallery{
 		let i=-1
 		for (let prop in this.gallery[display_id]) {
 			i=i+1
-			let d1 = this.main.ce("div",{"class":"selected_list_gallery"})
+			let d1 = this.main.ce("div",{"class":"selected_list_gallery","id":"selected_"+prop})
 				let d2 = this.main.ce("div",{"data-sku_root":prop,"id":"select_at_"+i,"class":"i"+((i%2)+1)})
 					let div_at=this.main.ce("div",{})
 					this.main.end(div_at,[this.main.cn(i+1)])	
@@ -231,7 +294,7 @@ class gallery{
 					this.main.end(div_name,[this.main.cn("")])	
 					let div_move=this.main.ce("div",{"onclick":"Gl.selectGalleryMove(this,'"+display_id+"',"+i+")"})
 					this.main.end(div_move,[this.main.cn("⇅")])
-					let div_del=this.main.ce("div",{"onclick":"Gl.deleteGallery(this,'"+display_id+"','"+prop+"')","title":"ลบออก"})
+					let div_del=this.main.ce("div",{"onclick":"Gl.deleteGallery(this,'"+display_id+"','"+prop+"')","title":"นำออก ไม่เลือก"})
 					this.main.end(div_del,[this.main.cn("×")])	
 				this.main.end(d2,[div_at,div_img,div_name,div_move,div_del])	
 			this.main.end(d1,[d2])	
@@ -508,16 +571,21 @@ class gallery{
 		let title_bar="เพิ่มรูปรูปภาพ"
 		let bts = [
 			{"value":"+ไฟล์รูปภาพ","onclick":"document.getElementById('upload_pic').click()"},
-			{"value":"ยืนยัน","onclick":"Ful.fileUploadImgs('add','"+table+"','"+key+"','"+key_data+"','"+icon_ob+"',null,null,Gl.addImgGalleryResult,'Gl.addImgGalleryError(re,form,bt,\\\'"+dialog_id+"\\\',\\\'"+rid+"\\\')')"}
+			{"value":"ยืนยัน","onclick":"Ful.fileUploadImgs('add','"+table+"','"+key+"','"+key_data+"','"+icon_ob+"','','','Gl.addImgGalleryResult(form,icon_name,\\\'"+display_id+"\\\',\\\'"+dialog_id+"\\\',\\\'"+rid+"\\\')','Gl.addImgGalleryError(form,\\\'"+display_id+"\\\',\\\'"+dialog_id+"\\\',\\\'"+rid+"\\\')')"
+			}
 		]
 		M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":title_bar,"width":"250","ofc":0})
 	}
-	addImgGalleryResult(re,form,bt){
-		
-	}
-	addImgGalleryError(re,form,bt,dialog_id,rid){alert(dialog_id)
-		//let rid = form.get("rid")
+	addImgGalleryResult(form,icon_name="",display_id,dialog_id,rid){alert(777)	//re,form,bt,display_id,dialog_id,rid
+		let ct=this.main.ce("input",{"value":icon_name})
+		alert(666)
+		this.main.id("ct1_gallery_"+display_id).appendChild(ct)
+		alert(555)
 		Ful.dialogClose(rid,0)
-		Ful.dialogClose(dialog_id,1)
+		alert(444)
+	}
+	addImgGalleryError(form,display_id,dialog_id,rid){//alert(dialog_id)
+		Ful.dialogClose(rid,0)
+		//Ful.dialogClose(dialog_id,1)
 	}
 }

@@ -354,6 +354,25 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 			this.b.style.overflow = "auto"
 		}
 	}
+	dialogConfirm(dt){
+		let rid=dt.hasOwnProperty("rid")?dt.rid:this.rid()
+		let title=dt.hasOwnProperty("title")?dt.title:"โปรดยืนยัน"
+		let msg=dt.hasOwnProperty("msg")?dt.msg:""
+		let ofc=dt.hasOwnProperty("ofc")?dt.ofc:1
+		let callback=dt.hasOwnProperty("callback")?dt.callback:""
+		let width=dt.hasOwnProperty("width")?dt.width:250
+		let ct=this.ce("div",{"class":"acp_c"})
+			let d1=this.ce("div",{})
+			let d2=this.ce("div",{})
+			this.end(d2,[this.cn(msg)])
+		this.end(ct,[d1,d2])
+		let title_bar=title
+		let bts = [
+			{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"',"+ofc+")"},
+			{"value":"ตกลง","onclick":callback}
+		]
+		this.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":title,"ofc":ofc,"width":width})
+	}
 }
 class gpu extends main {
 	constructor(){

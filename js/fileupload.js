@@ -130,29 +130,69 @@ class fileupload extends main{
 		document.getElementById(div_id).style.backgroundSize=w+"px "+h+"px"
 	}
 	fileUploadImgs(uploadtype="new",table,key,data,obj_str,url_to=null,url_key=null,callbackresult=null,callbackerror=null){
-		let obj=eval(obj_str)
-		let count=Object.keys(obj).length
-		//alert()
-		//alert(window.scrollY)
-		if(count>0){
-			this.fileUploadImgsPc(1,count)
-			this.fileUploadImgsSend(uploadtype,table,key,data,obj_str,url_to,url_key,callbackresult,callbackerror,count,0)
+		//let obj=eval(obj_str)
+		let obj=Object.assign({},eval(obj_str))
+		let count=Object.keys(obj).length		
+		let obj_str_static=JSON.stringify(obj)
+		if(uploadtype=="new"){
+			if(count>0){
+				this.fileUploadImgsPc(1,count)
+				this.fileUploadImgsSend(uploadtype,table,key,data,obj_str,obj_str_static,url_to,url_key,callbackresult,callbackerror,count,0)
+			}
+		}else if(uploadtype=="add"){
+			if(count>0){
+				this.fileUploadImgsPc(1,count)
+				this.fileUploadImgsSend(uploadtype,table,key,data,obj_str,obj_str_static,url_to,url_key,callbackresult,callbackerror,count,0)
+			}
 		}
 	}
-	fileUploadImgsSend(uploadtype,table,key,data,obj_str,url_to,url_key,callbackresult,callbackerror,count,index){
+	fileDeleteImgs(dt){
+		let uploadtype="delete"
+		let table=dt.table
+		let display_id=dt.display_id
+		let key=dt.key
+		let key_data=dt.key_data
+		let obj_str=dt.obj_str
+		let gl_obj_str=dt.gl_obj_str
+		let callbackresult=dt.callbackresult
+		let callbackerror=dt.callbackerror
+		let gl_obj=Object.assign({},eval(gl_obj_str))
+		//M.l(eval(gl_obj_str))
+		//M.l(gl_obj)
+		let count=Object.keys(gl_obj).length		
+		if(uploadtype=="delete"){alert("jjjjjjjjjjjjjjjjjj")
+			let count_gl=Object.keys(gl_obj).length	
+			if(count_gl>0){
+				this.fileDeleteImgsPc(1,count)
+				let gl_obj_str_static=JSON.stringify(gl_obj)
+				this.fileUploadImgsSend(
+					uploadtype	,table		,key				,key_data		,gl_obj_str,	gl_obj_str_static,
+					''					,''				,callbackresult	,callbackerror	,
+					count_gl		,0
+				)
+			}
+		}
+	}
+	fileUploadImgsSend(uploadtype,table,key,data,obj_str,obj_str_static,url_to,url_key,callbackresult,callbackerror,count,index){
 		let i=-1;
 		let icon=""
-		let obj=eval(obj_str)
+		alert(obj_str)
+		let obj=JSON.parse(obj_str_static)
+		
 		for(let prop in obj){
 			i+=1
 			if(i==index){
-				icon=obj[prop]
+				if(uploadtype!="delete"){
+					icon=obj[prop]
+				}else{
+					icon=prop
+				}	
 				break;
 			}
 		}
-		//alert(icon)
-		let dt={"data":{"a":"fileupload","table":table,"key":key,"data":data,"icon":icon,"index":index,"obj_str":obj_str,
+		let dt={"data":{"a":"fileupload","table":table,"key":key,"data":data,"icon":icon,"index":index,"obj_str":obj_str,"obj_str_static":obj_str_static,
 			"url_to":url_to,"url_key":url_key,"count":count,"uploadtype":uploadtype,"callbackresult":callbackresult,"callbackerror":callbackerror},"result":Ful.uploadResult,"error":Ful.uploadError}		
+		M.l(dt)
 		this.setFec(dt)
 	}
 	fileUploadImgsPc(s,count){
@@ -181,9 +221,12 @@ class fileupload extends main{
 	}
 	uploadResult(re,form,bt){
 		if(re["result"]){
+			let icon_name=re["icon_name"]
+			let uploadtype=form.get("uploadtype")
 			let table=form.get("table")
 			let key=form.get("key")
 			let obj_str=form.get("obj_str")
+			let obj_str_static=form.get("obj_str_static")
 			let url_to=form.get("url_to")
 			let url_key=form.get("url_key")
 			let count=form.get("count")*1
@@ -192,12 +235,18 @@ class fileupload extends main{
 			let callbackresult=form.get("callbackresult")
 			let callbackerror=form.get("callbackerror")
 			let idx=index+1
-			Ful.setUpResult(count,index,form)
+			Ful.setUpResult(count,index,form,icon_name)
+			alert("idx="+idx+";count="+count)
 			if(idx<count){
-				Ful.fileUploadImgsSend(uploadtype,table,key,data,obj_str,url_to,url_key,callbackresult,callbackerror,count,idx)
-			}else{
-				Ful.fileUploadImgsPc(0,count)
-			}
+				Ful.fileUploadImgsSend(uploadtype,table,key,data,obj_str,obj_str_static,url_to,url_key,callbackresult,callbackerror,count,idx)
+			}/*else{
+				
+				if(uploadtype=="new"||uploadtype=="add"){
+					Ful.fileUploadImgsPc(0,count)
+				}else if(uploadtype=="delete"){
+					Ful.fileDeleteImgsPc(0,0)
+				}
+			}*/
 		}else{
 			Ful.uploadError(re,form,bt)
 		}
@@ -214,21 +263,36 @@ class fileupload extends main{
 		alert(callbackerror)
 		eval(callbackerror)
 	}
-	setUpResult(count,index,form){
-		this.id("fileuploadfinish").innerHTML=(index+1)
+	setUpResult(count,index,form,icon_name){
+		let uploadtype=form.get("uploadtype")
+		let callbackresult=form.get("callbackresult")
+		if(uploadtype=="add"){
+			this.id("fileuploadfinish").innerHTML=(index+1)
+			eval(callbackresult)	
+		}else if(uploadtype=="delete"){
+			this.id("filedeletefinish").innerHTML=(index+1)
+			eval(callbackresult)	
+		}
 		if(index==count-1){
 			let data=form.get("data")
 			let url_to=form.get("url_to")
 			let url_key=form.get("url_key")
-			let callbackresult=form.get("callbackresult")
+			
 			alert("สำเร็จ")
-			if(url_to!=null){
+			if(url_to!=null&&url_to.length>0){
 				location.href=url_to+"&"+url_key+"="+data
-			}else if(callbackresult!=null){
+			}else if(callbackresult!=null&&callbackresult.length>0){
 				let obj_str=form.get("obj_str")
+
 				eval(obj_str+"={}")
-				Ful.fileUploadImgsPc(0,0)
-				eval(callbackresult)
+				if(uploadtype=="new"){
+					Ful.fileUploadImgsPc(0,0)
+				}else if(uploadtype=="add"){
+					Ful.fileUploadImgsPc(0,0)
+				}else{
+					Ful.fileDeleteImgsPc(0,0)
+				}
+				
 			}
 		}else{
 			
@@ -241,5 +305,28 @@ class fileupload extends main{
 			let ip=this.ce("input",{"id":"upload_pic","type":"file","acept":"image/png,image/gif,image/jpeg,image/webp","class":"fuif","name":"picture","onchange":"Ful.fileUploadShow(event,20,"+icon_ob_str+",1024,160)"})
 		this.end(ct,[p,d1,ip])
 		return ct
+	}
+	fileDeleteImgsPc(s,count){
+		if(s==1){
+			this.b.style.overflow="hidden"
+			let top=window.scrollY
+			let ct=this.ce("div",{"id":"filedeletepc","class":"fdrp","style":"top:"+top+"px"})
+			let d=this.ce("div",{})
+				let p1=this.ce("p",{})
+					let s1=this.ce("span",{"id":"filedeletefinish"})
+					this.end(s1,[this.cn("0")])
+					let s2=this.ce("span",{})
+					this.end(s2,[this.cn("/"+count)])
+				this.end(p1,[s1,s2])	
+			this.end(d,[p1,this.cn("กำลังลบรูป อย่าปิดหน้านี้")])
+			this.end(ct,[d])
+			this.end(M.b,[ct])		
+		}else if(s==0){
+			if(count!=0){
+				this.b.style.overflow="auto"
+			}
+			this.id("filedeletepc").className="furo"
+			this.id("filedeletepc").parentNode.removeChild(this.id("filedeletepc"))
+		}
 	}
 }

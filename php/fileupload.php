@@ -44,9 +44,19 @@ class fileupload extends main{
 										if($se["result"]){
 											$this->re["result"]=true;
 											$this->img->imgSave($img,$key);
+											$this->re["icon_name"]=$se["icon_name"];
 										}else{
 											$this->re["message_error"]=$se["message_error"];
 										}
+									}
+								}else if(isset($_POST["uploadtype"])&&$_POST["uploadtype"]=="delete"){
+									$file=$_POST["icon"];
+									$pt="/^[0-9a-zA-Z]{1,}.png$/";
+									if(preg_match($pt,$file)){
+										$this->delImgs($file);
+										$this->delIconGl($_POST["table"],$_POST["key"],$_POST["data"],$file);
+										$this->re["icon_name"]=$file;
+										$this->re["result"]=true;
 									}
 								}
 							}
@@ -59,7 +69,51 @@ class fileupload extends main{
 		header('Content-type: application/json');
 		echo json_encode($this->re);
 	}
-	private function addIconGl(string $table,string $key,string $data,string $icon_key,array $img,string $mime=""):array{echo "ttttt";exit;
+	private function delIconGl(string $table,string $key,string $data,string $file){
+		$a=explode(".",$file);
+		$sku_key=trim($a[0]);
+		$re=["result"=>false,"message_error"=>"","icon_name"=>""];
+		$sql=[];
+		$sql["set"]="SELECT @result:=0,
+			@message_error:='',
+			@icon_arr_json:=(SELECT IFNULL(`icon_arr`,'[]')  FROM `".$table."` WHERE `".$key."`='".$data."' ),
+			@icon_gl_json:=(SELECT IFNULL(`icon_gl`,'[]')  FROM `".$table."` WHERE `".$key."`='".$data."' ),
+			@js_key:='',
+			@icon_json:=''
+		";
+		$sql["set_gl"]="
+			IF 1<2 THEN
+				SET @js_key=(SELECT JSON_SEARCH(@icon_gl_json,'one','".$file."'));
+				SET @icon_json=(SELECT JSON_REMOVE(@icon_gl_json,JSON_UNQUOTE(@js_key)));
+				UPDATE `".$table."`
+					SET  `icon_gl`	=	@icon_json
+					WHERE `".$key."`='".$data."' AND @js_key IS NOT NULL;
+				SET @js_key=(SELECT JSON_SEARCH(@icon_arr_json,'one','".$file."'));
+				SET @icon_json=(SELECT JSON_REMOVE(@icon_arr_json,JSON_UNQUOTE(@js_key)));
+				UPDATE `".$table."`
+					SET  `icon_arr`	=	@icon_json
+					WHERE `".$key."`='".$data."' AND @js_key IS NOT NULL;
+				DELETE FROM `gallery` WHERE `sku_key`='".$sku_key."';
+			END IF;
+		";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`";
+		//print_r($sql);
+		$se=$this->metMnSql($sql,["result"]);
+	}
+	private function delImgs(string $name):void{
+		$sq=[16,32,64,128,256,512,1024];
+		$file=$this->gallery_dir."/".$name;
+		if(file_exists($file)){
+			unlink($file);
+		}
+		for($i=0;$i<count($sq);$i++){
+			$file=$this->gallery_dir."/".$sq[$i]."x".$sq[$i]."_".$name;
+			if(file_exists($file)){
+				unlink($file);
+			}
+		}
+	}
+	private function addIconGl(string $table,string $key,string $data,string $icon_key,array $img,string $mime=""):array{
 		$re=["result"=>false,"message_error"=>"","icon_name"=>""];
 		$mimefull=$this->getStringSqlSet($img["mime"]);
 		$md5=$this->getStringSqlSet(md5($img["file"]));
@@ -73,7 +127,7 @@ class fileupload extends main{
 			@icon_key:='".$icon_key."',
 			@sku_key:='".$icon_key."',
 			@icon:='".$icon_key."".($mime!=""?".".$mime:"")."',
-			@icon_json:=(SELECT IFNULL(`icon_arr`,'[]')  FROM `".$table."` WHERE `".$key."`='".$data."' );
+			@icon_json:=(SELECT IFNULL(`icon_gl`,'[]')  FROM `".$table."` WHERE `".$key."`='".$data."' );
 		";
 		$sql["run"]="
 			IF 1<2 THEN
@@ -91,7 +145,7 @@ class fileupload extends main{
 				SET @result=1;
 			END IF;
 		";
-		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@iconname AS `icon_name`";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@icon AS `icon_name`";
 		$se=$this->metMnSql($sql,["result"]);
 		//print_r($se);
 		if($se["result"]){
