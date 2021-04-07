@@ -136,10 +136,10 @@ class fileupload extends main{
 					`icon_gl`	=	@icon_json	
 				WHERE `".$key."`='".$data."';
 				INSERT  INTO `gallery` (
-					`sku_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,
+					`sku_key`		,`gl_sku`		,`name`		,`a_type`		,`mime_type`		,`md5`,
 					`user`			,`size`			,`width`		,`height`
 				) VALUES (
-					@sku_key		,\"".$data."\"		,'billin'		,".$mimefull."				,".$md5.",
+					@sku_key		,\"".$data."\"	,\"".$data."\"		,'billin'		,".$mimefull."				,".$md5.",
 					".$user."		,".$size."		,".$width."		,".$height."
 				);
 				SET @result=1;
@@ -178,10 +178,10 @@ class fileupload extends main{
 					`icon_arr`	=	@icon_json,`icon_gl`	=	@icon_json	
 				WHERE `".$key."`='".$data."';
 				INSERT  INTO `gallery` (
-					`sku_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,
+					`sku_key`		,`gl_sku`		,`name`		,`a_type`		,`mime_type`		,`md5`,
 					`user`			,`size`			,`width`		,`height`
 				) VALUES (
-					@sku_key		,\"".$data."\"		,'billin'		,".$mimefull."				,".$md5.",
+					@sku_key		,\"".$data."\"	,\"".$data."\"		,'billin'		,".$mimefull."				,".$md5.",
 					".$user."		,".$size."		,".$width."		,".$height."
 				);
 				SET @result=1;
@@ -189,7 +189,6 @@ class fileupload extends main{
 		";
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`";
 		$se=$this->metMnSql($sql,["result"]);
-		//print_r($se);
 		if($se["result"]){
 			$re["result"]=$se["data"]["result"][0]["result"];
 			$re["message_error"]=$se["data"]["result"][0]["message_error"];

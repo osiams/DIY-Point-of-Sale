@@ -176,7 +176,6 @@ class fileupload extends main{
 	fileUploadImgsSend(uploadtype,table,key,data,obj_str,obj_str_static,url_to,url_key,callbackresult,callbackerror,count,index){
 		let i=-1;
 		let icon=""
-		alert(obj_str)
 		let obj=JSON.parse(obj_str_static)
 		
 		for(let prop in obj){
@@ -192,7 +191,6 @@ class fileupload extends main{
 		}
 		let dt={"data":{"a":"fileupload","table":table,"key":key,"data":data,"icon":icon,"index":index,"obj_str":obj_str,"obj_str_static":obj_str_static,
 			"url_to":url_to,"url_key":url_key,"count":count,"uploadtype":uploadtype,"callbackresult":callbackresult,"callbackerror":callbackerror},"result":Ful.uploadResult,"error":Ful.uploadError}		
-		M.l(dt)
 		this.setFec(dt)
 	}
 	fileUploadImgsPc(s,count){
@@ -236,7 +234,7 @@ class fileupload extends main{
 			let callbackerror=form.get("callbackerror")
 			let idx=index+1
 			Ful.setUpResult(count,index,form,icon_name)
-			alert("idx="+idx+";count="+count)
+			//alert("idx="+idx+";count="+count)
 			if(idx<count){
 				Ful.fileUploadImgsSend(uploadtype,table,key,data,obj_str,obj_str_static,url_to,url_key,callbackresult,callbackerror,count,idx)
 			}/*else{
@@ -260,13 +258,16 @@ class fileupload extends main{
 		let n=index*1+1
 		alert("รูปที่ "+(n)+" เกิดข้อผิดพลาด\nไม่สามารถ ส่งไฟล์ไปยัง \n"+window.location.origin+"\n*รูปภาพถูกส่งสำเร็จแล้ว "+(n-1)+" รูป")
 		Ful.fileUploadImgsPc(0,0)
-		alert(callbackerror)
+		//alert(callbackerror)
 		eval(callbackerror)
 	}
 	setUpResult(count,index,form,icon_name){
 		let uploadtype=form.get("uploadtype")
 		let callbackresult=form.get("callbackresult")
-		if(uploadtype=="add"){
+		if(uploadtype=="new"){
+			this.id("fileuploadfinish").innerHTML=(index+1)
+			eval(callbackresult)	
+		}else if(uploadtype=="add"){
 			this.id("fileuploadfinish").innerHTML=(index+1)
 			eval(callbackresult)	
 		}else if(uploadtype=="delete"){

@@ -85,14 +85,38 @@ class bills_in extends bills{
 		$note=$this->getStringSqlSet($_POST["note"]);
 		$sku=$this->getStringSqlSet($_POST["sku"]);
 		$user=$this->getStringSqlSet($_SESSION["sku_root"]);
+		$bill_no=$this->getStringSqlSet($_POST["bill_no"]);
+		$bill_type=$this->getStringSqlSet($_POST["bill_type"]);
+		$bill_date=$this->getStringSqlSet($_POST["bill_date"]." 00:00:00");
+		$payu_json0=$this->cutPerfix($_POST["payu"]);
+		$payu_json=$this->getStringSqlSet($payu_json0);
+		$_POST["gallery_list"]=isset($_POST["gallery_list"])?$_POST["gallery_list"]:"";
+		$icon_arr=$this->setPropR($this->getStringSqlSet($_POST["gallery_list"]));
 		$pd=json_decode($_POST["product"],true);
 		$n=0;
 		$sum=0;
-		//print_r($_POST["sku"]);exit;
+		$vat=0;
 		foreach($pd as $k=>$v){
-			if((string) $v["act"]!="0"){
-				$n+=1;
+			$n+=1;			
+			$vt=0;
+			if($bill_type=='"v0"'){
+				$vt=((float) $v["vat_p"]/100)* (float) $v["sum"];
+				$vat+=$vt;
+				$sum+=$v["sum"]+$vt;
+			}else{
+				$vt= (float) $v["sum"] - ((float) $v["sum"]*100/(100+(float) $v["vat_p"]));
+				$vat+=$vt;
 				$sum+=$v["sum"];
+			}
+		}
+		$py=json_decode($_POST["payu"],true);
+		$py_n=0;
+		$py_sum=0;
+		
+		foreach($py as $k=>$v){
+			if($v>0){
+				$py_n+=1;
+				$py_sum+=$v;
 			}
 		}
 		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
@@ -102,11 +126,20 @@ class bills_in extends bills{
 		$sql["set"]="SELECT @result:=0,
 			@message_error:='',
 			@sku:=".$sku.",
+			@bill_no:=".$bill_no.",
+			@bill_type:=".$bill_type.",
+			@bill_date:=".$bill_date.",
+			@payu_json0:='".$payu_json0."',
+			@payu_json:=".$payu_json.",
+			@icon_arr:=".$this->getStringSqlSet(json_encode($icon_arr)).",
 			@lot='',
 			@jspd:=".$jspd.",
 			@pd_length:=0,
 			@note:=".$note.",
 			@n:=".$n.",
+			@sum:=".$sum.",
+			@py_n:=".$py_n.",
+			@py_sum:=".$py_sum.",
 			@sum:=".$sum.",
 			@TEST:='',
 			@ischange:=0,
@@ -118,7 +151,11 @@ class bills_in extends bills{
 		$sql["check"]="
 			IF @n = 0 THEN 
 				SET @message_error='เกิดขอผิดพลาด จำนวนรายการสินค้า ที่ส่งมา 0 รายการ';
-			END IF;			
+			ELSEIF (@py_sum - @sum) >= @py_n*0.99 THEN
+				SET @message_error=CONCAT('เกิดขอผิดพลาด จำนวนที่ชำระ(',@py_sum,') มากกว่า ราคารวมสินค้า (',@sum,')');
+			ELSEIF (@sum - @py_sum) >= @py_n*0.99 THEN
+				SET @message_error=CONCAT('เกิดขอผิดพลาด จำนวนที่ชำระ(',@py_sum,') น้อยกว่า ราคารวมสินค้า (',@sum,')');
+			END IF;		
 		";
 		$sql["run"]="
 			BEGIN NOT ATOMIC 
@@ -128,7 +165,11 @@ class bills_in extends bills{
 					__r INT,
 					date_reg TIMESTAMP );
 				IF LENGTH(@message_error)=0 THEN
-					UPDATE bill_in SET n=@n,sum=@sum,user_edit=@user,note=@note WHERE sku=".$sku.";
+					UPDATE bill_in 
+						SET 	n=@n						,sum=@sum				,user_edit=@user				,bill_no=@bill_no,
+								bill_type=@bill_type	,bill_date=@bill_date	,payu_json	=@payu_json	,payu_key_json=@payu_key_json,
+								icon_arr=JSON_UNQUOTE(@icon_arr)	,note=@note 
+						WHERE sku=".$sku.";
 					SET @pd_length=JSON_LENGTH(@jspd);
 					SELECT r_,_r,date_reg INTO r.r__, r.__r,r.date_reg FROM bill_in WHERE sku=".$sku.";
 					SET @date=r.date_reg;
@@ -391,6 +432,7 @@ class bills_in extends bills{
 				@message_error:='',
 				@sku:=".$sku.",
 				@note:=(SELECT note FROM `bill_in` WHERE `sku`=@sku LIMIT 1),
+				@icon_gl:=(SELECT icon_gl FROM `bill_in` WHERE `sku`=@sku LIMIT 1),
 				@sum:=(SELECT (SUM(bill_in_list.n)-SUM(bill_in_list.balance)) 
 					FROM bill_in_list 
 					LEFT JOIN bill_in
@@ -408,12 +450,18 @@ class bills_in extends bills{
 					SELECT r_,_r INTO r.r__,r.__r FROM bill_in WHERE sku=@sku LIMIT 1;
 					DELETE FROM `bill_in_list` WHERE  id>=r.r__ AND id<=r.__r AND `bill_in_sku`=@sku ;
 					DELETE FROM `bill_in` WHERE `sku`=@sku  LIMIT 1;
+					DELETE FROM `gallery` WHERE `gl_sku`=@sku;
 					SET @result=1;
 				END IF;
 			END;";
-			$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@sku AS `sku`,@note AS note,@sum";
+			$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@sku AS `sku`,@note AS note,@sum,@icon_gl AS `icon_gl`";
 			$se=$this->metMnSql($sql,["result"]);
 			if($se["result"]&&$se["data"]["result"][0]["result"]==1){
+				$files=json_decode($se["data"]["result"][0]["icon_gl"]);
+				if(!is_array($files)){
+					$files=[];
+				}
+				$this->delImgs($files);
 				header('Location:?a=bills&c=in&ed='.$_POST["sku"]);
 			}else if($se["message_error"]!=""){
 				$error=$se["message_error"]."**";
@@ -426,6 +474,23 @@ class bills_in extends bills{
 		if($error!=""){
 			$this->deletePage($error,$note);
 		}		
+	}
+	private function delImgs(array $files):void{
+		print_r($files);
+		$sq=[16,32,64,128,256,512,1024];
+		for($g=0;$g<count($files);$g++){
+			$file=$this->gallery_dir."/".$files[$g];
+			echo $file."*";
+			if(file_exists($file)){
+				unlink($file);
+			}
+			for($i=0;$i<count($sq);$i++){
+				$file=$this->gallery_dir."/".$sq[$i]."x".$sq[$i]."_".$files[$g];
+				if(file_exists($file)){
+					unlink($file);
+				}
+			}
+		}
 	}
 	private function deletePage(string $error,string $note):void{
 		$this->addDir("","ลบ ".htmlspecialchars($note));
@@ -530,6 +595,7 @@ class bills_in extends bills{
 		$product_list_id=$this->key("key",7);
 		$gallery_list_id=$this->key("key",7);
 		$gallery_gl_list_id=$this->key("key",7);
+		echo $sku."**";
 		echo '<form class="form100"  name="billsin" method="post">
 			<input type="hidden" name="sku" value="'.htmlspecialchars($sku).'" />
 			<input type="hidden" id="'.$payu_list_id.'" name="payu_list" value="'.$payu.'" />
@@ -630,7 +696,7 @@ class bills_in extends bills{
 		$this->gall=new gallery("bill_in","sku",$dt[0]["sku"],"billsin",$gal_id,$gallery_list_id,$gallery_gl_list_id,"Bi.icon");	
 		$this->gall->writeForm();	
 		echo '
-		<input type="button" onclick="Bi.billsinSumit('.$et.')" value="แก้ไข นำเข้าสินค้า" /></form>';
+		<input type="button" onclick="Bi.billsinSumit(true)" value="แก้ไข นำเข้าสินค้า" /></form>';
 	}
 	private function billsinCheck(string $type="insert"):array{
 		$re=["result"=>false,"message_error"=>""];
@@ -690,7 +756,7 @@ class bills_in extends bills{
 		$pop=["po","partner"];
 		$po_partner=(isset($_GET["po_partner"])&&in_array($_GET["po_partner"],$pop))?htmlspecialchars($_GET["po_partner"]):"partner";
 		echo '<form class="form100"  name="billsin" method="post">
-			<input type="hidden" name="sku_root" value="" />
+			<input type="hidden" name="sku" value="" />
 			<input type="hidden" id="'.$payu_list_id.'" name="payu_list" value="'.$payu.'" />
 			<input type="hidden" id="'.$product_list_id.'" name="product_list" value="'.$product.'" />
 			<input type="hidden" name="po_partner" value="'.$po_partner.'" />
@@ -784,7 +850,7 @@ class bills_in extends bills{
 			<script type="text/javascript">/*F.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')*/</script>
 		</div>
 		<br /><br />
-		<input type="button" onclick="Bi.billsinSumit()" value="นำเข้าสินค้าเพิ่ม" /></form>';
+		<input type="button" onclick="Bi.billsinSumit(false)" value="นำเข้าสินค้าเพิ่ม" /></form>';
 		
 		if($group=="partner"){
 			$pd=$this->loadProductPartner($sku_root);
@@ -1015,7 +1081,7 @@ class bills_in extends bills{
 			echo '<tr colspan="6"><td class="c">
 				<h3><b>รูปภาพใบเสร็จ</b></h3>';
 			for($i=0;$i<count($icon_arr);$i++){
-				echo '<div class="billinarr_icon"><img src="img/gallery/256x256_'.$icon_arr[$i].'" onclick="G.view(this)"></div>';
+				echo '<div class="billinarr_icon"><img class="viewimage" src="img/gallery/256x256_'.$icon_arr[$i].'" onclick="G.view(this)"></div>';
 			}
 			echo '</td></tr>';
 		}
@@ -1104,6 +1170,17 @@ class bills_in extends bills{
 			$t.=",".$k.",";
 		}
 		return $t;
+	}
+	protected function setPropR(string $prop):string{
+		$ar = [];
+		if(strlen(trim($prop))>2){
+			$prop =trim($prop);
+			$ar = explode(",,",substr($prop,2,-2));
+		}
+		if($ar[0]==""){
+			$ar=[];
+		}
+		return json_encode($ar);
 	}
 }
 ?>

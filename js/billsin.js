@@ -491,7 +491,7 @@ class billsin extends main{
 			dt[n_list]={"name":name,"sku_root":sku_root,"n":n,"sum":sum,"vat_p":vat_p,"act":act}
 			n_list+=1
 		}
-		if( n_list==0&&editable){//alert(n_list+"*"+editable)
+		if( n_list==0&&!editable){//alert(n_list+"*"+editable)
 			alert("ไม่มีสินค้านำเข้า คุณยังไม่ได้เลือก")
 		}else if(!error){
 			let note=null
@@ -501,10 +501,11 @@ class billsin extends main{
 			formData.append("c","bills_in")				
 			formData.append("product",JSON.stringify(dt))	*/
 			let payu=this.getPayuOb()
+			let edible=editable?"edit":"fill"
 			let dt2={"data":{"a":"bills","submith":"clicksubmit","c":"bills_in","product":JSON.stringify(dt),
 				"bill_no":f.bill_no.value,"pn":f.pn.value,
 				"bill_date":f.bill_date.value,"bill_type":f.bill_type.value,"note":f.note.value,"payu":JSON.stringify(payu),
-				"b":"fill"},
+				"b":edible,"sku":f.sku.value,gallery_list:f.gallery_list.value},
 				"result":Bi.billsinSaveResult,"error":Bi.billsinSaveError}	
 			M.l(dt)
 			let patt = /^([1-9])[0-9]{3}-(0|1)[0-9]-(0|1|2|3)[0-9]$/g;
@@ -569,9 +570,11 @@ class billsin extends main{
 			let data=re["data"]["sku"]
 			let url_to="?a=bills&c=in"
 			let url_key=form.get("url_key")
-			Ful.fileUploadImgs('bill_in','sku',data,'Bi.icon',url_to,'ed')
-			/*alert("สำเร็จ")
-			let ed=re["data"]["sku"]
+			let b=form.get("b")
+			let uploadtype=(b=="fill")?"new":"add"
+			Ful.fileUploadImgs(uploadtype,'bill_in','sku',data,'Bi.icon',url_to,'ed')
+			alert("สำเร็จ")
+			/*let ed=re["data"]["sku"]
 			location.href="?a=bills&c=in&ed="+ed*/
 		}else{
 			Bi.billsinSaveError(re,form,bt)

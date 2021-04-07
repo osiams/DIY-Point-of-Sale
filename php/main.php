@@ -51,9 +51,9 @@ class main{
 			],
 			"gallery"=>[
 				"name"=>"gallery",
-				"column"=>["id","sku_key","name","a_type","mime_type","md5","user","size","width","height","date_reg"],
+				"column"=>["id","sku_key","gl_key","name","a_type","mime_type","md5","user","size","width","height","date_reg"],
 				"primary"=>"sku_key",
-				"index"=>["a_type","mime_type","size","width","height"]
+				"index"=>["gl_key","a_type","mime_type","size","width","height"]
 			],
 			"group"=>[
 				"name"=>"group",
@@ -292,6 +292,7 @@ class main{
 			"email"=>["name"=>"อีเมล","type"=>"CHAR","length_value"=>30],
 			"fax"=>["name"=>"แฟ็กซ์","type"=>"CHAR","length_value"=>15],
 			"float"=>["name"=>"จำนวน","type"=>"FLOAT","length_value"=>[10,4]],
+			"gl_key"=>["name"=>"รหัสห้องภาพ","type"=>"CHAR","length_value"=>25],
 			"group_key"=>["name"=>"กลุ่มอ้างอิง","type"=>"CHAR","length_value"=>25],
 			"group_root"=>["name"=>"กลุ่มราก","type"=>"CHAR","length_value"=>25],
 			"h"=>["name"=>"เปลี่ยน","type"=>"INT","length_value"=>10],
