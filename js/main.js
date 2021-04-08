@@ -348,10 +348,12 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 		}
 	}
 	dialogClose(id,ofc=1){
-		this.id(id).parentNode.removeChild(this.id(id))
-		this.id(id+"_dialog").parentNode.removeChild(this.id(id+"_dialog"))
-		if(ofc==1){
-			this.b.style.overflow = "auto"
+		if(this.id(id)!=undefined){
+			this.id(id).parentNode.removeChild(this.id(id))
+			this.id(id+"_dialog").parentNode.removeChild(this.id(id+"_dialog"))
+			if(ofc==1){
+				this.b.style.overflow = "auto"
+			}
 		}
 	}
 	dialogConfirm(dt){

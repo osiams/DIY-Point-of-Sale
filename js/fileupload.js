@@ -160,7 +160,7 @@ class fileupload extends main{
 		//M.l(eval(gl_obj_str))
 		//M.l(gl_obj)
 		let count=Object.keys(gl_obj).length		
-		if(uploadtype=="delete"){alert("jjjjjjjjjjjjjjjjjj")
+		if(uploadtype=="delete"){
 			let count_gl=Object.keys(gl_obj).length	
 			if(count_gl>0){
 				this.fileDeleteImgsPc(1,count)

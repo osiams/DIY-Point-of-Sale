@@ -97,7 +97,7 @@ class form_selects extends main{
 			echo '<table id="'.$this->id.'" class="table_select_partner">
 				<tr><td colspan="3" class="r"><input type="button" value="เพิ่ม/แก้ไข" onclick="Fsl.ctAddPartner(\'partner\',null,\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')" /></td></tr>
 			</table>';
-			echo '<script type="text/javascript">Fsl.setLoadPartner(\'partner\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')</script>';
+			echo '<script type="text/javascript">let value='.$json_value.';Fsl.setLoadPartner(\'partner\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\',value)</script>';
 		}else if($this->a=="payu"){
 			echo '<table id="'.$this->id.'" class="table_select_payu r">
 				<tr><td colspan="4" class="r">

@@ -20,9 +20,10 @@
 .selected_list_partner > div > div:nth-child(5){display:grid;align-content: center;justify-content: center;height:30px;width:30px;background-color:gray;color:white;cursor:pointer;border-radius: 15px 15px 15px 15px;margin:0 auto;}
 .selected_list_partner > div > div:nth-child(5):hover{background-color:red;}
 
-.selected_list_partner_search{display:grid;grid-template-columns:100px auto 70px;grid-gap:3px;padding:3px 3px;background-color:LightGray}
+.selected_list_partner_search{display:grid;grid-template-columns:100px auto 70px;grid-gap:3px;padding:3px 3px;background-color:LightGray;position:relative}
 .selected_list_partner_search > select:nth-child(1){width:100%}
-.selected_list_partner_search > input:nth-child(2){width:calc(100% - 6px)}
+.selected_list_partner_search > input:nth-child(2){width:calc(100% - 31px);padding-right:25px;}
+.selected_list_partner_search > div:nth-child(4){position:absolute;right:85px;top:10px;width:calc(30px;);cursor:pointer;font-weight:bold;}
 
 .table_select_payu{width:calc(100% - 8px);border-radius: 3px 3px 3px 3px;border-spacing:0px;border:1px solid gray;min-height:32px;cursor:pointer;}
 .table_select_payu td:nth-child(1){width:20px;}

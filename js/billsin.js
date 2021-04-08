@@ -100,7 +100,6 @@ class billsin extends main{
 				
 				sun+=sl
 				vat+=sm-sl
-				M.l("vat="+vat)
 				sum+=sm
 			}else{
 				sun+=sm
@@ -184,7 +183,6 @@ class billsin extends main{
 		window.parent.billsinSelect(a)
 	}
 	productSelect(a,editable=true){
-		//M.l(a)
 		let step="1"
 		if(a.s_type!="p"){
 			step="any"
@@ -298,7 +296,6 @@ class billsin extends main{
 		if(a.s_type!="p"){
 			step="any"
 		}
-		//M.l(a)
 		let	balance=a.balance
 		if(M.id(a.sku_root)!=undefined){
 			alert("❌\n"+a.name+"\nเลือกไปแล้ว อยู่อันดับที่ "+M.id(a.sku_root).innerHTML)
@@ -453,7 +450,6 @@ class billsin extends main{
 		if(e==undefined){
 			fr.src="?a=product&b=select&fl="+f.fl.value+"&tx="+f.tx.value+"&for=billsin"
 		}else{
-			M.l("up="+f.tx.value)
 			let k=e.key.toLowerCase()
 			if(k=="enter"){
 				fr.src="?a=product&b=select&fl="+f.fl.value+"&tx="+f.tx.value+"&for=billsin"
@@ -502,12 +498,15 @@ class billsin extends main{
 			formData.append("product",JSON.stringify(dt))	*/
 			let payu=this.getPayuOb()
 			let edible=editable?"edit":"fill"
+			let gl_list_value=""
+			if(f.gallery_list!=undefined){
+				gl_list_value=f.gallery_list.value
+			}
 			let dt2={"data":{"a":"bills","submith":"clicksubmit","c":"bills_in","product":JSON.stringify(dt),
 				"bill_no":f.bill_no.value,"pn":f.pn.value,
 				"bill_date":f.bill_date.value,"bill_type":f.bill_type.value,"note":f.note.value,"payu":JSON.stringify(payu),
-				"b":edible,"sku":f.sku.value,gallery_list:f.gallery_list.value},
+				"b":edible,"sku":f.sku.value,gallery_list:gl_list_value},
 				"result":Bi.billsinSaveResult,"error":Bi.billsinSaveError}	
-			M.l(dt)
 			let patt = /^([1-9])[0-9]{3}-(0|1)[0-9]-(0|1|2|3)[0-9]$/g;
 			let date_result = patt.test(f.bill_date.value);
 			let sumPay1=this.getPay1()

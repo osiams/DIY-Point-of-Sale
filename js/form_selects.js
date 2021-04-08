@@ -5,6 +5,7 @@ class form_selects{
 		this.partner_old={}
 		this.partner={}
 		this.search={}
+		this.delsearch=0
 	}
 	run(){
 
@@ -81,9 +82,12 @@ class form_selects{
 					this.main.end(pn_sh,[op_sh])
 				}
 			let ipshid="input_search_partner_id_"+display_id
-			let its=this.main.ce("input",{"id":ipshid,"type":"text"})
-			let ibs=this.main.ce("input",{"type":"button","value":"🔍","onclick":"Fsl.selectPartnerSearch('"+a+"','"+callback+"','"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"')"})		
-		this.main.end(cpn,[pn_sh,its,ibs])
+			let dibtsearch="dlbtsearch"
+			let its=this.main.ce("input",{"id":ipshid,"type":"text","onkeyup":"Fsl.isEnter(event,this,'"+dibtsearch+"')"})
+			let itd=this.main.ce("div",{"id":"ipshidet","onclick":"Fsl.setValueDel('"+ipshid+"')"})
+				this.main.end(itd,[this.main.cn("↩")])
+			let ibs=this.main.ce("input",{"id":dibtsearch,"type":"button","value":"🔍","onclick":"Fsl.selectPartnerSearch('"+a+"','"+callback+"','"+oshid+"','"+ipshid+"','"+form_name+"','"+dialog_id+"','"+display_id+"','"+partner_list_id+"')"})		
+		this.main.end(cpn,[pn_sh,its,ibs,itd])
 		let ct=this.main.ce("div",{})
 			let ct0 = this.main.ce("div",{"id":"ct0_partner_"+display_id})
 			let fron = this.main.ce("form",{"name":rid,"style":"width:100%;text-align:center;"})
@@ -133,6 +137,16 @@ class form_selects{
 			this.main.rmc_all(this.main.id("ct0_partner_"+display_id))
 			this.main.end(this.main.id("ct0_partner_"+display_id),[fron,div_page])	
 			//this.main.id("ct0_partner_"+display_id).appenChild()
+		}
+	}
+	setValueDel(id){
+		let o=M.id(id)
+		o.value=o.value.substr(0,o.value.length-1)
+	}
+	isEnter(event,did,id){
+		let key=event.code
+		if(key=="NumpadEnter"||key=="Enter"){	
+			this.main.id(id).click()
 		}
 	}
 	selectPartnerSearch(a,callback,option_search_id,input_search_id,form_name,dialog_id,display_id,partner_list_id,page=1,lid=0){
@@ -498,6 +512,7 @@ class form_selects{
 			"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"js_value":JSON.stringify(ob_value)},
 			"result":Fsl.getListPartnerLoadResult,"error":Fsl.getListPartnerLoadError
 		}
+		M.l(dt)
 		this.main.setFec(dt)
 	}
 	getListPartnerLoadResult(re,form,bt){
@@ -512,11 +527,15 @@ class form_selects{
 	}
 	loadSetPartner(re,form,bt){
 		let a=form.get("b")
+		
 		let partner_list=form.get("partner_list")
+		
 		let ob_value=JSON.parse(form.get("js_value"))
+		
 		let display_id = form.get("display_id")
 		let dt=re["data"]
 		let st=F.valueListToArray(partner_list)
+		
 		for (let i=0;i<dt.length;i++) {
 			let value=ob_value[dt[i]["sku_root"]]!=undefined?ob_value[dt[i]["sku_root"]]:0
 			this.partner[display_id][dt[i]["sku_root"]]={
@@ -525,7 +544,9 @@ class form_selects{
 				"value":value
 			}
 		}	
+		
 		this.setPartnerOld(display_id)
+		
 		if(a=="partner"){
 			this.selectPartnerOKAppend(a,display_id)	
 		}else if(a=="payu"){

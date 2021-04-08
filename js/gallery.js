@@ -70,14 +70,14 @@ class gallery{
 		let ct=this.main.ce("div",{})
 			let ct0 = this.main.ce("div",{"id":"ct0_gallery_"+display_id})
 			let fron = this.main.ce("form",{"name":rid,"style":"width:100%;text-align:center;"})
-			let d1 = this.main.ce("div",{"class":"selects_list_gallery"})
+			let d1 = this.main.ce("div",{"id":"select_list_gallery","class":"selects_list_gallery"})
 
 					
 			let gallery_has = F.valueListToArray(gallery_list)
 										
 				for(let i=0;i<arr.length;i++){
 					let ckrid = "checkboxid_"+arr[i]
-					let div1=this.main.ce("div",{"class":"i"+((i%2)+1)})
+					let div1=this.main.ce("div",{"id":"select_"+arr[i],"class":"i"+((i%2)+1)})
 						let ck = this.main.ce("input",{"type":"checkbox","id":ckrid,"name":"checkbox_"+rid,"data-icon":arr[i],"value":arr[i],"onchange":"Gl.selectCkGallery(this,'"+display_id+"')"})
 				
 						if(gallery_has.includes(arr[i]) || this.gallery[display_id].hasOwnProperty(arr[i]) ){
@@ -151,9 +151,7 @@ class gallery{
 		}
 		////////////////////////////////////////--3
 		let gl_val=this.main.id(gallery_gl_list_id)
-		//alert("gl_val="+gl_val.value)
 		let gl=F.valueListToArray(gl_val.value)
-		//M.l(gl)
 		let val=""
 		for(let i=0;i<gl.length;i++){
 			if(gl[i]!=icon_name){
@@ -161,17 +159,25 @@ class gallery{
 			}
 		}
 		gl_val.value=val
-		//alert("gl_val="+gl_val.value)
 		////////////////////////////////////////--4
 		if(Gl.gallery[display_id]!=undefined){
 			if(Gl.gallery[display_id][icon_name]!=undefined){
 				delete Gl.gallery[display_id][icon_name]
 			}
+			if(Gl.gallery_old[display_id][icon_name]!=undefined){
+				delete Gl.gallery_old[display_id][icon_name]
+			}
 		}
 		////////////////////////////////////////--5
-		this.selectGalleryOKAppend(display_id)
-		//let display_id=form.get("display_id")
-		//alert(";display_id="+display_id)
+		let p=this.main.id("select_"+icon_name)
+		if(p!=undefined){
+			p.parentNode.removeChild(p)
+		}
+		////////////////////////////////////////--6
+		let c=this.main.id("div_fileset_div_"+icon_name)
+		if(c!=undefined){
+			c.parentNode.removeChild(c)
+		}
 	}
 	deleteImgGalleryError(re,form,bt){
 		alert("deleteImgGalleryError")
@@ -348,10 +354,8 @@ class gallery{
 	}
 	selectGalleryOKAppend(display_id){
 		let d=this.main.id(display_id)
-		//alert(display_id)
-		M.l(this.gallery[display_id])
 		for (let prop in this.gallery[display_id]) {
-			let div_img=this.main.ce("div",{})
+			let div_img=this.main.ce("div",{"id":"div_fileset_div_"+this.gallery[display_id][prop]["icon"]})
 				let img=this.main.ce("img",{"class":"viewimage","src":"img/gallery/128x128_"+this.gallery[display_id][prop]["icon"],"alt":this.gallery[display_id][prop]["name"],"onerror":"this.src='img/pos/64x64_null.png'","onclick":"G.view(this)" })	
 			this.main.end(div_img,[img])	
 			this.main.end(d,[div_img])	
@@ -571,18 +575,43 @@ class gallery{
 		let title_bar="เพิ่มรูปรูปภาพ"
 		let bts = [
 			{"value":"+ไฟล์รูปภาพ","onclick":"document.getElementById('upload_pic').click()"},
-			{"value":"ยืนยัน","onclick":"Ful.fileUploadImgs('add','"+table+"','"+key+"','"+key_data+"','"+icon_ob+"','','','Gl.addImgGalleryResult(form,icon_name,\\\'"+display_id+"\\\',\\\'"+dialog_id+"\\\',\\\'"+rid+"\\\')','Gl.addImgGalleryError(form,\\\'"+display_id+"\\\',\\\'"+dialog_id+"\\\',\\\'"+rid+"\\\')')"
+			{"value":"ยืนยัน","onclick":"Ful.fileUploadImgs('add','"+table+"','"+key+"','"+key_data+"','"+icon_ob+"','','','Gl.addImgGalleryResult(form,icon_name,\\\'"+display_id+"\\\',\\\'"+dialog_id+"\\\',\\\'"+rid+"\\\',\\\'"+gallery_list_id+"\\\',\\\'"+gallery_gl_list_id+"\\\')','Gl.addImgGalleryError(form,\\\'"+display_id+"\\\',\\\'"+dialog_id+"\\\',\\\'"+gallery_list_id+"\\\',\\\'"+gallery_gl_list_id+"\\\')')"
 			}
 		]
 		M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":title_bar,"width":"250","ofc":0})
 	}
-	addImgGalleryResult(form,icon_name="",display_id,dialog_id,rid){alert(777)	//re,form,bt,display_id,dialog_id,rid
-		let ct=this.main.ce("input",{"value":icon_name})
-		alert(666)
-		this.main.id("ct1_gallery_"+display_id).appendChild(ct)
-		alert(555)
+	addImgGalleryResult(form,icon_name="",display_id,dialog_id,rid,gallery_list_id,gallery_gl_list_id){	//re,form,bt,display_id,dialog_id,rid
+		//let ct=this.main.ce("input",{"value":icon_name})
+		//this.main.id("ct1_gallery_"+display_id).appendChild(ct)
+		//let obj_str = form.get("obj_str")
+		//alert(obj_str)
+		//////////////////-1
+		let d1=this.main.id("select_list_gallery")
+			let ckrid = "checkboxid_"+icon_name
+			let div1=this.main.ce("div",{"id":"select_"+icon_name,"class":"i_new"})
+				let ck = this.main.ce("input",{"type":"checkbox","id":ckrid,"name":"checkbox_"+rid,"data-icon":icon_name,"value":icon_name,"onchange":"Gl.selectCkGallery(this,'"+display_id+"')"})
+				let div_img=this.main.ce("div",{"class":"img96"})
+					let img=this.main.ce("img",{"class":"viewimage","src":"img/gallery/128x128_"+icon_name,"alt":"","onerror":"this.src='img/pos/64x64_null.png'","onclick":"G.view(this,0)"})	
+				this.main.end(div_img,[img])	
+				let boc = this.main.ce("label",{"for":ckrid})		
+					let tn = this.main.cn("")
+				this.main.end(boc,[tn])
+				let s=this.main.ce("div",{"data-rid_close":dialog_id,"onclick":"Gl.select1Gallery(this,'gallery','"+display_id+"','"+gallery_list_id+"')"})
+				this.main.end(s,[this.main.cn("⬆")])
+			this.main.end(div1,[ck,div_img,boc,s])
+		this.main.end(d1,[div1])
+			let obs=d1.parentNode.parentNode.parentNode
+			obs.scrollTo({"top": obs.scrollHeight,"behavior": "smooth" })		
+		////////////////////////////////////////--2
+		let gl_val=this.main.id(gallery_gl_list_id)
+		let gl=F.valueListToArray(gl_val.value)
+		gl.push(icon_name); 
+		let val=""
+		for(let i=0;i<gl.length;i++){
+				val+=","+gl[i]+","
+		}
+		gl_val.value=val
 		Ful.dialogClose(rid,0)
-		alert(444)
 	}
 	addImgGalleryError(form,display_id,dialog_id,rid){//alert(dialog_id)
 		Ful.dialogClose(rid,0)
