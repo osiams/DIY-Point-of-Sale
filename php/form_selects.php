@@ -114,12 +114,22 @@ class form_selects extends main{
 		$sql=[];
 		$sql["get"]="SELECT `id`,`name`,`icon`,`sku`,`sku_root` 
 			FROM `partner` 
-			WHERE `sku_root` IN(".$tin.")
-			ORDER BY `id` DESC ";
+			WHERE `sku_root` IN(".$tin.")";
 		$se=$this->metMnSql($sql,["get"]);
 		if($se["result"]){
 			$re=$se["data"]["get"];
 		}
+		$q=json_decode('['.$tin.']');
+		$dt1=$se["data"]["get"];
+		for($i=0;$i<count($q);$i++){
+			for($j=0;$j<count($dt1);$j++){
+				if($dt1[$j]["sku_root"]==$q[$i]){
+					$re[$i]=$dt1[$j];
+					break;
+				}
+			}
+		}
+		//print_r($re);
 		return $re;
 	}
 	public function writeSetValue(string $display_id,$json_value):void{

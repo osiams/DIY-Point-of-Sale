@@ -9,7 +9,7 @@ class partner extends main{
 		$this->pn_type = ["s"=>"ผู้ผลิต","n"=>"ตัวแทนจำหน่าย"];
 		$this->tp_type = ["0"=>"ต้องไปรับสินค้าเอง","1"=>"ส่งสินค้าถึงร้าน"];
 		$this->od_type = ["s"=>"มีคนมาจด","a"=>"โทรศัพท์มาถาม","o"=>"ออกไปซื้อเอง","t"=>"โทรสั่งซื้อ"];
-		$this->per=3;
+		$this->per=10;
 		$this->page=1;
 		$this->txsearch="";
 		$this->fl="";

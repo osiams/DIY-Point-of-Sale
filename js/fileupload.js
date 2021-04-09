@@ -11,7 +11,7 @@ class fileupload extends main{
 			icon_ref=idr
 			icon_id_str=icon_id.toString()
 			//alert(icon_id_str)
-		}else{alert(88)
+		}else{
 			ic=M.id(icon_id)
 			icon_ref=ic.id
 		}

@@ -2,6 +2,14 @@
 class it extends main{
 	public function __construct(){
 		parent::__construct();
+		$this->it_in_type=[
+			"b"=>["icon"=>"💵","name"=>"ชื้อเข้า"],
+			"c"=>["icon"=>"❌","name"=>"ยกเลิก"],
+			"r"=>["icon"=>"↩️","name"=>"คืนสินค้า"],
+			"m"=>["icon"=>"📥","name"=>"ย้ายเข้า"],
+			"mm"=>["icon"=>"💦","name"=>"แตกสินค้า"],
+			"x"=>["icon"=>"🗑","name"=>"ลบคลังสินค้า"]
+		];
 	}
 	public function run(){
 		$q=["regis","edit","view"];
@@ -759,6 +767,13 @@ class it extends main{
 		}
 		//print_r($se);
 		return $re;
+	}
+	protected function writeBillInType(){
+		echo '<div class="it_note">หมายเหตุ';
+		foreach($this->it_in_type as $k=>$v){
+			echo '<span>'.$v["icon"]." = ".$v["name"].'</span>';
+		}
+		echo '</div>';
 	}
 }
 ?>

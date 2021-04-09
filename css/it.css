@@ -72,3 +72,5 @@ td{vertical-align: middle;}
 #it_view_lot  tr > th:nth-child(9) {word-break: break-all;}
 }
 
+.it_note{padding:10px;text-align:left}
+.it_note > span{padding:2px 10px;}

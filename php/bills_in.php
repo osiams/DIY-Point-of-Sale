@@ -1008,7 +1008,7 @@ class bills_in extends bills{
 			$this->pageHead(["title"=>"รายละเอียด DIYPOS","js"=>["billsin","Bi"],"css"=>["billsin"]]);
 			echo '<div class="content">';
 			if(count($dt)>0){
-				echo '<h2 class="c"> '.htmlspecialchars($dt[0]["note"]).'</h2>';
+				//echo '<h2 class="c"> '.htmlspecialchars($dt[0]["note"]).'</h2>';
 				$aut="";
 				if($dt[0]["in_type"]=="c"||$dt[0]["in_type"]=="r"){
 					$key=$dt[0]["sku"];
@@ -1036,9 +1036,21 @@ class bills_in extends bills{
 		$icon_arr=json_decode($dt[0]["icon_arr"]);
 		echo '<div style="max-width:800px;">
 			'.$aut.'
-			<table class="page r"><tr><td>บันทึกโดย : '.$dt[0]["user_name"].' วันที่ '.$dt[0]["date_reg"].'
-				<br />⏳ผ่านมาแล้ว '.$this->ago(time()-strtotime($dt[0]["date_reg"])).'
-				</td></tr>';
+			<table class="page r">
+				<tr>
+					<td class="c">
+						<h2>ใบนำเข้าสินค้า</h2>
+						<div class="billinview">
+							<div>
+								<div><img src="img/gallery/64x64_'.$dt[0]["partner_icon"].'" /></div>
+								<div><a href="?a=partner&amp;b=details&amp;sku_root='.$dt[0]["partner_sku_root"].'">'.$dt[0]["partner_name"].'</a><br />🧾'.$dt[0]["bill_no"].'</div>
+							</div>
+							<div class="r">บันทึกโดย : '.$dt[0]["user_name"].' วันที่ '.$dt[0]["date_reg"].'
+								<br />⏳ผ่านมาแล้ว '.$this->ago(time()-strtotime($dt[0]["date_reg"])).'
+							</div>
+						</div>
+					</td>
+				</tr>';
 		echo '<tr><td>
 			<table  id="billinlist" class="l"><tr>
 				<th>ที่</th>
@@ -1109,7 +1121,7 @@ class bills_in extends bills{
 				IF(`bill_in_list`.`s_type`='p',bill_in_list.n,bill_in_list.n_wlv) AS `n` ,
 				IF(`bill_in_list`.`s_type`='p',bill_in_list.balance,bill_in_list.balance_wlv) AS `balance`,bill_in_list.sum ,bill_in_list.name,
 				IFNULL(SUM(IF(`bill_in_list2`.`s_type`='p',bill_in_list2.balance,bill_in_list2.balance_wlv)),0) AS `sum_balance`,
-				partner_ref.name AS partner_name,
+				partner_ref.name AS partner_name,partner_ref.sku_root AS partner_sku_root,partner_ref.icon AS partner_icon,
 				unit_ref.name AS unit_name,
 				product_ref.barcode AS barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`,product_ref.vat_p,
 				product.price,product.cost

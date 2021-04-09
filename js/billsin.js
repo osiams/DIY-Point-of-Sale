@@ -573,8 +573,8 @@ class billsin extends main{
 			let uploadtype=(b=="fill")?"new":"add"
 			Ful.fileUploadImgs(uploadtype,'bill_in','sku',data,'Bi.icon',url_to,'ed')
 			alert("สำเร็จ")
-			/*let ed=re["data"]["sku"]
-			location.href="?a=bills&c=in&ed="+ed*/
+			let ed=re["data"]["sku"]
+			location.href="?a=bills&c=in&ed="+ed
 		}else{
 			Bi.billsinSaveError(re,form,bt)
 		}

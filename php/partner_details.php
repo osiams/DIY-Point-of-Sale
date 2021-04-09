@@ -11,16 +11,26 @@ class partner_details extends partner{
 	}
 	private function detailsPage():void{
 		$dt=$this->detailsGetData()["partner"];
-		$pn_name=$dt["name"];
-		$this->addDir("",htmlspecialchars($pn_name));
-		$this->pageHead(["title"=>"คู่ค้า ".htmlspecialchars($pn_name),"css"=>["partner"],"js"=>["partner","Pn"],"run"=>["Pn"]]);
-		echo '<div class="content">
-			<div class="form">
-				<h1 class="c">'.$pn_name.'</h1>';
-		$this->writeContentPartner($dt);		
-		echo '<br />';
-		$this->writeContentProduct();
-		$this->pageFoot();
+		if(count($dt)>0){
+			$pn_name=$dt["name"];
+			$this->addDir("",htmlspecialchars($pn_name));
+			$this->pageHead(["title"=>"คู่ค้า ".htmlspecialchars($pn_name),"css"=>["partner"],"js"=>["partner","Pn"],"run"=>["Pn"]]);
+			echo '<div class="content">
+				<div class="form">
+					<h1 class="c">'.$pn_name.'</h1>';
+			$this->writeContentPartner($dt);		
+			echo '<br />';
+			$this->writeContentProduct();
+			$this->pageFoot();
+		}else{
+			$pn_name="ไม่พบข้อมูลคู่ค้า";
+			$this->addDir("",htmlspecialchars($pn_name));
+			$this->pageHead(["title"=>"คู่ค้า ".htmlspecialchars($pn_name),"css"=>["partner"],"js"=>["partner","Pn"],"run"=>["Pn"]]);
+			echo '<div class="content">
+				<div class="form">
+					<h1 class="c">'.$pn_name.'</h1>';
+			$this->pageFoot();
+		}
 	}
 	private function writeContentPartner(array $dt):void{
 		//print_r($dt);
@@ -116,7 +126,7 @@ class partner_details extends partner{
 			WHERE `sku_root`=".$sku_root.";
 		";
 		$se=$this->metMnSql($sql,["partner"]);
-		if($se["result"]){
+		if($se["result"]&&isset($se["data"]["partner"][0])){
 			$re["partner"]=$se["data"]["partner"][0];
 		}
 		return $re;

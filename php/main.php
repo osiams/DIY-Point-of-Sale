@@ -814,6 +814,7 @@ class main{
 		$not=$note;
 		$note=htmlspecialchars($note);
 		$t="";
+		$nt2_old=$nt2;
 		if($nt2!=""){
 			$nt2="<span class=\"pin\"> 📌  ".htmlspecialchars($nt2)."</span>";
 		}
@@ -822,7 +823,7 @@ class main{
 			if(count($a)==3){
 				//$t.="💰 ซื้อเข้า 🏭".$a[0]." 📅".$a[1]." 🧾".$a[2];
 			}
-			$t.="💵 ".$note;
+			$t.="💵 ".$note.'🧾'.$nt2_old;
 		}else if($type=="c"){
 			$t.="❌ ยกเลิก ".$note."".$nt2;
 		}else if($type=="r"){

@@ -476,7 +476,8 @@ class it_view_lot extends it_view{
 				$tx=$this->billNote("mm",''.$se[$i]["sku"],$se[$i]["note"]);
 				$c="mmm";
 			}else if($se[$i]["in_type"]=="b"){
-				$tx=$this->billNote("b",''.$se[$i]["note"],'');
+				//$tx=$this->billNote("b",''.$se[$i]["note"],'');
+				$tx=$this->billNote("b",''.$se[$i]["partner_name"],$se[$i]["bill_no"]);
 				$c="in";
 			}else if($se[$i]["in_type"]=="x"){
 				$tx=$this->billNote("x",''.$se[$i]["note"],'');
@@ -525,6 +526,7 @@ class it_view_lot extends it_view{
 				</tr>';
 		}
 		echo '</table></form>';
+		$this->writeBillInType();
 		echo '</div></div>';
 	}
 	private function getPdLot(string $sku_root,string $pd):array{
@@ -555,8 +557,10 @@ class it_view_lot extends it_view{
 				bill_in_list.sum,bill_in_list.product_sku_root,
 				bill_in_list.name AS `product_name`,
 				(bill_in_list.sum/(IFNULL(bill_in_list.n,1)*IFNULL(bill_in_list.n_wlv,1))) AS cost,
+				bill_in.bill_no AS bill_no,
 				bill_in.in_type,bill_in.bill,IFNULL(bill_in.note,'')  AS bill_note,
 				bill_in.sku,IFNULL(bill_in.note,'') AS `note`,bill_in.date_reg,
+				partner_ref.name AS partner_name,partner_ref.icon AS partner_icon,
 				product_ref.barcode,product_ref.sku AS product_sku,`product_ref`.`s_type`,
 				IFNULL(product.skuroot1,'') AS skuroot1,IFNULL(product.skuroot1_n,0) AS skuroot1_n,
 				IFNULL(product.skuroot2,'') AS skuroot2,IFNULL(product.skuroot2_n,0) AS skuroot2_n,
@@ -564,6 +568,8 @@ class it_view_lot extends it_view{
 			FROM bill_in_list
 			LEFT JOIN bill_in
 			ON( bill_in_list.bill_in_sku=bill_in.sku)
+			LEFT JOIN partner_ref
+			ON(bill_in.pn_key=partner_ref.sku_key)
 			LEFT JOIN product
 			ON(bill_in_list.product_sku_root=product.sku_root)
 			LEFT JOIN product_ref

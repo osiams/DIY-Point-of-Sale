@@ -54,7 +54,7 @@ class product extends main{
 	}
 	productEdit(sku_root){
 		let f=document.forms.product
-		f.action="?a=product&b=edit"
+		f.action="?a=product&b=edit&url_refer="+encodeURIComponent(window.location.href)
 		f.sku_root.value=sku_root
 		f.submit()
 	}

@@ -51,6 +51,7 @@ div.billsin_note_edit > input{width:98%;text-align:center}
 #billsin  #trsearch > td:nth-child(1) > label  > select{width:100px;}
 #billsin  #trsearch > td:nth-child(1) > label  > input[type="text"]{width:calc(100% - 200px);max-width:360px;}
 
+#billinlist{width:100%;}
 #billinlist tr > td:nth-child(4) > div:nth-child(2){display:none;font-size:12px;color:#555555;text-align:right;padding-right:2px;}
 #billinlist tr > td:nth-child(5) > div:nth-child(2){display:none;font-size:12px;color:#555555;text-align:right;padding-right:2px;}
 @keyframes zoominput {
@@ -104,6 +105,9 @@ div.billsin_note_edit > input{width:98%;text-align:center}
 #billin_view  tr > td:nth-child(3) > div:nth-child(2){display:none;font-size:12px;color:#555555;text-align:right;padding-right:2px;}
 
 
+.billinview{display:grid;grid-template-columns:50% 50%;grid-gap: 2px 2px;padding:2px 2px;}
+.billinview > div:nth-child(1){display:grid;grid-template-columns:64px auto;border-radius: 3px 3px 3px 3px;border:1px solid Gainsboro;grid-gap: 3px 3px;padding:10px;align-content:start;justify-content: start;background-color:OldLace;}
+.billinview > div:nth-child(1) > div:nth-child(2){display:grid;justify-content: start;align-content:start;font-size:1em;text-align:left}
 
 @media screen and (max-width: 640px) {
 #billin_view  tr > td:nth-child(3) > div:nth-child(2){display:block}
@@ -112,4 +116,9 @@ div.billsin_note_edit > input{width:98%;text-align:center}
 
 #billin_view   td:nth-child(6){display:none}
 #billin_view   td:nth-child(7){display:none}
+
+.billinview{display:grid;grid-template-columns:100%;grid-gap: 10px 10px;}
 }
+
+
+

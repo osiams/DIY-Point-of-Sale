@@ -269,8 +269,11 @@ class product extends main{
 				}else if($qe["data"]["result"][0]["result"]==0){
 					$error=$qe["data"]["result"][0]["message_error"];
 				}else if($qe["data"]["result"][0]["result"]==1){
-					 //print_r($qe);
-					header('Location:?a=product&ed='.$_POST["sku_root"]);
+					$url_refer=(isset($_POST["url_refer"]))?$_POST["url_refer"]:"";
+					$pt="/&ed=[0-9a-zA-Z-+\.&\/]{1,25}/";
+					$pr='';
+					$url=preg_replace($pt, $pr,$url_refer)."&ed=".$_POST["sku_root"];
+					header('Location:'.$url);
 				}
 			}
 			if($error!=""){
@@ -336,6 +339,7 @@ class product extends main{
 		return $se;
 	}
 	private function editProductPage($error){
+		$url_refer=(isset($_GET["url_refer"]))?$_GET["url_refer"]:"";
 		$sku_root=(isset($_POST["sku_root"]))?$_POST["sku_root"]:"";
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
 		$sku=(isset($_POST["sku"]))?htmlspecialchars($_POST["sku"]):"";
@@ -364,6 +368,7 @@ class product extends main{
 		echo '			<form  name="edit_product" method="post">
 						<input type="hidden" name="submit" value="clicksubmit" />
 						<input type="hidden" name="sku_root" value="'.$sku_root.'" />
+						<input type="hidden" name="url_refer" value="'.htmlspecialchars($url_refer).'" />
 						<input type="hidden" id="'.$partner_list_id.'" name="partner_list" value="'.$partner.'" />
 						<p><label for="product_regis_name">ชื่อสินค้า</label></p>
 						<div><input id="product_regis_name" type="text" name="name" value="'.$name.'" class="want" /></div>

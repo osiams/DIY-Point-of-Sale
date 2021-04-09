@@ -54,6 +54,7 @@ class product_details extends product{
 		
 	}
 	private function stock(array $dt):void{
+		//print_r($dt);
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
 		echo '<table class="productdetails"><caption>สินค้าคงคลัง ทั้งหมด</caption>
 			<tr><th>ที่</th><th>งวด</th><th>รับเข้า</th><th>คงเหลือ</th></tr>';
@@ -81,7 +82,7 @@ class product_details extends product{
 				$tx=$this->billNote("mm",''.$dt[$i]["note"],'');
 				$c="mmm";
 			}else if($dt[$i]["in_type"]=="b"){
-				$tx=$this->billNote("b",''.$dt[$i]["note"],'');
+				$tx=$this->billNote("b",''.$dt[$i]["partner_name"],$dt[$i]["bill_no"]);
 				$c="in";
 			}else if($dt[$i]["in_type"]=="x"){
 				$tx=$this->billNote("x",''.$dt[$i]["note"],'');
@@ -185,11 +186,15 @@ class product_details extends product{
 				IFNULL(bill_in_list.n_wlv,1) AS `n_wlv` ,
 				IFNULL(IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv),0) AS `balance`,
 				bill_in_list.sum,bill_in_list.product_sku_root,
-				bill_in.in_type,bill_in.bill,IFNULL(bill_in.note,'') AS `note`,
-				bill_in.sku,bill_in.date_reg,it_ref.name  AS `it_name`
+				bill_in.bill_no,bill_in.in_type,bill_in.bill,IFNULL(bill_in.note,'') AS `note`,
+				bill_in.sku,bill_in.date_reg,
+				partner_ref.name AS partner_name,partner_ref.sku_root AS partner_sku_root,
+				it_ref.name  AS `it_name`
 			FROM bill_in_list
 			LEFT JOIN bill_in
 			ON( bill_in_list.bill_in_sku=bill_in.sku)
+			LEFT JOIN partner_ref
+			ON( bill_in.pn_key=partner_ref.sku_key)
 			LEFT JOIN it_ref
 			ON(bill_in_list.stkey=it_ref.sku_key)
 			WHERE  IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)>0 AND bill_in_list.product_sku_root=".$sku_root." ORDER BY bill_in_list.sq DESC ;
