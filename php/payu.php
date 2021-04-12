@@ -11,6 +11,7 @@ class payu extends main{
 		$this->fl="";
 		$this->lid=0;
 		$this->sh="";
+		$this->max_squar=256;
 	}
 	public function run(){
 		$file = "php/class/image.php";
@@ -136,7 +137,7 @@ class payu extends main{
 					$error=$qe["data"]["result"][0]["message_error"];
 				}else if($qe["data"]["result"][0]["result"]==1){
 					 if($img["result"]){
-						$this->img->imgSave($img,$key);
+						$this->img->imgSave($img,$key,$this->max_squar);
 					}
 					header('Location:?a='.$this->a.'&ed='.$_POST["sku_root"]);
 				}
@@ -277,7 +278,7 @@ class payu extends main{
 					$error=$qe["data"]["result"][0]["message_error"];
 				}else if($qe["data"]["result"][0]["result"]==1){
 					if($img["result"]){
-						$this->img->imgSave($img,$key);
+						$this->img->imgSave($img,$key,$this->max_squar);
 					}
 					header('Location:?a='.$this->a.'&ed='.$key);
 				}

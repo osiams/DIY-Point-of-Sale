@@ -512,7 +512,6 @@ class form_selects{
 			"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"js_value":JSON.stringify(ob_value)},
 			"result":Fsl.getListPartnerLoadResult,"error":Fsl.getListPartnerLoadError
 		}
-		M.l(dt)
 		this.main.setFec(dt)
 	}
 	getListPartnerLoadResult(re,form,bt){

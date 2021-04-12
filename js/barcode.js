@@ -230,7 +230,6 @@ class barcode extends main{
 		if(z<1){
 			this.pvo.style.left="-"+((this.pvo.clientWidth-(this.pvo.clientWidth*z))/2)+"px"
 			this.pvo.style.top="-"+((this.pvo.clientHeight-(this.pvo.clientHeight*z))/2)+"px"
-			M.l(this.pvo.clientWidth+","+(this.pvo.clientWidth*z))
 		}else{
 			this.pvo.style.left="0px"
 			this.pvo.style.top="0px"
@@ -306,7 +305,7 @@ class barcode extends main{
 		this.end(ct,[this.cn("👆 เลือกสินค้าใส่")])
 		M.popup(did,ct)*/
 	}
-	productSelect(d,n=null,tx=""){M.l(d)
+	productSelect(d,n=null,tx=""){
 		if(d.s_type!="p"&&d.s_type!="p_wlv"){
 			let v=prompt(tx+"[สินค้าชั่งตวงวัด]\nโปรดใส่จำนวน เป็น " +d.unit)
 			let patt = /^[0-9]{1,10}.?[0-9]{0,10}$/g;
@@ -359,8 +358,6 @@ class barcode extends main{
 	}
 	setConT(d){
 		let mmppx=(this.pvo.clientWidth/parseInt(this.pvo.style.width))
-		//alert( mmppx)
-		M.l(d.for_id)
 		let li=this.id(d.for_id)
 		let lv=[19,24,29,34,49,99]
 		let c=0

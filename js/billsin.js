@@ -571,10 +571,13 @@ class billsin extends main{
 			let url_key=form.get("url_key")
 			let b=form.get("b")
 			let uploadtype=(b=="fill")?"new":"add"
+			let count_img=Object.keys(Bi.icon).length
 			Ful.fileUploadImgs(uploadtype,'bill_in','sku',data,'Bi.icon',url_to,'ed')
-			alert("สำเร็จ")
-			let ed=re["data"]["sku"]
-			location.href="?a=bills&c=in&ed="+ed
+			if(uploadtype=="add"||count_img==0){
+				alert("สำเร็จ")
+				let ed=re["data"]["sku"]
+				location.href="?a=bills&c=in&ed="+ed
+			}
 		}else{
 			Bi.billsinSaveError(re,form,bt)
 		}

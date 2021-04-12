@@ -212,10 +212,24 @@ div.page{margin:2px auto;}
 /* */
 .pwlv{font-size:1.5em;}
 
+/*process*/
+.process{position:absolute;top:0px;left:0px;display:grid;width:100%;height:100%;align-content:center;justify-content:center;background-color:transparent}
+.process > div{display:grid;grid-template-columns:80px auto;background-color:white;padding:10px;grid-gap:10px;box-shadow: 2px 4px 4px gray;}
+.process > div > div:nth-child(1) > div:nth-child(1){width:72px;height:72px;background-color:#eeeeee;border-radius: 36px 36px 36px 36px;margin:0 auto;border:1px solid gray}
+.process > div > div:nth-child(1) > div:nth-child(1) > div{width:6px;height:72px;margin:0 auto;}
+.process > div > div:nth-child(1) > div:nth-child(1) > div > div{clip-path: polygon(50% 0, 100% 32px,50% 36px,0 32px);background-color:red;width:6px;height:36px;position:relative;left:0px;top:4px;}
+.process > div > div:nth-child(1) > code:nth-child(2){text-align:center;font-size:1.2em;font-weight:bold;width:100%;display:block;}
 /*alert,confirm,prompt*/
+.acp_a{display:grid;grid-template-columns:80px auto;min-height:70px;padding:5px;}
+.acp_a > div:nth-child(1){display:block;background-image:url('../img/pos/64x64_warning.png');background-repeat: no-repeat;background-position:center top;min-width:80px;min-height:70px;}
+.acp_a> div:nth-child(2){width:calc(100% - 5px);}
 .acp_c{display:grid;grid-template-columns:80px auto;min-height:70px;padding:5px;}
 .acp_c > div:nth-child(1){display:block;background-image:url('../img/pos/64x64_confirm.png');background-repeat: no-repeat;background-position:center top;min-width:80px;min-height:70px;}
 .acp_c > div:nth-child(2){width:calc(100% - 5px);}
+.acp_p{display:grid;grid-template-columns:80px auto;min-height:70px;padding:5px;}
+.acp_p > div:nth-child(1){display:block;background-image:url('../img/pos/64x64_prompt.png');background-repeat: no-repeat;background-position:center top;min-width:80px;min-height:70px;}
+.acp_p > div:nth-child(2){width:calc(100% - 5px);}
+.acp_p > div:nth-child(2) > input{width:calc(100% - 15px);margin:5px auto;}
 /*view image*/
 .viewimage{cursor:pointer;}
 .vifs{/*display:grid;align-content:center;justify-content:center;*/position:absolute;z-index:1001;top:0px;left:0px;width:100%;height:100%;background-color:black;}

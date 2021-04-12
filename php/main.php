@@ -467,9 +467,17 @@ class main{
 					}
 				}
 				$re["result"]=true;
-				$conn->commit();
+				try{
+					$conn->commit();
+				}catch(PDOException $e){
+
+				}
 			}catch(PDOException $e){
-				//$conn->rollBack();
+				try{
+					$conn->rollBack();
+				}catch(PDOException $e){
+	
+				}
 				//print_r($e->getMessage());
 				//print_r($sql);
 				$re["message_error"]=$e->getMessage();

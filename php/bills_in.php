@@ -450,7 +450,7 @@ class bills_in extends bills{
 					SELECT r_,_r INTO r.r__,r.__r FROM bill_in WHERE sku=@sku LIMIT 1;
 					DELETE FROM `bill_in_list` WHERE  id>=r.r__ AND id<=r.__r AND `bill_in_sku`=@sku ;
 					DELETE FROM `bill_in` WHERE `sku`=@sku  LIMIT 1;
-					DELETE FROM `gallery` WHERE `gl_sku`=@sku;
+					DELETE FROM `gallery` WHERE `gl_key`=@sku;
 					SET @result=1;
 				END IF;
 			END;";
@@ -767,6 +767,8 @@ class bills_in extends bills{
 						<optgroup label="ใบสั่งซื้อ">
 						</optgroup>
 						<optgroup label="คู่ค้า">';
+						
+							echo '<option data-group="partner" value=""></option>';
 							for($i=0;$i<count($pn);$i++){
 								$st=($pn[$i]["sku_root"]==$sku_root)?" selected":"";
 								echo '<option data-group="partner" value="'.$pn[$i]["sku_root"].'"'.$st.'>'.htmlspecialchars($pn[$i]["name"]).'</option>';

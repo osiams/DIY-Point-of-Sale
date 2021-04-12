@@ -7,6 +7,7 @@ class fileupload extends main{
 			"data"=>[],
 			"message_error"=>""
 		];
+		$this->max_squar=["bill_in"=>256,];
 	}
 	public function fetch(){
 		$file = "php/class/image.php";
@@ -31,11 +32,12 @@ class fileupload extends main{
 									$mime=$a[1];
 									$this->re["result"]=true;
 									$this->re["data"]='{"mime":"'.$mime.'"}';
+									$max=(isset($this->max_squar[$_POST["table"]]))?$this->max_squar[$_POST["table"]]:256;
 									if(isset($_POST["uploadtype"])&&$_POST["uploadtype"]=="new"){
 										$se=$this->setIconArr($_POST["table"],$_POST["key"],$_POST["data"],$key,$img,$mime);
 										if($se["result"]){
 											$this->re["result"]=true;
-											$this->img->imgSave($img,$key);
+											$this->img->imgSave($img,$key,$max);
 										}else{
 											$this->re["message_error"]=$se["message_error"];
 										}
@@ -43,7 +45,7 @@ class fileupload extends main{
 										$se=$this->addIconGl($_POST["table"],$_POST["key"],$_POST["data"],$key,$img,$mime);
 										if($se["result"]){
 											$this->re["result"]=true;
-											$this->img->imgSave($img,$key);
+											$this->img->imgSave($img,$key,$max);
 											$this->re["icon_name"]=$se["icon_name"];
 										}else{
 											$this->re["message_error"]=$se["message_error"];
@@ -136,7 +138,7 @@ class fileupload extends main{
 					`icon_gl`	=	@icon_json	
 				WHERE `".$key."`='".$data."';
 				INSERT  INTO `gallery` (
-					`sku_key`		,`gl_sku`		,`name`		,`a_type`		,`mime_type`		,`md5`,
+					`sku_key`		,`gl_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,
 					`user`			,`size`			,`width`		,`height`
 				) VALUES (
 					@sku_key		,\"".$data."\"	,\"".$data."\"		,'billin'		,".$mimefull."				,".$md5.",
@@ -178,7 +180,7 @@ class fileupload extends main{
 					`icon_arr`	=	@icon_json,`icon_gl`	=	@icon_json	
 				WHERE `".$key."`='".$data."';
 				INSERT  INTO `gallery` (
-					`sku_key`		,`gl_sku`		,`name`		,`a_type`		,`mime_type`		,`md5`,
+					`sku_key`		,`gl_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,
 					`user`			,`size`			,`width`		,`height`
 				) VALUES (
 					@sku_key		,\"".$data."\"	,\"".$data."\"		,'billin'		,".$mimefull."				,".$md5.",
@@ -189,17 +191,11 @@ class fileupload extends main{
 		";
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`";
 		$se=$this->metMnSql($sql,["result"]);
+		//print_r($se);
 		if($se["result"]){
 			$re["result"]=$se["data"]["result"][0]["result"];
 			$re["message_error"]=$se["data"]["result"][0]["message_error"];
 		}
 		return $re;
-		/*	INSERT  INTO `gallery` (
-				`sku_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,
-				`user`			,`size`			,`width`		,`height`
-			) VALUES (
-				".$sku_key."	,".$name."		,'payu'		,".$mimefull."				,".$md5.",
-				".$user."		,".$size."		,".$width."		,".$height."
-			);	*/	
 	}
 }

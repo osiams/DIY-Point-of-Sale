@@ -15,6 +15,7 @@ class partner extends main{
 		$this->fl="";
 		$this->lid=0;
 		$this->sh="";
+		$this->max_squar=256;
 	}
 	public function run(){
 		$file = "php/class/image.php";
@@ -195,7 +196,7 @@ class partner extends main{
 					$error=$qe["data"]["result"][0]["message_error"];
 				}else if($qe["data"]["result"][0]["result"]==1){
 					 if($img["result"]){
-						$this->img->imgSave($img,$key);
+						$this->img->imgSave($img,$key,$this->max_squar);
 					}
 					header('Location:?a='.$this->a.'&ed='.$_POST["sku_root"]);
 				}
@@ -362,7 +363,7 @@ class partner extends main{
 					$error=$qe["data"]["result"][0]["message_error"];
 				}else if($qe["data"]["result"][0]["result"]==1){
 					if($img["result"]){
-						$this->img->imgSave($img,$key);
+						$this->img->imgSave($img,$key,$this->max_squar);
 					}
 					header('Location:?a='.$this->a.'&ed='.$key);
 				}
@@ -687,7 +688,7 @@ class partner extends main{
 			}
 			$sn=strlen(trim($se[$i]["sku"]))>0?substr(trim($se[$i]["sku"]),0,15):(mb_substr(trim($se[$i]["name"]),0,15));
 			echo '<tr'.$cm.'><td class="r">'.($se[$i]["id"]).'</td>
-				<td class="l"><div class="img48"><img  class="viewimage" src="img/gallery/64x64_'.$se[$i]["icon"].'"  alt="'.$sn.'" onclick="G.view(this)"  title="เปิดดูภาพ" /></div></td>
+				<td class="l"><div class="img48"><img  class="viewimage" src="img/gallery/64x64_'.$se[$i]["icon"].'"   onerror="this.src=\'img/pos/64x64_null.png\'" alt="'.$sn.'" onclick="G.view(this)"  title="เปิดดูภาพ" /></div></td>
 				<td class="l">'.$sku.'</td>
 				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a></td>
 				<td class="action">

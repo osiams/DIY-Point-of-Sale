@@ -7,6 +7,9 @@ class main{
 	constructor(){
 		this.b=document.body
 		this.film=document.getElementById("film")
+		this.processid="processidxxy"
+		this.processid_tiv="ppp"
+		this.processid_time=0
 		this.zdl=25
 		this.z=1
 		this.CookieName={"ud":null}
@@ -305,7 +308,6 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 			let film =  this.ce("div",{"class":"film","id":rid,"onclick":"M.filmActive(this,'"+rid+"')"})
 				film.style.zIndex = zindex
 			this.end(this.b,[film,dialog])	
-			M.l("window.scrollY = "+window.scrollY)
 			let tp = (data.ct.offsetHeight + 76 + 8)/2 - window.scrollY 
 			let lt = (data.ct.offsetWidth+8)/2 - window.scrollX 
 			/*if(width != ""){
@@ -316,7 +318,7 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 			//alert(data.ct.offsetHeight)
 		}
 	}
-	setDialogSize(did){M.l(did.offsetHeight)
+	setDialogSize(did){
 		let width = (did.offsetWidth > window.innerWidth)?window.innerWidth:did.offsetWidth
 		width = (width < did.childNodes[2].childNodes[0].offsetWidth+8)?did.childNodes[2].childNodes[0].offsetWidth+8:width
 		let height = (did.offsetHeight > window.innerHeight)?window.innerHeight:did.offsetHeight	
@@ -347,12 +349,15 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 			did.classList.add("dialog_active1");
 		}
 	}
-	dialogClose(id,ofc=1){
+	dialogClose(id,ofc=1,idfc=""){
 		if(this.id(id)!=undefined){
 			this.id(id).parentNode.removeChild(this.id(id))
 			this.id(id+"_dialog").parentNode.removeChild(this.id(id+"_dialog"))
 			if(ofc==1){
 				this.b.style.overflow = "auto"
+			}
+			if(idfc!=""&&this.id(idfc)!=undefined){
+				this.id(idfc).focus()
 			}
 		}
 	}
@@ -363,6 +368,10 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 		let ofc=dt.hasOwnProperty("ofc")?dt.ofc:1
 		let callback=dt.hasOwnProperty("callback")?dt.callback:""
 		let width=dt.hasOwnProperty("width")?dt.width:250
+		let win_width=window.innerWidth
+		if(width> win_width){
+			width =  win_width-10
+		}
 		let ct=this.ce("div",{"class":"acp_c"})
 			let d1=this.ce("div",{})
 			let d2=this.ce("div",{})
@@ -374,6 +383,115 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 			{"value":"ตกลง","onclick":callback}
 		]
 		this.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":title,"ofc":ofc,"width":width})
+	}
+	dialogPrompt(dt){
+		let rid=dt.hasOwnProperty("rid")?dt.rid:this.rid()
+		let title=dt.hasOwnProperty("title")?dt.title:"โปรดยืนยัน"
+		let msg=dt.hasOwnProperty("msg")?dt.msg:""
+		let ofc=dt.hasOwnProperty("ofc")?dt.ofc:1
+		let callback=dt.hasOwnProperty("callback")?dt.callback:""
+		let callback_ip=dt.hasOwnProperty("callback")?"if(F.isEnter(event)){if(!this.readOnly){this.readOnly=true;"+callback+"}else{this.readOnly=false}}else{this.readOnly=false;}":""
+		//let callback_ip=dt.hasOwnProperty("callback")?"if(F.isEnter(event)){this.disabled=true;"+callback+"}":""
+		let width=dt.hasOwnProperty("width")?dt.width:250
+		let win_width=window.innerWidth
+		if(width> win_width){
+			width =  win_width-10
+		}
+		let id="prompt_input_"+rid
+		let ct=this.ce("div",{"class":"acp_p"})
+			let d1=this.ce("div",{})
+			let d2=this.ce("div",{})
+				let ip=this.ce("input",{"id":id,"type":"text","onkeyup":callback_ip,"onclick":"this.readOnly=false;this.focus()"})
+			this.end(d2,[this.cn(msg),ip])
+		this.end(ct,[d1,d2])
+		let title_bar=title
+		let bts = [
+			{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"',"+ofc+")"},
+			{"value":"ตกลง","onclick":callback}
+		]
+		this.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":title,"ofc":ofc,"width":width})
+		this.id(id).focus()
+	}
+	dialogAlert(dt){
+		let rid=dt.hasOwnProperty("rid")?dt.rid:this.rid()
+		let title=dt.hasOwnProperty("title")?dt.title:window.location.hostname+" บอกว่า"
+		let msg=dt.hasOwnProperty("msg")?dt.msg:""
+		let ofc=dt.hasOwnProperty("ofc")?dt.ofc:1
+		let callback=dt.hasOwnProperty("callback")?dt.callback:""
+		let width=dt.hasOwnProperty("width")?dt.width:250
+		let win_width=window.innerWidth
+		if(width> win_width){
+			width =  win_width-10
+		}
+		let id="alert_"+rid
+		let ct=this.ce("div",{"class":"acp_a"})
+			let d1=this.ce("div",{})
+			let d2=this.ce("div",{})
+			this.end(d2,[this.cn(msg)])
+		this.end(ct,[d1,d2])
+		let title_bar=title
+		let bts = [
+			{"id":id,"value":"ตกลง","onclick":callback}
+		]
+		this.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":title,"ofc":ofc,"width":width})
+		this.id(id).focus()
+	}
+	process(display=1,ofc=1,stat=0,msg=""){
+		if(display==1){
+			M.processid_time=0
+			let ct=this.ce("div",{"id":this.processid,"class":"process"})
+				let d=this.ce("div",{})
+					let d1=this.ce("div",{})
+						let e1=this.ce("div",{})
+							let f=this.ce("div",{"id":this.processid+"_pointer"})
+								let g=this.ce("div",{})
+							this.end(f,[g])
+						this.end(e1,[f])
+						let e2=this.ce("code",{"id":this.processid+"_time"})
+						this.end(e2,[this.cn("00:00")])
+					this.end(d1,[e1,e2])
+					let d2=this.ce("div",{"id":this.processid+"_msg"})
+					this.end(d2,[this.cn(msg)])
+				this.end(d,[d1,d2])
+			this.end(ct,[d])
+			this.end(this.b,[ct])
+			M.processid_tiv=setInterval(M.processSet, 80,0)
+		}else{
+			clearInterval(M.processid_tiv)
+			if(stat==1){
+				let o=this.id(this.processid+"_msg")
+				this.rmc_all(o)
+				let p=this.ce("p",{})
+				this.end(p,[this.cn("✔ สำเร็จ")])
+				o.appendChild(p)
+				let ip=this.ce("input",{"type":"button","value":"ปิด","onclick":"M.process(0,"+ofc+")"})
+				o.appendChild(ip)
+			}else{
+				this.id(this.processid).parentNode.removeChild(this.id(this.processid))
+				if(ofc==1){
+					this.b.style.overflow = "auto"
+				}
+			}
+		}
+	}
+	processSet(){
+		M.processid_time+=80
+		if(M.id(M.processid)!=undefined){
+			let t=M.processTx(M.processid_time)
+			let b=(t[0]/60)*360
+			b=Math.floor(b)
+			M.id(M.processid+"_pointer").style.transform="rotate("+b+"deg)";
+			let s=t[0]<10?" "+t[0]*1:t[0]
+			M.id(M.processid+"_time").innerHTML=s+"."+t[1]+" วินาที"
+		}
+		
+	}
+	processTx(s){
+		let a=Math.floor(s/1000)
+		let b=(s%1000)/10
+		let t1=a<10?"0"+a:a
+		let t2=b<10?"0"+b:b
+		return [t1,t2]
 	}
 }
 class gpu extends main {
@@ -719,5 +837,13 @@ class F{
 			re= value.substring(1, value.length-1).split(",,")
 		}
 		return re
+	}
+	static isEnter(event){
+		let key=event.code
+		if(key=="NumpadEnter"||key=="Enter"){	
+			return true
+		}else{
+			return false
+		}
 	}
 }

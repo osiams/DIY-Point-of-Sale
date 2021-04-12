@@ -49,7 +49,7 @@ class image{
 		}
 		return $re;
 	}
-	public function imgSave(array $dt,string $sku_key):array{
+	public function imgSave(array $dt,string $sku_key,int $max_squar=256):array{
 		$re=array(
 			"result"=>false
 		);
@@ -71,46 +71,48 @@ class image{
 			}	
 					
 			for($i=0;$i<count($dt["squar"]);$i++){
-				$target_file=$this->dir."/".$dt["squar"][$i]."x".$dt["squar"][$i]."_".$sku_key.".".$this->dot[$dt["mime"]];
-				//echo $target_file;
-				$new_width=$dt["squar"][$i];
-				$new_height=$dt["squar"][$i];			
-				if($dt["width"]>=$dt["height"]){
-					$new_height=($dt["height"]/$dt["width"])*$new_width;
-				}else{
-					$new_width=($dt["width"]/$dt["height"])*$new_height;
-				}
+				if(($dt["width"]>=$dt["squar"][$i]||$dt["height"]>=$dt["squar"][$i])||$dt["squar"][$i]<=$max_squar){
+					$target_file=$this->dir."/".$dt["squar"][$i]."x".$dt["squar"][$i]."_".$sku_key.".".$this->dot[$dt["mime"]];
+					//echo $target_file;
+					$new_width=$dt["squar"][$i];
+					$new_height=$dt["squar"][$i];			
+					if($dt["width"]>=$dt["height"]){
+						$new_height=($dt["height"]/$dt["width"])*$new_width;
+					}else{
+						$new_width=($dt["width"]/$dt["height"])*$new_height;
+					}
 
-				$thumb    = imagecreatetruecolor($new_width, $new_height);
-				if($dt["mime"]=="image/png"){
-					$background = imagecolorallocate($thumb , 0, 0, 0);
-					imagecolortransparent($thumb, $background);
-					imagealphablending($thumb, false);
-					imagesavealpha($thumb, true);
+					$thumb    = imagecreatetruecolor($new_width, $new_height);
+					if($dt["mime"]=="image/png"){
+						$background = imagecolorallocate($thumb , 0, 0, 0);
+						imagecolortransparent($thumb, $background);
+						imagealphablending($thumb, false);
+						imagesavealpha($thumb, true);
+						
+					}else if($dt["type"]==3){
+						//$original = imagecreatefrompng($dt["tmp_name"]);
+						$background = imagecolorallocate($thumb , 0, 0, 0);
+						imagecolortransparent($thumb, $background);
+						imagealphablending($thumb, false);
+						imagesavealpha($thumb, true);
+						
+					}else if($dt["type"]==1){
+						//$original = imagecreatefromgif($dt["tmp_name"]);
+						$background = imagecolorallocatealpha($thumb , 0, 0, 0,127);
+						imagecolortransparent($thumb, $background);
+						imagefill($thumb, 0, 0, $background);
+						imagealphablending($thumb, true);
+					}
 					
-				}else if($dt["type"]==3){
-					//$original = imagecreatefrompng($dt["tmp_name"]);
-					$background = imagecolorallocate($thumb , 0, 0, 0);
-					imagecolortransparent($thumb, $background);
-					imagealphablending($thumb, false);
-					imagesavealpha($thumb, true);
-					
-				}else if($dt["type"]==1){
-					//$original = imagecreatefromgif($dt["tmp_name"]);
-					$background = imagecolorallocatealpha($thumb , 0, 0, 0,127);
-					imagecolortransparent($thumb, $background);
-					imagefill($thumb, 0, 0, $background);
-					imagealphablending($thumb, true);
-				}
-				
-				imagecopyresampled($thumb, $original, 0, 0, 0, 0, $new_width,$new_height, $dt["width"], $dt["height"]);
-				if($dt["type"]==2){
-					imagejpeg($thumb, $target_file,100);
-				}else if($dt["mime"]=="image/png"){
-					imagepng($thumb, $target_file,9);
-					
-				}else if($dt["type"]==1){
-					imagegif($thumb, $target_file,100);
+					imagecopyresampled($thumb, $original, 0, 0, 0, 0, $new_width,$new_height, $dt["width"], $dt["height"]);
+					if($dt["type"]==2){
+						imagejpeg($thumb, $target_file,100);
+					}else if($dt["mime"]=="image/png"){
+						imagepng($thumb, $target_file,9);
+						
+					}else if($dt["type"]==1){
+						imagegif($thumb, $target_file,100);
+					}
 				}
 			}
 			//--รูปดั้งเดิม

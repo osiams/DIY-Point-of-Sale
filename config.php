@@ -2,7 +2,7 @@
 #คำเตือน!! โปรดแก้ไขด้วยความระมัดระวัง
 define("CF", [
 #หน้า index?a=value ทั้งหมดที่มีและใช้งาน
-	"a"=>["product","unit","fetch","me","user","setting","bills","sell","barcode","bill58","ret","it","day","qrc","cd","group","partner","prop","payu","tool","fileupload","gallery"],
+	"a"=>["product","unit","fetch","me","user","setting","bills","sell","barcode","bill58","ret","it","day","qrc","cd","group","partner","prop","payu","tool","fileupload","gallery","factory"],
 	"require" => ["group"=>["prop"],"product"=>["group","prop"]],
 #้ข้อมูลการเชื่อมต่อกับ ฐานข้อมูล MariaDB
 	"server"=>"127.0.0.1",
@@ -28,8 +28,8 @@ define("CF", [
 		["name"=>"-","a"=>["me"]],
 		["name"=>"-","a"=>["me"]],
 		["name"=>"-","a"=>["me"]],
-		["name"=>"ผู้จัดการรร้าน","a"=>["product","unit","fetch","me","user","setting","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop","payu","tool","fileupload","gallery"]],
-		["name"=>"เจ้าของร้าน","a"=>["product","unit","fetch","me","user","setting","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop","payu","tool","fileupload","gallery"]]
+		["name"=>"ผู้จัดการรร้าน","a"=>["product","unit","fetch","me","user","setting","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop","payu","fileupload","gallery"]],
+		["name"=>"เจ้าของร้าน","a"=>["product","unit","fetch","me","user","setting","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop","payu","tool","fileupload","gallery","factory"]]
 	]
 ]);
 #ค่าการอณุญาตการใช้งาน

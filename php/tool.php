@@ -38,6 +38,11 @@ class tool extends main{
 			<div class="content">
 			<h1>'.$this->title.'</h1>
 				<div class="tool_main">
+					<div onclick="Tl.resetFactory()">
+						<div class="icon_tool_reset_to_factory"></div>
+						<div>ตั้งค่าโรงงาน
+						</div>
+					</div>
 					<div onclick="Tl.pdtxtDownload()">
 						<div class="icon_tool_pd_to_data_txt"></div>
 						<div>สินค้าแปลงเป็นข้อมูลข้อความ

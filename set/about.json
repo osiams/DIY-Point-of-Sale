@@ -1,9 +1,9 @@
 {
 	"name":"DIY POS",
 	"version":"0.4",
-	"date":"2021-03-13",
+	"date":"2021-04-12",
 	"description":" DIY POS โปรแกรมขายสินค้าหน้าร้าน ฟรี และ เป็นส่วนตัว",
-	"develop":"PHP 8 , MariaDB 10.4.17 , HTML 5 , CSS 3 , JavaScript ",
-	"server" :" XAMPP 8.0.2 (Apache 2.4.46, MariaDB 10.4.17, PHP 8.0.2)",
-	"contact":"https://www.youtube.com/channel/UC691LQZLsQFYrJLhyI2_MwA\n\nhttps://www.facebook.com/DIYPOS/\n\nhttps://github.com/osiams\n\nhttps://diypos.wordpress.com/"
+	"develop":"PHP 8 , MariaDB 10.4.18 , HTML 5 , CSS 3 , JavaScript ",
+	"server" :" XAMPP 8.0.3 (Apache 2.4.46, MariaDB 10.4.18, PHP 8.0.3)",
+	"contact":"https://www.youtube.com/channel/UC691LQZLsQFYrJLhyI2_MwA\nhttps://www.facebook.com/DIYPOS/\nhttps://github.com/osiams\nhttps://diypos.wordpress.com/"
 }
