@@ -19,6 +19,7 @@ class home extends main{
 		echo ''.$this->os("group",'<div  class="icon icon_group" onclick="location.href=\'?a=group\'">กลุ่มสินค้า</div>').'';
 		echo ''.$this->os("prop",'<div  class="icon icon_prop" onclick="location.href=\'?a=prop\'">คุณสมบัติ</div>').'';
 		echo ''.$this->os("user",'<div  class="icon icon_user" onclick="location.href=\'?a=user\'">ผู้ใช้</div>').'';
+		echo ''.$this->os("member",'<div  class="icon icon_member" onclick="location.href=\'?a=member\'">สมาชิก</div>').'';
 		echo ''.$this->os("partner",'<div  class="icon icon_partner" onclick="location.href=\'?a=partner\'">คู่ค้า</div>').'';
 		echo ''.$this->os("bills",'<div  class="icon icon_bills" onclick="location.href=\'?a=bills\'">ใบ</div>').'';
 		echo ''.$this->os("ret",'<div  class="icon icon_ret" onclick="location.href=\'?a=ret\'">คืนสินค้า</div>').'';

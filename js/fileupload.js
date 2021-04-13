@@ -256,9 +256,9 @@ class fileupload extends main{
 		eval(obj_str+"={}")
 
 		let n=index*1+1
-		alert("รูปที่ "+(n)+" เกิดข้อผิดพลาด\nไม่สามารถ ส่งไฟล์ไปยัง \n"+window.location.origin+"\n*รูปภาพถูกส่งสำเร็จแล้ว "+(n-1)+" รูป")
+		let error=re["message_error"]
+		alert(error+"\nรูปที่ "+(n)+" เกิดข้อผิดพลาด\nไม่สามารถ ส่งไฟล์ไปยัง \n"+window.location.origin+"\n*รูปภาพถูกส่งสำเร็จแล้ว "+(n-1)+" รูป")
 		Ful.fileUploadImgsPc(0,0)
-		//alert(callbackerror)
 		eval(callbackerror)
 	}
 	setUpResult(count,index,form,icon_name){

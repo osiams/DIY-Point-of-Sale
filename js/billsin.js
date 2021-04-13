@@ -572,7 +572,7 @@ class billsin extends main{
 			let b=form.get("b")
 			let uploadtype=(b=="fill")?"new":"add"
 			let count_img=Object.keys(Bi.icon).length
-			Ful.fileUploadImgs(uploadtype,'bill_in','sku',data,'Bi.icon',url_to,'ed')
+			Ful.fileUploadImgs(uploadtype,'bill_in','sku',data,'Bi.icon',url_to,'ed',null,'Bi.billinUploafFileError(\''+data+'\')')
 			if(uploadtype=="add"||count_img==0){
 				alert("สำเร็จ")
 				let ed=re["data"]["sku"]
@@ -581,6 +581,9 @@ class billsin extends main{
 		}else{
 			Bi.billsinSaveError(re,form,bt)
 		}
+	}
+	billinUploafFileError(ed=""){
+		location.href="?a=bills&c=in&ed="+ed
 	}
 	billsinSaveError(re,form,bt){
 		if(re["result"]!=undefined){

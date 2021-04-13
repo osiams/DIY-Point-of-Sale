@@ -74,6 +74,38 @@ class main{
 				"index"=>["sku_root"],
 				"check"=>" prop IS NULL OR JSON_VALID(prop)"
 			],
+			"member"=>[
+				"name"=>"member",
+				"column"=>["id","sku","sku_key","sku_root",
+					"name","lastname","mb_type","icon",
+					"sex","birthday",
+					"password","memberceo",
+					"no","alley","road","distric","country",
+					"province","post_no",
+					"tel","idc","disc","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","birthday"=>"NULL"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"unsigned"=>["day_nv"],
+				"primary"=>"sku_root",
+				"not_null"=>["name"],
+				"index"=>["mb_type","sex","birthday"],
+				"unique"=>["sku","tel","idc"]
+			],
+			"member_ref"=>[
+				"name"=>"member_ref",
+				"column"=>["id","sku","sku_key","sku_root",
+					"name","lastname","mb_type","icon",
+					"sex","birthday",
+					"password","memberceo",
+					"no","alley","road","distric","country",
+					"province","post_no",
+					"tel","idc","disc","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"unsigned"=>["day_nv"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_key",
+				"index"=>["sku_root","birthday"]
+			],
 			"product"=>[
 				"name"=>"product",
 				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type","partner",
@@ -270,6 +302,7 @@ class main{
 			"bill_po_sku"=>["name"=>"เลขที่ใบสั่งซื้อ","type"=>"CHAR","length_value"=>25],
 			"bill_in_sku"=>["name"=>"รหัสภายในใบนำเข้าสินค้า","type"=>"CHAR","length_value"=>25],
 			"bill_type"=>["name"=>"ประเภทใบเสร็จ","type"=>"ENUM","length_value"=>["c","v0","v1"]],
+			"birthday"=>["name"=>"วันเกิด","type"=>"TIMESTAMP",],
 			"brand_name"=>["name"=>"ชื่อการค้า","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			//--0=เงินม1=สินค้าตัวเดิม
 			"changto"=>["name"=>"เปลี่ยนเป็น","type"=>"ENUM","length_value"=>["0","1"]],
@@ -301,6 +334,7 @@ class main{
 			"icon_arr"=>["name"=>"รูปหลาย","type"=>"TEXT","length_value"=>65535],
 			"icon_gl"=>["name"=>"ห้องรูป","type"=>"TEXT","length_value"=>65535],
 			"id"=>["name"=>"ที่","type"=>"INT","length_value"=>10],
+			"idc"=>["name"=>"เลขที่บัตรประชาชน์","type"=>"CHAR","length_value"=>15],
 			"idkey"=>["name"=>"ที่อ้างอิง","type"=>"INT","length_value"=>10],
 			//--"buy","cancel","return",move,x,delete
 			"in_type"=>["name"=>"ประเภทการเข้า","type"=>"ENUM","length_value"=>["b","c","r","m","x","d","mm"]],
@@ -310,7 +344,9 @@ class main{
 			"lot_root"=>["name"=>"งวดราก","type"=>"CHAR","length_value"=>25],
 			"m"=>["name"=>"สินค้ารากที่แตก","type"=>"CHAR","length_value"=>25],
 			"m_n"=>["name"=>"จำนวนสินค้ารากที่แตก","type"=>"INT","length_value"=>10],
+			"mb_type"=>["name"=>"ประเภทสมาชิก","type"=>"ENUM","length_value"=>["s","p"]],
 			"md5"=>["name"=>"md5","type"=>"CHAR","length_value"=>32],
+			"memberceo"=>["name"=>"ระดับสมาชิก","type"=>"ENUM","length_value"=>["0","1","2","3","4","5","6","7","8","9"]],
 			"mime_type"=>["name"=>"ประเภทไฟล์","type"=>"ENUM","length_value"=>["image/png","image/gif","image/jpeg"]],
 			"modi_date"=>["name"=>"วันปรับปรุง","type"=>"TIMESTAMP",],
 			"money_type"=>["name"=>"รูปแบบเงิน","type"=>"ENUM","length_value"=>["ca","tr","ck","cd"]],
@@ -347,6 +383,7 @@ class main{
 			"_r"=>["name"=>"สิ้นสุด","type"=>"INT","length_value"=>10],
 			"road"=>["name"=>"ถนน","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"s_type"=>["name"=>"รูปแบบการขาย","type"=>"ENUM","length_value"=>["p","w","l","v"]],
+			"sex"=>["name"=>"เพศ","type"=>"ENUM","length_value"=>["m","f"]],
 			"sq"=>["name"=>"ลำดับ","type"=>"INT","length_value"=>10],
 			"sku"=>["name"=>"รหัสภายใน","type"=>"CHAR","length_value"=>25],
 			"sku_key"=>["name"=>"รหัสอ้างอิง","type"=>"CHAR","length_value"=>25],
@@ -644,7 +681,7 @@ class main{
 						$re["message_error"]="ข้อมูล \"".$nm."\"  ต้องไม่ว่าง" ;
 						break;
 					}else if(strlen(trim($ry))>0){
-						$name=["name","brand_name","no","alley","road","distric","country","province","note"];
+						$name=["name","brand_name","no","alley","road","distric","country","province","note","lastname"];
 						$sku=["sku","unit"];
 						$tax=["tax","tel","fax","post_no"];
 						$url=["web"];
@@ -652,9 +689,10 @@ class main{
 						$password=["password"];
 						$money=["price","cost"];
 						$float=["vat_p"];
-						$enum = ["data_type","s_type","pn_type","od_type","tp_type","bill_type"];
+						$enum = ["data_type","s_type","pn_type","od_type","tp_type","bill_type","sex","mb_type"];
 						$json_arr = ["prop","partner"];
 						$province=["bill_no"];
+						$date=["birthday"];
 						if(in_array($v,$sku)){
 							$pt="/^[0-9a-zA-Z-+\.&\/]{1,25}$/";
 							if(!preg_match($pt,$ry)) {
@@ -752,6 +790,13 @@ class main{
 							if(strlen($ry)>$max) {
 								$re["result"]=false;
 								$re["message_error"]=$this->fills[$v]["name"]." ยาวเกิน ".$max." แต่ข้อความคุณยาว ".strlen($ry);
+								break;
+							}
+						}else if(in_array($v,$date)){
+							$pt="/^([1-9])[0-9]{3}-(0|1)[0-9]-(0|1|2|3)[0-9]$/";
+							if(!preg_match($pt,$ry)) {
+								$re["result"]=false;
+								$re["message_error"]=$this->fills[$v]["name"]." วันที่ไม่อยู่ในรูปแบบ yyyy-mm-dd";
 								break;
 							}
 						}
@@ -902,6 +947,17 @@ class main{
 		$imagedata = file_get_contents($file);
 		if(strlen(trim($file))>0){
 			$re = "data: ".mime_content_type($file).";base64,".base64_encode($imagedata);
+		}
+		return $re;
+	}
+	protected function setDateR(string $date,string $time=""):string{
+		$re="";
+		$tm="";
+		if(strlen($time)>0){
+			$tm=" ".$time;
+		}
+		if(strlen($date)>0){
+			$re= $date."".$tm;
 		}
 		return $re;
 	}

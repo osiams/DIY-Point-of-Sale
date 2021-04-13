@@ -1044,7 +1044,7 @@ class bills_in extends bills{
 						<h2>ใบนำเข้าสินค้า</h2>
 						<div class="billinview">
 							<div>
-								<div><img src="img/gallery/64x64_'.$dt[0]["partner_icon"].'" /></div>
+								<div><img src="img/gallery/64x64_'.$dt[0]["partner_icon"].'" onerror="this.src=\'img/pos/64x64_null.png\'" /></div>
 								<div><a href="?a=partner&amp;b=details&amp;sku_root='.$dt[0]["partner_sku_root"].'">'.$dt[0]["partner_name"].'</a><br />🧾'.$dt[0]["bill_no"].'</div>
 							</div>
 							<div class="r">บันทึกโดย : '.$dt[0]["user_name"].' วันที่ '.$dt[0]["date_reg"].'

@@ -87,6 +87,7 @@ class setting extends main{
 		}		
 		
 		$lan=$_SERVER['REQUEST_SCHEME']."://".$_SERVER['SERVER_NAME'].":".$_SERVER['SERVER_PORT']."".$_SERVER['PHP_SELF'];
+		$lanphpadmin=$_SERVER['REQUEST_SCHEME']."://".$_SERVER['SERVER_NAME'].":".$_SERVER['SERVER_PORT']."/phpmyadmin/";
 		$lan2="http://".$this->findIPv4().":".CF["http_port"]."".$_SERVER['PHP_SELF'];
 		$lan3="https://".$this->findIPv4().":".CF["https_port"]."".$_SERVER['PHP_SELF'];
 		/*echo '		<form class="form100" name="setting" method="post">
@@ -104,7 +105,7 @@ class setting extends main{
 				<caption>เครื่องแม่ขาย</caption>
 				<tr><th>รายละเอียด</th><th>ค่า</th></tr>
 				<tr><td class="l">ที่อยู่แฟ้ม</td><td class="l">'.dirname(dirname(__FILE__)).'</td></tr>
-				<tr><td class="l">ชื่อครื่อ</td><td class="l">'.$_SERVER['SERVER_NAME'].'</td></tr>
+				<tr><td class="l">ชื่อครื่อง</td><td class="l">'.$_SERVER['SERVER_NAME'].'</td></tr>
 				<tr><td class="l">ที่อยู่ครื่อง</td><td class="l">'.$_SERVER['SERVER_ADDR'].'</td></tr>
 				<tr><td class="l">ที่อยู่ครื่อง IPv4</td><td class="l">'.$this->findIPv4().'</td></tr>
 				<tr><td class="l">พอร์ต</td><td class="l">'.$_SERVER['SERVER_PORT'].'</td></tr>
@@ -114,6 +115,7 @@ class setting extends main{
 				<hr />
 				'.$lan3.'<br /><img src="?a=qrc&amp;s=qrq&d='.$lan3.'" />
 				</td></tr>
+				<tr><td class="l">จัดการฐานข้อมูล</td><td class="l"><a href="'.$lanphpadmin.'">'.$lanphpadmin.'</a></td></tr>
 				<tr>
 					<td class="l">ฟ้อนต์สำหรับพิมพ์_0</td>
 					<td class="l">ที่อยู่ = '.$this->printer->font_0.' <br />

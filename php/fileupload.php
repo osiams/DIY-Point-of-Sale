@@ -51,14 +51,18 @@ class fileupload extends main{
 											$this->re["message_error"]=$se["message_error"];
 										}
 									}
-								}else if(isset($_POST["uploadtype"])&&$_POST["uploadtype"]=="delete"){
-									$file=$_POST["icon"];
-									$pt="/^[0-9a-zA-Z]{1,}.png$/";
-									if(preg_match($pt,$file)){
-										$this->delImgs($file);
-										$this->delIconGl($_POST["table"],$_POST["key"],$_POST["data"],$file);
-										$this->re["icon_name"]=$file;
-										$this->re["result"]=true;
+								}else{
+									if(isset($_POST["uploadtype"])&&$_POST["uploadtype"]=="delete"){
+										$file=$_POST["icon"];
+										$pt="/^[0-9a-zA-Z]{1,}.png$/";
+										if(preg_match($pt,$file)){
+											$this->delImgs($file);
+											$this->delIconGl($_POST["table"],$_POST["key"],$_POST["data"],$file);
+											$this->re["icon_name"]=$file;
+											$this->re["result"]=true;
+										}
+									}else{
+										$this->re["message_error"]=$img["message_error"];
 									}
 								}
 							}
