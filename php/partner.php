@@ -593,6 +593,7 @@ class partner extends main{
 		$se="";
 		if(isset($_GET["fl"])){
 			if(in_array($_GET["fl"],$fla)){
+				$fl=$_GET["fl"];
 				if(($_GET["fl"]=="sku")
 				&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["tx"])){
 					$fl=$_GET["fl"];

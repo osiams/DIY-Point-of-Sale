@@ -6,7 +6,8 @@ class member extends main{
 		$this->img=null;
 		$this->title = "สมาชิก";
 		$this->a = "member";
-		$this->mb_type = ["s"=>"ผู้ประกอบการ","p"=>"ผู้บริโภค"];
+		$this->mb_type = ["s"=>"🏠 ผู้ประกอบการ","p"=>"🧑 ผู้บริโภค"];
+		$this->sex = ["m"=>"♂️ ชาย","f"=>"♀️ หญิง","n"=>"ไม่ระบุ"];
 		$this->per=10;
 		$this->page=1;
 		$this->txsearch="";
@@ -27,46 +28,46 @@ class member extends main{
 			if($t=="regis"){
 				$this->regisMember();
 			}else if($t=="edit"){
-				$this->editPartner();
+				$this->editMember();
 			}else if($t=="delete"){
-				$this->deletePartner();
+				$this->deleteMember();
 			}else if($t=="details"){
 				if(isset($_GET["sku_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku_root"])){
-					require("php/partner_details.php");
-					(new partner_details($_GET["sku_root"]))->run();
+					require("php/member_details.php");
+					(new member_details($_GET["sku_root"]))->run();
 				}else{
-					$this->pagePartner();
+					$this->pageMember();
 				}
 			}
 		}else{
 			$this->pageMember();
 		}
 	}
-	private function deletePartner():void{
+	private function deleteMember():void{
 		if(isset($_POST["sku_root"])){
+			$url_refer=(isset($_GET["url_refer"]))?$_GET["url_refer"]:"";
 			$sku_root=$this->getStringSqlSet($_POST["sku_root"]);
 			$sql=[];
 			$sql["set"]="SELECT @sku_root:=".$sku_root.";";
-			$sql["del"]="DELETE FROM `partner` WHERE `sku_root`=".$sku_root;
-			//print_r($sql);
+			$sql["del"]="DELETE FROM `member` WHERE `sku_root`=".$sku_root;
 			$re = $this->metMnSql($sql,[]);
-			//print_r($re);
-			header('Location:?a='.$this->a.'&ed='.$_POST["sku_root"]);
+			$pt="/&ed=[0-9a-zA-Z-+\.&\/]{1,25}/";
+			$pr='';
+			$url=preg_replace($pt, $pr,$url_refer)."&ed=".$_POST["sku_root"];
+			header('Location:'.$url);
 		}
 	}
-	private function editPartnerPage(string $error):void{
+	private function editMemberPage(string $error):void{
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
 		$icon_load=(isset($_POST["icon_load"]))?$_POST["icon_load"]:"";
 		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
-		$brand_name=(isset($_POST["brand_name"]))?htmlspecialchars($_POST["brand_name"]):"";
-		$sku=(isset($_POST["sku"]))?htmlspecialchars($_POST["sku"]):"";
-		$tax=(isset($_POST["tax"]))?htmlspecialchars($_POST["tax"]):"";
+		$lastname=(isset($_POST["lastname"]))?htmlspecialchars($_POST["lastname"]):"";
+		$idc=(isset($_POST["idc"]))?htmlspecialchars($_POST["idc"]):"";	
+		$sex=(isset($_POST["sex"])&&isset($this->sex[$_POST["sex"]]))?$_POST["sex"]:"n";
+		$birthday=(isset($_POST["birthday"]))?htmlspecialchars($_POST["birthday"]):"";
 		$tel=(isset($_POST["tel"]))?htmlspecialchars($_POST["tel"]):"";
-		$fax=(isset($_POST["fax"]))?htmlspecialchars($_POST["fax"]):"";
-		$web=(isset($_POST["web"]))?htmlspecialchars($_POST["web"]):"";
-		$pn_type = (isset($_POST["pn_type"]))?htmlspecialchars($_POST["pn_type"]):"";
-		$tp_type = (isset($_POST["tp_type"]))?htmlspecialchars($_POST["tp_type"]):"";
-		$od_type = (isset($_POST["od_type"]))?htmlspecialchars($_POST["od_type"]):"";
+		$mb_type = (isset($_POST["mb_type"]))?htmlspecialchars($_POST["mb_type"]):"";
+		$mb_type=(!isset($this->mb_type[$mb_type]))?"p":$mb_type;
 		$no=(isset($_POST["no"]))?htmlspecialchars($_POST["no"]):"";
 		$alley=(isset($_POST["alley"]))?htmlspecialchars($_POST["alley"]):"";
 		$road=(isset($_POST["road"]))?htmlspecialchars($_POST["road"]):"";
@@ -74,61 +75,44 @@ class member extends main{
 		$country=(isset($_POST["country"]))?htmlspecialchars($_POST["country"]):"";
 		$province=(isset($_POST["province"]))?htmlspecialchars($_POST["province"]):"";
 		$post_no=(isset($_POST["post_no"]))?htmlspecialchars($_POST["post_no"]):"";
-		$note=(isset($_POST["note"]))?htmlspecialchars($_POST["note"]):"";
+		$disc=(isset($_POST["disc"]))?htmlspecialchars($_POST["disc"]):"";
 		$sku_root=(isset($_POST["sku_root"]))?htmlspecialchars($_POST["sku_root"]):"";
-		$this->addDir("","แก้ไขคู่ค้า");
-		$this->pageHead(["title"=>"แก้ไขคู่ค้า DIYPOS","js"=>["partner","Pn","fileupload","Ful"],"run"=>["Pn"],"css"=>["partner","fileupload"]]);
+		$this->addDir("","แก้ไข".$this->title);
+		$this->pageHead(["title"=>"แก้ไข".$this->title." DIYPOS","js"=>["member","Mb","fileupload","Ful"],"run"=>["Mb"],"css"=>["member","fileupload"]]);
 		echo '<div class="content">
 			<div class="form">
-				<h1 class="c">แก้ไขคู่ค้า</h1>';
+				<h1 class="c">แก้ไข'.$this->title.'</h1>';
 		if($error!=""){
 			echo '<div class="error">'.$error.'</div>';
 		}		
-		echo '		<form  method="post">
+		echo '		<form  name="member" method="post">
 			<input type="hidden" name="submit" value="clicksubmit" />
 			<input type="hidden" id="icon_load_id" name="icon_load" value="'.$icon_load.'" />
 			<input type="hidden" id="icon_id" name="icon" value="" />
 			<input type="hidden" name="sku_root" value="'.$sku_root.'" />
-			<p><label for="partner_name">ชื่อ</label></p>
-			<div><input id="partner_name" class="want" type="text" name="name" value="'.$name.'" autocomplete="off" /></div>
-			<p><label for="partner_brand_name">ชื่อการค้า</label></p>
-			<div><input id="partner_brand_name" type="text" name="brand_name" value="'.$brand_name.'" autocomplete="off" /></div>
-			<p><label for="partner_sku">รหัสภายใน</label></p>
-			<div><input id="partner_sku" type="text" value="'.$sku.'"  name="sku" autocomplete="off"  /></div>
-			<p><label for="tax">เลขที่ผู้เสียภาษี</label></p>
-			<div><input id="tax" type="text" value="'.$tax.'"  name="tax" autocomplete="off"  /></div>
-			<p><label for="pn_type">ประเภทคู่ค้า</label></p>
+			<p><label for="member_name">ชื่อ</label></p>
+			<div><input id="member_name" class="want" type="text" name="name" value="'.$name.'" autocomplete="off" /></div>
+			<p><label for="member_lastame">นามสกุล</label></p>
+			<div><input id="member_lastame" type="text" name="lastname" value="'.$lastname.'" autocomplete="off" /></div>
+			<p><label for="sex">เพศ</label></p>
 			<div>
-				<select name="pn_type">
-					<option value=""'.($pn_type == ""?" selected":"").'></option>					
-					<option value="s"'.($pn_type == "s"?" selected":"").'>'.$this->pn_type["s"].'</option>
-					<option value="n"'.($pn_type == "n"?"selected":"").'>'.$this->pn_type["n"].'</option>
+				<select name="sex">
+					<option value=""'.($sex == ""?" selected":"").'>'.$this->sex["n"].'</option>
+					<option value="m"'.($sex == "m"?" selected":"").'>'.$this->sex["m"].'</option>					
+					<option value="f"'.($sex == "f"?" selected":"").'>'.$this->sex["f"].'</option>
 				</select>
 			</div>
-			<p><label for="od_type">รูปแบบการสั่งซื้อหลัก</label></p>
+			<p><label for="member_birthday">วัน-เดือน-ปี เกิด</label></p>
+			<div><input id="member_birthday" type="date" name="birthday" value="'.$birthday.'" /></div>
+			<p><label for="mb_type">ประเภทสมาชิก</label></p>
 			<div>
-				<select name="od_type">	
-					<option value=""'.($od_type == ""?" selected":"").'></option>				
-					<option value="s"'.($od_type == "s"?" selected":"").'>'.$this->od_type["s"].'</option>
-					<option value="a"'.($od_type == "a"?"selected":"").'>'.$this->od_type["a"].'</option>
-					<option value="o"'.($od_type == "o"?" selected":"").'>'.$this->od_type["o"].'</option>
-					<option value="t"'.($od_type == "t"?"selected":"").'>'.$this->od_type["t"].'</option>
-				</select>
-			</div>
-			<p><label for="tp_type">การส่งสินค้า</label></p>
-			<div>
-				<select name="tp_type">	
-					<option value=""'.($tp_type == ""?" selected":"").'></option>				
-					<option value="1"'.($tp_type == "1"?" selected":"").'>'.$this->tp_type["1"].'</option>
-					<option value="0"'.($tp_type == "0"?"selected":"").'>'.$this->tp_type["0"].'</option>
+				<select name="mb_type">
+					<option value="p"'.($mb_type == "p"?" selected":"").'>'.$this->mb_type["p"].'</option>					
+					<option value="s"'.($mb_type == "s"?" selected":"").'>'.$this->mb_type["s"].'</option>
 				</select>
 			</div>
 			<p><label for="tel">โทรศัพท์</label></p>
 			<div><input id="tel" type="text" value="'.$tel.'"  name="tel" autocomplete="off"  /></div>
-			<p><label for="fax">แฟ็ก</label></p>
-			<div><input id="fax" type="text" value="'.$fax.'"  name="fax" autocomplete="off"  /></div>
-			<p><label for="web">เว็บไซต์</label></p>
-			<div><input id="web" type="text" value="'.$web.'"  name="web" autocomplete="off"  /></div>
 			<p><label for="no">ที่อยู่ เลขที่</label></p>
 			<div><input id="no" type="text" value="'.$no.'"  name="no" autocomplete="off"  /></div>
 			<p><label for="alley">ซอย</label></p>
@@ -143,24 +127,24 @@ class member extends main{
 			<div><input id="province" type="text" value="'.$province.'"  name="province" autocomplete="off"  /></div>
 			<p><label for="post_no">รหัสไปรษณี</label></p>
 			<div><input id="post_no" type="text" value="'.$post_no.'"  name="post_no" autocomplete="off"  /></div>
-			<p><label for="note">รายละเอียดย่อ</label></p>
-			<div><input id="note" type="text" value="'.$note.'"  name="note" autocomplete="off"  /></div>
+			<p><label for="member_disc">รายละเอียดย่อ</label></p>
+			<div><input id="member_disc" type="text" value="'.$disc.'"  name="disc" autocomplete="off"  /></div>
 			<div>
 				<div id="div_fileuploadpre" class="fileuploadpre1"></div>
 				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" class="fuif" name="picture" onchange="Ful.fileUploadShow(event,1,\'icon_id\',1024,160)" />
 				<label for="upload_pic"  class="fubs">+เลือกรูปภาพ</label>
 			</div>	
-			<script type="text/javascript">Ful.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\',\'icon_load_id\')</script>
 		';			
 		echo '</table>
 					<br />
-					<input type="submit" value="แก้ไขคู่ค้า" />
+					<input type="button" value="แก้ไข '.$this->title.'" onclick="Mb.checkIsChange()" />
 				</form>
+				<script type="text/javascript">Ful.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\',\'icon_load_id\');Mb.setOldData();</script>
 			</div>
 		</div>';
 		$this->pageFoot();
 	}
-	private function editPartner():void{
+	private function editMember():void{
 		$error="";
 		$img=["result"=>false,"set"=>0];
 		$mime="";
@@ -200,12 +184,12 @@ class member extends main{
 				}
 			}
 			if($error!=""){
-				$this->editPartnerPage($error);
+				$this->editMemberPage($error);
 			}
 		}else{
 			$sku_root=(isset($_POST["sku_root"]))?$_POST["sku_root"]:"";
-			$this->editPartnerSetCurent($sku_root);
-			$this->editPartnerPage($error);
+			$this->editMemberSetCurent($sku_root);
+			$this->editMemberPage($error);
 		}
 	}
 	private function editPartnerUpdate(string $key,array $img,string $mime):array{
@@ -295,15 +279,15 @@ class member extends main{
 		print_r($sql);
 		return $se;
 	}
-	private function editPartnerOldData(string $sku_root):array{
+	private function editMemberOldData(string $sku_root):array{
 		$sku_root=$this->getStringSqlSet($sku_root);
 		$sql=[];
 		$sql["result"]="SELECT 
-				`name`		,`brand_name`		,`sku`		,`sku_root`	,`pn_type`		,IFNULL(`icon`,'') AS `icon`,
-				`tel`			,`fax`					,`tax`		,`web`			,`no`,
-				`tp_type`	,`od_type`			,`pn_type`	,`alley`		,`road`			,`distric`,
-				`country`,`province`,`post_no`,`note`
-			FROM `partner` 
+				`name`		,`lastname`		,`sku`		,`sku_root`	,`mb_type`		,IFNULL(`icon`,'') AS `icon`,
+				`sex`		,`birthday`	,`tel`			,`idc`				,`no`,
+				`alley`		,`road`			,`distric`,
+				`country`,`province`,`post_no`,`disc`
+			FROM `member` 
 			WHERE `sku_root`=".$sku_root."";
 		$re=$this->metMnSql($sql,["result"]);
 		if(isset($re["data"]["result"][0])){
@@ -311,17 +295,17 @@ class member extends main{
 				$re["data"]["result"][0]["icon_load"]=$this->img2Base64($this->gallery_dir."/".$re["data"]["result"][0]["icon"]);
 				unset($re["data"]["result"][0]["icon"]);
 			}
+			$re["data"]["result"][0]["birthday"]=explode(" ",$re["data"]["result"][0]["birthday"])[0];
 			return $re["data"]["result"][0];
 		}
 		return [];
 	}
-	private function editPartnerSetCurent(string $sku_root):void{
-		$od=$this->editPartnerOldData($sku_root);
-		$fl=["sku","name","brand_name","pn_type","icon_load",
-					"no","alley","road","distric","country",
+	private function editMemberSetCurent(string $sku_root):void{
+		$od=$this->editMemberOldData($sku_root);
+		$fl=["sku","name","lastname","mb_type","icon_load",
+					"sex","birthday","no","alley","road","distric","country",
 					"province","post_no",
-					"tel","fax","tax","web","tp_type",
-					"od_type","note"];
+					"tel","idc","disc"];
 		foreach($fl as $v){
 			if(isset($od[$v])){
 				$_POST[$v]=$od[$v];
@@ -335,8 +319,6 @@ class member extends main{
 		$error="";
 		$img=["result"=>false,"set"=>0];
 		$mime="";
-		//unset($_POST["tel"]);
-		$_POST["tel"]="t";
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
 			$se=$this->checkSet("member",["post"=>["name","lastname","sex","birthday","mb_type","idc","tel","alley","road","distric","country","province","post_no","disc"]],"post");
 			if(isset($_POST["icon"])&&$_POST["icon"]!=""){
@@ -350,12 +332,11 @@ class member extends main{
 					$mime=$a[1];
 					$img["set"]=1;
 				}
-				//$this->img->imgSave($se,"123456789gdgdfd");
 			}
 			if(!$se["result"]){
 				$error=$se["message_error"];
 			}else{
-				/*$key=$this->key("key",7);
+				$key=$this->key("key",7);
 				 $qe=$this->regisMemberInsert($key,$img,$mime);
 				if(!$qe["result"]){
 					$error=$qe["message_error"];
@@ -366,7 +347,7 @@ class member extends main{
 						$this->img->imgSave($img,$key,$this->max_squar);
 					}
 					header('Location:?a='.$this->a.'&ed='.$key);
-				}*/
+				}
 			}
 			if($error!=""){
 				$this->regisMemberPage($error);
@@ -455,7 +436,7 @@ class member extends main{
 				SET @result=1;
 			END IF;
 		";
-		$sql["ref"]=$this->ref("partner","sku_key",$key);
+		$sql["ref"]=$this->ref("member","sku_key",$key);
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`";
 		$se=$this->metMnSql($sql,["result"]);
 		//print_r($sql);exit;
@@ -466,9 +447,8 @@ class member extends main{
 		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
 		$lastname=(isset($_POST["lastname"]))?htmlspecialchars($_POST["lastname"]):"";
 		$idc=(isset($_POST["idc"]))?htmlspecialchars($_POST["idc"]):"";
-		$sex=(isset($_POST["sex"]))?htmlspecialchars($_POST["sex"]):"";
+		$sex=(isset($_POST["sex"])&&isset($this->sex[$_POST["sex"]]))?$_POST["sex"]:"n";
 		$birthday=(isset($_POST["birthday"]))?htmlspecialchars($_POST["birthday"]):"";
-		$sex=($sex!="m"&&$sex!="f")?"":$sex;
 		$tel=(isset($_POST["tel"]))?htmlspecialchars($_POST["tel"]):"";
 		$mb_type = (isset($_POST["mb_type"]))?htmlspecialchars($_POST["mb_type"]):"";
 		$mb_type=(!isset($this->mb_type[$mb_type]))?"p":$mb_type;
@@ -492,15 +472,15 @@ class member extends main{
 			<input type="hidden" name="submit" value="clicksubmit" />
 			<input type="hidden" id="icon_id" name="icon" value="'.$icon.'" />
 			<p><label for="member_name">ชื่อ</label></p>
-			<div><input id="pmember_name" class="want" type="text" name="name" value="'.$name.'" autocomplete="off" /></div>
+			<div><input id="member_name" class="want" type="text" name="name" value="'.$name.'" autocomplete="off" /></div>
 			<p><label for="member_lastame">นามสกุล</label></p>
 			<div><input id="member_lastame" type="text" name="lastname" value="'.$lastname.'" autocomplete="off" /></div>
 			<p><label for="sex">เพศ</label></p>
 			<div>
 				<select name="sex">
-					<option value=""'.($sex == ""?" selected":"").'>ไม่ระบุ</option>
-					<option value="m"'.($sex == "m"?" selected":"").'>♂️ ชาย</option>					
-					<option value="f"'.($sex == "f"?" selected":"").'>♀️ หญิง</option>
+					<option value=""'.($sex == ""?" selected":"").'>'.$this->sex["n"].'</option>
+					<option value="m"'.($sex == "m"?" selected":"").'>'.$this->sex["m"].'</option>					
+					<option value="f"'.($sex == "f"?" selected":"").'>'.$this->sex["f"].'</option>
 				</select>
 			</div>
 			<p><label for="member_birthday">วัน-เดือน-ปี เกิด</label></p>
@@ -508,8 +488,8 @@ class member extends main{
 			<p><label for="mb_type">ประเภทสมาชิก</label></p>
 			<div>
 				<select name="mb_type">
-					<option value="p"'.($mb_type == "p"?" selected":"").'>🧑 '.$this->mb_type["p"].'</option>					
-					<option value="s"'.($mb_type == "s"?" selected":"").'>🏠 '.$this->mb_type["s"].'</option>
+					<option value="p"'.($mb_type == "p"?" selected":"").'>'.$this->mb_type["p"].'</option>					
+					<option value="s"'.($mb_type == "s"?" selected":"").'>'.$this->mb_type["s"].'</option>
 				</select>
 			</div>
 			<p><label for="tel">โทรศัพท์</label></p>
@@ -548,19 +528,23 @@ class member extends main{
 		$this->pageFoot();
 	}
 	protected function pageMember(){
+		
 		$this->defaultPageSearch();
 		$this->pageHead(["title"=>$this->title." DIYPOS","css"=>["member"],"js"=>["member","Mb"],"run"=>["Mb"]]);
+			
 			echo '<div class="content">
 				<div class="form">
 				<h1 class="c">'.$this->title.'</h1>
 				<div class="pn_search">
 					<form class="form100" name="pd_search" action="" method="get">
-						<input type="hidden" name="a" value="partner" />
+						<input type="hidden" name="a" value="member" />
 						<input type="hidden" name="lid" value="0" />
 						<label><select id="product_search_fl" name="fl">
 							<option value="name"'.(($this->fl=="name")?" selected":"").'>ชื่อ</option>
-							<option value="brand_name"'.(($this->fl=="brand_nam")?" selected":"").'>ชื่อการค้า</option>
-							<option value="sku"'.(($this->fl=="sku")?" selected":"").'>รหัสภายใน</option>
+							<option value="lastname"'.(($this->fl=="lastname")?" selected":"").'>นามสกุล</option>
+							<option value="sku"'.(($this->fl=="sku")?" selected":"").'>รหัส</option>
+							<option value="tel"'.(($this->fl=="tel")?" selected":"").'>เบอร์โทรศัพท์</option>
+							<option value="idc"'.(($this->fl=="idc")?" selected":"").'>บัตรประชาชน</option>
 						</select>
 						 <input id="product_search_tx" type="text" name="tx" value="'.str_replace("\\","",htmlspecialchars($this->txsearch)).'" />
 						 <input  type="submit" value="🔍" /> </label></form>
@@ -571,7 +555,7 @@ class member extends main{
 		$this->pageFoot();
 	}
 	private function defaultSearch():string{
-		$fla=["sku","brand_name","name"];
+		$fla=["sku","lastname","name","idc","tel"];
 		$fl="name";
 		$tx="";
 		$se="";
@@ -590,17 +574,18 @@ class member extends main{
 		if($tx!=""){
 			$tx=substr($tx,1,-1);
 			$this->txsearch=$tx;
-			$se=" WHERE `partner`.`".$fl."` LIKE  \"%".$tx."%\"  ";
+			$se=" WHERE `member`.`".$fl."` LIKE  \"%".$tx."%\"  ";
 		}
 		return $se;
 	}
 	public function defaultPageSearch():void{
-		$fla=["brand_name","sku","name"];
+		$fla=["sku","lastname","name","idc","tel"];
 		$fl="name";
 		$tx="";
 		$se="";
 		if(isset($_GET["fl"])){
 			if(in_array($_GET["fl"],$fla)){
+				$fl=$_GET["fl"];
 				if($_GET["fl"]=="sku"){
 					if(preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["tx"])){
 						$fl=$_GET["fl"];
@@ -624,15 +609,15 @@ class member extends main{
 			if($this->lid>0){
 				$idsearch="<=".$this->lid." ";
 			}
-			$this->sh=" WHERE `partner`.`id`".$idsearch." AND `partner`.`".$fl."` LIKE  \"%".$tx."%\""  ;
+			$this->sh=" WHERE `member`.`id`".$idsearch." AND `member`.`".$fl."` LIKE  \"%".$tx."%\""  ;
 		}
 	}
 	protected function pageSearch(int $row):void{
-		$href='?a=partner&amp;fl='.$this->fl.'&amp;tx='.$this->txsearch.'&amp;page=';
+		$href='?a='.$this->a.'&amp;fl='.$this->fl.'&amp;tx='.$this->txsearch.'&amp;page=';
 		if($this->page>1){
 			echo '<a onclick="history.back()">⬅️ก่อนหน้า</a>';
 		}
-		echo '<span class="partner_page_search">หน้า '.$this->page.'</span>';
+		echo '<span class="member_page_search">หน้า '.$this->page.'</span>';
 		if($row>$this->per){
 			echo '<a href="'.$href.''.($this->page+1).'&amp;lid='.$this->lid.'">ถัดไป➡️</a>';
 		}
@@ -643,7 +628,7 @@ class member extends main{
 		$se=$dt["get"];
 		echo '<form class="form100" name="'.$this->a.'" method="post">
 			<input type="hidden" name="sku_root" value="" />';
-		echo '	<table class="partnerview" "style="width:100%;">
+		echo '	<table class="partnerview" style="width:100%;">
 				<tr><th>ที่</th>
 				<th>รูป</th>
 				<th>รหัส</th>
@@ -675,11 +660,11 @@ class member extends main{
 			echo '<tr'.$cm.'><td class="r">'.($se[$i]["id"]).'</td>
 				<td class="l"><div class="img48"><img  class="viewimage" src="img/gallery/64x64_'.$se[$i]["icon"].'"   onerror="this.src=\'img/pos/64x64_null.png\'" alt="'.$sn.'" onclick="G.view(this)"  title="เปิดดูภาพ" /></div></td>
 				<td class="l">'.$sku.'</td>
-				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a></td>
+				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.' '.$lastname.'</a></td>
 				<td class="l">'.$this->mb_type[$se[$i]["mb_type"]].'</td>
 				<td class="action">
-					<a onclick="Pn.edit(\''.$se[$i]["sku_root"].'\')" title="แก้ไข">📝</a>
-					<a onclick="Pn.delete(\''.$se[$i]["sku_root"].'\',\''.htmlspecialchars($se[$i]["name"]).'\')" title="ทิ้ง">🗑</a>
+					<a onclick="Mb.edit(\''.$se[$i]["sku_root"].'\')" title="แก้ไข">📝</a>
+					<a onclick="Mb.delete(\''.$se[$i]["sku_root"].'\',\''.htmlspecialchars($se[$i]["name"]." ".$se[$i]["lastname"]).'\')" title="ทิ้ง">🗑</a>
 					'.$ed.'
 					</td>
 				</tr>';
@@ -689,7 +674,7 @@ class member extends main{
 		//print_r($dt);
 		$count=(isset($dt["count"][0]["count"]))?$dt["count"][0]["count"]:0;
 		if($this->txsearch==""){
-			$this->page($count,$this->per,$this->page,"?a=partner&amp;page=");
+			$this->page($count,$this->per,$this->page,"?a=member&amp;page=");
 		}else{
 			$this->pageSearch(count($se));
 		}

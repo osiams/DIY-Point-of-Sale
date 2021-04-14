@@ -685,6 +685,7 @@ class main{
 						$sku=["sku","unit"];
 						$tax=["tax","tel","fax","post_no"];
 						$url=["web"];
+						$idc=["idc"];
 						$barcode=["barcode"];
 						$password=["password"];
 						$money=["price","cost"];
@@ -693,6 +694,7 @@ class main{
 						$json_arr = ["prop","partner"];
 						$province=["bill_no"];
 						$date=["birthday"];
+						$disc=["disc"];
 						if(in_array($v,$sku)){
 							$pt="/^[0-9a-zA-Z-+\.&\/]{1,25}$/";
 							if(!preg_match($pt,$ry)) {
@@ -797,6 +799,31 @@ class main{
 							if(!preg_match($pt,$ry)) {
 								$re["result"]=false;
 								$re["message_error"]=$this->fills[$v]["name"]." วันที่ไม่อยู่ในรูปแบบ yyyy-mm-dd";
+								break;
+							}
+						}else if(in_array($v,$idc)){
+							$pt="/^[1-8]{1}[0-9]{12}$/";
+							if(!preg_match($pt,$ry)) {
+								$re["result"]=false;
+								$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ ^[1-8]{1}[0-9]{12}\$";
+								break;
+							}else{
+								$s=0;
+								for($i=0;$i<12;$i++){
+									$s+=((int) $ry[$i])*(13-$i);
+								}
+								$u=11-($s%11);
+								if((int) $ry[12]!=$u){
+									$re["result"]=false;
+									$re["message_error"]="เลขบัตรประชาชนไม่ถูกต้อง เลขหลักสุดท้าย ควรเป็นเลข ".$u." ไม่ใช่เลข ".$ry[12];
+									break;
+								}
+							}
+						}else if(in_array($v,$disc)){
+							$max=$this->fills[$v]["length_value"]-4;
+							if(strlen($ry)>$max) {
+								$re["result"]=false;
+								$re["message_error"]=$this->fills[$v]["name"]." ยาวเกิน ".$max." แต่ข้อความคุณยาว ".strlen($ry);
 								break;
 							}
 						}
@@ -946,7 +973,7 @@ class main{
 		}
 		$imagedata = file_get_contents($file);
 		if(strlen(trim($file))>0){
-			$re = "data: ".mime_content_type($file).";base64,".base64_encode($imagedata);
+			$re = "data:".mime_content_type($file).";base64,".base64_encode($imagedata);
 		}
 		return $re;
 	}
