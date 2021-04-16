@@ -43,6 +43,18 @@ class form_selects extends main{
 				$this->product->defaultPageSearch();
 				$this->fetchProductSelectPage();
 			}
+		}else if($this->a=="member"){
+			if(isset($_POST["c"])&&$_POST["c"]=="member_get"){
+				$this->fetchProductGetPage();
+			}else{
+				require_once("php/member.php");
+				$this->postToGet();
+				
+				$this->member= new member();
+				$this->member->page=$this->setPageR();
+				$this->member->defaultPageSearch();
+				$this->fetchMemberSelectPage();
+			}
 		}
 		
 	}
@@ -196,6 +208,15 @@ class form_selects extends main{
 		$this->re["message_error"]="";
 		$this->re["data"]=$this->product->getAllProduct("form_select");
 		$this->re["data"]["page"]=["page"=>$this->product->page,"per"=>$this->product->per];
+		header('Content-type: application/json');
+		echo json_encode($this->re);
+	}
+	#########################################################
+	private function fetchMemberSelectPage():void{
+		$this->re["result"]=true;
+		$this->re["message_error"]="";
+		$this->re["data"]=$this->member->getAllMember("form_select");
+		$this->re["data"]["page"]=["page"=>$this->member->page,"per"=>$this->member->per];
 		header('Content-type: application/json');
 		echo json_encode($this->re);
 	}

@@ -9,7 +9,7 @@ class sell extends main{
 		if(isset($_GET["b"])&&in_array($_GET["b"],$q)){
 			$this->sendSt();
 		}else{
-			$this->pageHead(["title"=>"ขายสินค้า DIYPOS","js"=>["ws","Ws","sell","S"],"run"=>["Ws","S"],"css"=>["sell"]]);
+			$this->pageHead(["title"=>"ขายสินค้า DIYPOS","js"=>["ws","Ws","sell","S","form_selects","Fsl"],"run"=>["Ws","S","Fsl"],"css"=>["sell","form_selects"]]);
 			echo '<script type="text/javascript">S.ip = "'.$this->userIPv4().'";S.wsRegis();</script>';
 			$this->pageFoot();
 		}

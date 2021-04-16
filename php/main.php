@@ -288,7 +288,7 @@ class main{
 			]
 		];
 		$this->fills=[
-			"a_type"=>["name"=>"สำหรับแอป","type"=>"ENUM","length_value"=>["partner","billin","payu"]],
+			"a_type"=>["name"=>"สำหรับแอป","type"=>"ENUM","length_value"=>["partner","billin","payu","member"]],
 			"amount"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
 			"alley"=>["name"=>"ซอย","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"barcode"=>["name"=>"รหัสแท่ง","type"=>"CHAR","length_value"=>80],

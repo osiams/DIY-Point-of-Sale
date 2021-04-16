@@ -35,3 +35,5 @@
 
 .num_panel{position:absolute;margin:0px auto;background-color:transparent;z-index:2;}
 
+.form_select_div_one_select{display:grid;grid-template-columns:32px auto;width:100%;grid-gap:3px;}
+.form_select_div_one_select > div:nth-child(2){height:100%;display:grid;align-content: center;}

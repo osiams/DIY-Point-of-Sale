@@ -51,10 +51,11 @@ class form_selects{
 	ctSelectPartner(re,form,bt){
 		let a=form.get("b")
 		let callback=form.get("callback")
-		let title_bar={"partner":"เลือกคู่ค้า","payu":"เลือกรูปแบบการชำระ","product":"เลือกสินค้า"}
+		let title_bar={"partner":"เลือกคู่ค้า","payu":"เลือกรูปแบบการชำระ","product":"เลือกสินค้า","member":"เลือกสมาชิก"}
 		let tsh_prop={"partner":{"name":"ชื่อ","brand_name":"ชื่อการค้า","sku":"รหัสภายใน"},
 			"payu":{"name":"ชื่อ","sku":"รหัสภายใน"},
-			"product":{"name":"ชื่อ","sku":"รหัสภายใน","barcode":"รหัสแท่ง"}
+			"product":{"name":"ชื่อ","sku":"รหัสภายใน","barcode":"รหัสแท่ง"},
+			"member":{"name":"ชื่อ","lastname":"นามสกุล","sku":"รหัสสมาชิก","tel":"เบอร์โทรศัพท์","idc":"หมายเลขบัตรประชาชน"}
 		}
 		if(a!=null&&!title_bar.hasOwnProperty(a)){
 			return false
@@ -315,10 +316,18 @@ class form_selects{
 		this.setEmptyTable(display_id)
 		let rid_close=did.getAttribute("data-rid_close")
 		this.selectPartnerListValue(a,display_id,partner_list_id)
+		
 		if(a=="partner"){
 			this.selectPartnerOKAppend(a,display_id)
 		}else if(a=="payu"){
 			this.selectPayuOKAppend(a,display_id)
+		}else if(a=="member"){
+			let select_type=this.main.id(display_id).getAttribute("data-select_type")
+			if(select_type=="one"){
+				this.selectPartnerOKAppendOne(a,display_id)
+			}else{
+				
+			}
 		}else if(a=="product"){
 			eval(callback).selectPartnerOK(display_id,partner_list_id)
 		}
@@ -342,6 +351,19 @@ class form_selects{
 			this.main.end(cell1,[div_img])
 			cell2.innerHTML=this.partner[display_id][prop]["name"]
 		}		
+	}
+	selectPartnerOKAppendOne(a,display_id){
+		let t=this.main.id(display_id)
+		for (let prop in this.partner[display_id]) {
+			let div=this.main.ce("div",{"class":"form_select_div_one_select"})
+				let div_img=this.main.ce("div",{"class":"img32"})
+					let img=this.main.ce("img",{"src":"img/gallery/32x32_"+this.partner[display_id][prop]["icon"],"alt":this.partner[display_id][prop]["name"],"onerror":"this.src='img/pos/64x64_null.png'"})	
+				this.main.end(div_img,[img])	
+				let span=this.main.ce("div",{})
+				this.main.end(span,[this.main.cn(this.partner[display_id][prop]["name"])])
+			this.main.end(div,[div_img,span])	
+			this.main.end(t,[div])
+		}
 	}
 	selectPayuOKAppend(a,display_id){
 		let t=this.main.id(display_id)
@@ -457,9 +479,13 @@ class form_selects{
 	setEmptyTable(display_id){
 		if(this.main.id(display_id)!=undefined){
 			let t=this.main.id(display_id)
-			let len=t.rows.length
-			for(let i=len-2;i>=0;i--){
-				t.deleteRow(i)
+			if(this.main.id(display_id).tagName=="TABLE"){
+				let len=t.rows.length
+				for(let i=len-2;i>=0;i--){
+					t.deleteRow(i)
+				}
+			}else{
+				this.main.rmc_all(t)
 			}
 		}
 	}

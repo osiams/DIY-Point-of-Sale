@@ -85,10 +85,11 @@ class member extends main{
 		if($error!=""){
 			echo '<div class="error">'.$error.'</div>';
 		}		
-		echo '		<form  name="member" method="post">
+		echo '		<form  name="member" method="post" onsubmit="Mb.checkIsChange()">
 			<input type="hidden" name="submit" value="clicksubmit" />
 			<input type="hidden" id="icon_load_id" name="icon_load" value="'.$icon_load.'" />
 			<input type="hidden" id="icon_id" name="icon" value="" />
+			<input type="hidden" id="setimgnull" name="setimgnull" value="0" />
 			<input type="hidden" name="sku_root" value="'.$sku_root.'" />
 			<p><label for="member_name">ชื่อ</label></p>
 			<div><input id="member_name" class="want" type="text" name="name" value="'.$name.'" autocomplete="off" /></div>
@@ -137,7 +138,7 @@ class member extends main{
 		';			
 		echo '</table>
 					<br />
-					<input type="button" value="แก้ไข '.$this->title.'" onclick="Mb.checkIsChange()" />
+					<input type="submit" value="แก้ไข '.$this->title.'" onclick="Mb.checkIsChange()" />
 				</form>
 				<script type="text/javascript">Ful.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\',\'icon_load_id\');Mb.setOldData();</script>
 			</div>
@@ -150,7 +151,7 @@ class member extends main{
 		$mime="";
 		$set_img=0;
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
-			$se=$this->checkSet("partner",["post"=>["name","brand_name","sku","tax","pn_type","od_type","tp_type","tel","fax","web","no","alley","road","distric","country","province","post_no","note"]],"post");
+			$se=$this->checkSet("member",["post"=>["name","lastname","sex","birthday","mb_type","idc","tel","no","alley","road","distric","country","province","post_no","disc"]],"post");
 			if(isset($_POST["icon"])&&$_POST["icon"]!=""){
 				$img=$this->img->imgCheck("icon");
 				if($img["result"]==false&&$se["result"]){
@@ -170,7 +171,7 @@ class member extends main{
 				$error=$se["message_error"];
 			}else{
 				$key=$this->key("key",7);
-				 $qe=$this->editPartnerUpdate($key,$img,$mime);
+				 $qe=$this->editMemberUpdate($key,$img,$mime);
 				 print_r($qe);
 				if(!$qe["result"]){
 					$error=$qe["message_error"];
@@ -192,20 +193,20 @@ class member extends main{
 			$this->editMemberPage($error);
 		}
 	}
-	private function editPartnerUpdate(string $key,array $img,string $mime):array{
+	private function editMemberUpdate(string $key,array $img,string $mime):array{
 		//print_r($img);
 		$name=$this->getStringSqlSet($_POST["name"]);
-		$brand_name=$this->getStringSqlSet($_POST["brand_name"]);
+		$lastname=$this->getStringSqlSet($_POST["lastname"]);
 		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
 		$icon_load=(isset($_POST["icon_load"]))?$_POST["icon_load"]:"";
-		$sku=$this->getStringSqlSet($_POST["sku"]);
-		$tax=$this->getStringSqlSet($_POST["tax"]);
+		$sex=(isset($_POST["sex"])&&isset($this->sex[$_POST["sex"]]))?$this->getStringSqlSet($_POST["sex"]):"NULL";
+		$setimgnull=(isset($_POST["setimgnull"])&&$_POST["setimgnull"]=="1")?1:0;
 		$tel=$this->getStringSqlSet($_POST["tel"]);
-		$fax=$this->getStringSqlSet($_POST["fax"]);
-		$web=$this->getStringSqlSet($_POST["web"]);
-		$pn_type = $this->getStringSqlSet($_POST["pn_type"]);
-		$tp_type = $this->getStringSqlSet($_POST["tp_type"]);
-		$od_type = $this->getStringSqlSet($_POST["od_type"]);
+		$idc=$this->getStringSqlSet($_POST["idc"]);
+		$mb_type = $this->getStringSqlSet($_POST["mb_type"]);
+		$birthday=$_POST["birthday"];
+		$birthday=$this->setDateR($birthday,"00:00:00");
+		$birthday=($birthday=="")?"NULL":$this->getStringSqlSet($birthday);
 		$no=$this->getStringSqlSet($_POST["no"]);
 		$alley=$this->getStringSqlSet($_POST["alley"]);
 		$road=$this->getStringSqlSet($_POST["road"]);
@@ -213,7 +214,7 @@ class member extends main{
 		$country=$this->getStringSqlSet($_POST["country"]);
 		$province=$this->getStringSqlSet($_POST["province"]);
 		$post_no=$this->getStringSqlSet($_POST["post_no"]);
-		$note=$this->getStringSqlSet($_POST["note"]);
+		$disc=$this->getStringSqlSet($_POST["disc"]);
 		$sku_root=$this->getStringSqlSet($_POST["sku_root"]);
 		$skuk=$key;
 		$sku_key=$this->getStringSqlSet($skuk);
@@ -236,14 +237,16 @@ class member extends main{
 		$sql["set"]="SELECT @result:=0,
 			@message_error:='',
 			@img_set:=".$img["set"].",
-			@count_name:=(SELECT COUNT(`id`)  FROM `partner` WHERE `name`=".$name." AND `sku_root` !=".$sku_root."),
-			@count_sku:=(SELECT COUNT(`id`)   FROM `partner` WHERE `sku`=".$sku." AND `sku_root` !=".$sku_root.");
+			@count_name:=(SELECT COUNT(`id`)  FROM `member` WHERE `name`=".$name." AND `sku_root`!=".$sku_root."),
+			@count_lastname:=(SELECT COUNT(`id`)  FROM `member` WHERE `lastname`=".$lastname." AND `sku_root`!=".$sku_root."),
+			@count_tel:=(SELECT COUNT(`id`)   FROM `member` WHERE `tel`=".$tel."  AND `sku_root`!=".$sku_root."),
+			@count_idc:=(SELECT COUNT(`id`)   FROM `member` WHERE `idc`=".$idc." AND `sku_root`!=".$sku_root.");
 		";
 		$sql["check"]="
-			IF @count_name > 0 THEN 
-				SET @message_error='เกิดขอผิดพลาด ชื่อที่แก้ไขมา มีแล้ว โปรดลองชื่ออื่น';
+			IF @count_name > 0 AND @count_lastname > 0 THEN 
+				SET @message_error='เกิดขอผิดพลาด ชื่อ และนามสกุลที่ส่งมา มีแล้ว โปรดลองชื่ออื่น';
 			ELSEIF @count_sku > 0 THEN
-				SET @message_error='เกิดขอผิดพลาด รหัสภายในทแก้ไขมา มีแล้ว โปรดลอง รหัสภายในอื่น';
+				SET @message_error='เกิดขอผิดพลาด รหัสภายในที่ส่งมา มีแล้ว โปรดลอง รหัสภายในอื่น';
 			END IF;			
 		";
 		$icon_tx="";
@@ -251,29 +254,31 @@ class member extends main{
 			$icon_tx=",`icon`='".$key.".".$mime."'";
 		}else if($icon_load==""){
 			$icon_tx=",`icon`=NULL";
+		}else if($setimgnull==1){
+			$icon_tx=",`icon`=NULL";
 		}
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
-				UPDATE `partner` SET  
-					`sku`	=	".$sku."				,`sku_key`=".$sku_key."	,`name`= ".$name." 			,`brand_name`= ".$brand_name." ,
-					`pn_type`=".$pn_type."		".$icon_tx."						,`no`= ".$no."					,`alley`= ".$alley.",	`road`= ".$road.",
+				UPDATE `member` SET  
+					`sku_key`=".$sku_key."		,`name`= ".$name." 			,`lastname`= ".$lastname." ,
+					`mb_type`=".$mb_type."	".$icon_tx."			,`birthday`=".$birthday."					,`sex`=".$sex.",
+					`no`= ".$no."					,`alley`= ".$alley.",	`road`= ".$road.",
 					`distric`= ".$distric."			,`country`= ".$country."		,`province`= ".$province."	,`post_no`= ".$post_no.",
-					`tel`= ".$tel."					,`fax`= ".$fax."					,`tax`= ".$tax."					,`web`= ".$web.",
-					`tp_type`= ".$tp_type."		,`od_type`= ".$od_type."	,`note`= ".$note."	
+					`tel`= ".$tel."					,`idc`= ".$idc."					,`disc`= ".$disc."	
 				WHERE `sku_root`=".$sku_root.";
 				IF @img_set=1 THEN
 					INSERT  INTO `gallery` (
 						`sku_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,
 						`user`			,`size`			,`width`		,`height`
 					) VALUES (
-						".$sku_key."	,".$name."		,'partner'		,".$mimefull."				,".$md5.",
+						".$sku_key."	,".$name."		,'member'		,".$mimefull."				,".$md5.",
 						".$user."		,".$size."		,".$width."		,".$height."
 					);
 				END IF;
 				SET @result=1;
 			END IF;
 		";
-		$sql["ref"]=$this->ref("partner","sku_key",$skuk);
+		$sql["ref"]=$this->ref("member","sku_key",$skuk);
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`";
 		$se=$this->metMnSql($sql,["result"]);
 		print_r($sql);
@@ -320,7 +325,7 @@ class member extends main{
 		$img=["result"=>false,"set"=>0];
 		$mime="";
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
-			$se=$this->checkSet("member",["post"=>["name","lastname","sex","birthday","mb_type","idc","tel","alley","road","distric","country","province","post_no","disc"]],"post");
+			$se=$this->checkSet("member",["post"=>["name","lastname","sex","birthday","mb_type","idc","tel","no","alley","road","distric","country","province","post_no","disc"]],"post");
 			if(isset($_POST["icon"])&&$_POST["icon"]!=""){
 				$img=$this->img->imgCheck("icon");
 				if($img["result"]==false&&$se["result"]){
@@ -364,6 +369,7 @@ class member extends main{
 		$idc=$this->getStringSqlSet($_POST["idc"]);
 		$tel=$this->getStringSqlSet($_POST["tel"]);
 		$mb_type = $this->getStringSqlSet($_POST["mb_type"]);
+		$sex=(isset($_POST["sex"])&&isset($this->sex[$_POST["sex"]]))?$this->getStringSqlSet($_POST["sex"]):"\"n\"";
 		$birthday=$_POST["birthday"];
 		$birthday=$this->setDateR($birthday,"00:00:00");
 		$birthday=($birthday=="")?"NULL":$this->getStringSqlSet($birthday);
@@ -401,12 +407,13 @@ class member extends main{
 								FROM information_schema.tables
 								WHERE table_name = 'member'),
 			@count_name:=(SELECT COUNT(`id`)  FROM `member` WHERE `name`=".$name."),
+			@count_lastname:=(SELECT COUNT(`id`)  FROM `member` WHERE `lastname`=".$lastname."),
 			@count_tel:=(SELECT COUNT(`id`)   FROM `member` WHERE `tel`=".$tel."),
 			@count_idc:=(SELECT COUNT(`id`)   FROM `member` WHERE `idc`=".$idc.");
 		";
 		$sql["check"]="
-			IF @count_name > 0 THEN 
-				SET @message_error='เกิดขอผิดพลาด ชื่อที่ส่งมา มีแล้ว โปรดลองชื่ออื่น';
+			IF @count_name > 0 AND @count_lastname > 0 THEN 
+				SET @message_error='เกิดขอผิดพลาด ชื่อ และนามสกุลที่ส่งมา มีแล้ว โปรดลองชื่ออื่น';
 			ELSEIF @count_sku > 0 THEN
 				SET @message_error='เกิดขอผิดพลาด รหัสภายในที่ส่งมา มีแล้ว โปรดลอง รหัสภายในอื่น';
 			END IF;			
@@ -414,13 +421,13 @@ class member extends main{
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
 				INSERT INTO `member`  (
-					`id`				,`sku`			,`sku_key`		,`sku_root`		,`name`				,`lastname`,
-					`mb_type`	,`birthday`		,`icon`				,`no`				,`alley`					,`road`,
+					`id`				,`sku`				,`sku_key`		,`sku_root`		,`name`				,`lastname`,
+					`mb_type`	,`birthday`		,`sex`				,`icon`				,`no`				,`alley`					,`road`,
 					`distric`		,`country`			,`province`		,`post_no`			,`tel`,
 					`idc`				,`disc`
 				) VALUES (
 					`id`				,LPAD(@lastid,6,'0')	,@sku_key			,@sku_key			,".$name."				,".$lastname.",
-					".$mb_type."	,".$birthday."			,@icon				,".$no."					,".$alley."				,".$road.",
+					".$mb_type."	,".$birthday."			,".$sex."					,@icon				,".$no."					,".$alley."				,".$road.",
 					".$distric."		,".$country."		,".$province."		,".$post_no."			,".$tel.",
 					".$idc."			,".$disc."
 				);

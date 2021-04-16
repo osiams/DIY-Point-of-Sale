@@ -5,8 +5,10 @@ class sell extends main{
 		this.pd={}
 		this.fl={}
 		this.dt={}
+		this.member={"name":"บุคลทั่วไป","sku_root":""}
 		this.bc="✂️"
 		this.idn=null
+		this.idmb=null
 		this.dpro=null
 		this.dlist=null
 		this.dsums=null
@@ -46,6 +48,7 @@ class sell extends main{
 	run(){
 		this.writeContent()
 		this.idn=this.id("n")
+		this.idmb=this.id("imember")
 		this.dpro="dpro"
 		this.dlist=this.id("dlist")
 		this.dlast=this.id("dlast")
@@ -122,8 +125,21 @@ class sell extends main{
 					let ileave=this.ce("input",{"type":"button","data-id":"ileave","value":"🗑","onclick":"M.popup(this,'S.clearSell(did)')"})
 					let iplus=this.ce("input",{"id" :"iplus","data-id":"iplus_pobup","type":"button","value":"📍0","onclick":"M.popup(this,'S.showSellList()')"})
 					let ibills=this.ce("input",{"type":"button","value":"🧾","onclick":"M.popup(this,'S.billsSell(did)')"})
-				this.end(dbarl,[iamount,isearch, ileave,iplus,ibills])
+					let imember0=this.ce("div",{})
+						let form=this.ce("form",{"name":"form_sell"})
+							let ipmember=this.ce("input",{"id":"ipmember","type":"hidden","value":""})
+							let imember=this.ce("div",{"data-select_type":"one","id":"imember","onclick":"M.popup(this,'S.selectMember(did)')"})
+							this.end(imember,[this.cn(this.member.name)])
+							this.end(form,[ipmember])		
+						this.end(form,[imember])
+					this.end(imember0,[form])
+				this.end(dbarl,[iamount,isearch, ileave,iplus,ibills,imember0])
 				let dbarc=this.ce("div",{})
+				/*	let dmu=this.ce("div",{})
+						this.end(dmu,[this.cn("👥")])
+					let dpmu=this.ce("div",{"id":"tmember","onclick":"M.popup(this,'G.me(did)')"})
+						this.end(dpmu,[this.cn("บุคตลทั่วไป")])
+				this.end(dbarc,[dmu,dpmu])*/
 				let dbarr=this.ce("div",{})
 					let dme=this.ce("div",{})
 						let spme=this.ce("span",{"data-id":"popupidsellme","onclick":"M.popup(this,'G.me(did)')"})
@@ -827,6 +843,23 @@ class sell extends main{
 			let db=this.ce("div",{"class":"c"})
 				let bthome=this.ce("input",{"type":"button","value":"ยกเลิก","onclick":"M.popupClear('ileave')"})
 				let btout=this.ce("input",{"type":"button","value":"ยืนยัน","onclick":"S.clearSellOk()"})
+			this.end(db,[bthome,btout])
+		this.end(ct,[p,db])
+		return ct
+	}
+	selectMember(did){
+		let ct=this.ce("div",{})
+			let p=this.ce("p",{"class":"s14"})
+			let tx=""
+			if(this.member.sku_root==""){
+				tx="ลูกค้า"+this.member.name+" ไม่ใช่สมาชิก"
+			}else{
+				
+			}
+			this.end(p,[this.cn(tx)])
+			let db=this.ce("div",{"class":"c"})
+				let bthome=this.ce("input",{"type":"button","value":"ลงทะเบียนใหม่","onclick":"M.popupClear('ileave')"})
+				let btout=this.ce("input",{"type":"button","value":"เลือกสมาชิก","onclick":"Fsl.ctAddPartner('member',null,'form_sell',null,'imember','ipmember')"})
 			this.end(db,[bthome,btout])
 		this.end(ct,[p,db])
 		return ct

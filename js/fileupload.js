@@ -330,4 +330,11 @@ class fileupload extends main{
 			this.id("filedeletepc").parentNode.removeChild(this.id("filedeletepc"))
 		}
 	}
+	isSetNull(){
+		let a=this.id("div_fileuploadpre")
+		if(a.childNodes.length==0){
+			return true
+		}
+		return false
+	}
 }
