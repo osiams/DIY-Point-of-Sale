@@ -5,7 +5,8 @@ class sell extends main{
 		this.pd={}
 		this.fl={}
 		this.dt={}
-		this.member={"name":"บุคลทั่วไป","sku_root":""}
+		this.member={"name":"บุคลทั่วไป","lastname":"","sku_root":"","icon":"null.png"}
+		this.member_default={"name":"บุคลทั่วไป","lastname":"","sku_root":"","icon":"null.png"}
 		this.bc="✂️"
 		this.idn=null
 		this.idmb=null
@@ -44,6 +45,7 @@ class sell extends main{
 		this.listen_cm=null
 		this.listen_target_id=null
 		this.bypass_pressInput=[]
+		this.mb_type = {"s":"🏠 ผู้ประกอบการ","p":"🧑 ผู้บริโภค"};
 	}
 	run(){
 		this.writeContent()
@@ -80,13 +82,16 @@ class sell extends main{
 			dt["command"] = "now"
 			dt["type"] = "message"
 			dt["_key"] = data.key
+			dt["member"] = this.member.name+" "+ this.member.lastname
 			this.sellcon.n_unit = this.getNUnit()
+			
 			dt["message"] = this.sellcon
+			M.l(dt)
 			Ws.send([],dt)
 		}
 		//alert(JSON.stringify(data)+"555+")
 	}
-	send2cd(data_jsn){
+	send2cd(data_jsn,command=null){
 		let data = {}
 		data["type"] = "message"		
 		data["_oto"] = "Cd"		
@@ -94,18 +99,22 @@ class sell extends main{
 			if(data_jsn["command"] == "success"){
 				for(let prop in data_jsn){
 					data[prop] = data_jsn[prop]
-					
 				}
 			}
 		}else{
+			if(command=="changemember"){
+				data["command"] = "changemember"
+			}else{
+				data["command"] = "sell"
+			}
 			data_jsn["n_unit"] = this.getNUnit()
 			let k = data_jsn["skurootlast"]
-			data["command"] = "sell"
 			data_jsn["name"] = (this.pd[k] != undefined)?this.pd[k]["name"]:""
 			data_jsn["barcode"] = (this.pd[k] != undefined)?this.pd[k]["barcode"]:""
 			data_jsn["price"] = (this.pd[k] != undefined)?this.pd[k]["price"]*this.pd[k]["n_wlv"]:""
 			data_jsn["unit"] = (this.pd[k] != undefined)?(this.pd[k]["n_wlv"]*1!=1?this.pd[k]["n_wlv"]+" ":"")+""+this.pd[k]["unit_name"]:""
 			data["message"] = data_jsn
+			data["member"] = this.member.name+" "+ this.member.lastname
 		}
 		Ws.send([],data)		
 	}
@@ -233,11 +242,13 @@ class sell extends main{
 		if(Object.keys(this.dt).length>0){
 			localStorage.setItem(this.datenow, JSON.stringify(this.dt))
 			localStorage.setItem(this.datenow+"_last", sku_root)
+			localStorage.setItem(this.datenow+"_member",JSON.stringify(this.member))
 			this.setItemStList()
 		}else{
 			this.clearItemStList()
 			localStorage.removeItem(this.datenow.toString());
 			localStorage.removeItem(this.datenow.toString()+"_last");
+			localStorage.removeItem(this.datenow.toString()+"_member");
 			this.datenow=null
 		}
 	}
@@ -290,6 +301,7 @@ class sell extends main{
 				let n_list=Object.keys(n_list_ob).length
 				let d=new Date(Number(tm))
 				let date=F.getThaiDate(d)
+				let member=this.jsonToObject(localStorage.getItem(tm+"_member"),this.member)
 				let ti=(i%2==0)?"i2 i1i2":"i1 i1i2"
 				list[i]=this.ce("div",{"class":ti})
 					if(this.datenow==Number(tm)){
@@ -299,6 +311,14 @@ class sell extends main{
 					this.end(list[i+"at"],[this.cn(i+1)])
 					list[i+"date"]=this.ce("div",{})
 					this.end(list[i+"date"],[this.cn(date)])
+					if(member.sku_root!=""){
+						let mb=this.ce("p",{})
+							let sp=this.ce("span",{})
+							this.end(sp,[this.cn(" "+member.sku)])
+						this.end(mb,[this.cn(member.name+" "+member.lastname),sp])		
+						this.end(list[i+"date"],[mb])				
+					}
+					
 					list[i+"n_list"]=this.ce("div",{})
 					this.end(list[i+"n_list"],[this.cn(n_list)])
 					list[i+"n_act"]=this.ce("div",{"class":"action"})
@@ -321,6 +341,7 @@ class sell extends main{
 		G.loading("sell_loading58x","start")
 		let dt=JSON.parse(localStorage.getItem(time))
 		let dt_last=localStorage.getItem(time+"_last").trim()
+		let dt_member=this.jsonToObject(localStorage.getItem(time+"_member"),this.member)
 		let n_last=0
 		this.loadSellListClearBefore(time)
 		let timeout=0
@@ -334,6 +355,7 @@ class sell extends main{
 			setTimeout(S.productSelect, timeout+=200,d,Number(dt[k]["n"]))
 		}
 		setTimeout(S.setLastWhenLoadSellList,timeout+=200,dt_last,n_last,9)
+		this.setMemberFromSt(dt_member.sku_root)
 	}
 	setLastWhenLoadSellList(dt_last,n_last,n){
 		let sku_root=dt_last
@@ -847,23 +869,6 @@ class sell extends main{
 		this.end(ct,[p,db])
 		return ct
 	}
-	selectMember(did){
-		let ct=this.ce("div",{})
-			let p=this.ce("p",{"class":"s14"})
-			let tx=""
-			if(this.member.sku_root==""){
-				tx="ลูกค้า"+this.member.name+" ไม่ใช่สมาชิก"
-			}else{
-				
-			}
-			this.end(p,[this.cn(tx)])
-			let db=this.ce("div",{"class":"c"})
-				let bthome=this.ce("input",{"type":"button","value":"ลงทะเบียนใหม่","onclick":"M.popupClear('ileave')"})
-				let btout=this.ce("input",{"type":"button","value":"เลือกสมาชิก","onclick":"Fsl.ctAddPartner('member',null,'form_sell',null,'imember','ipmember')"})
-			this.end(db,[bthome,btout])
-		this.end(ct,[p,db])
-		return ct
-	}
 	clearSellOk(){
 		this.setSt("close")
 		this.dt={}
@@ -921,6 +926,7 @@ class sell extends main{
 		this.popupClear('iplus_pobup')
 		this.setiplus()
 		this.datenow=null
+		this.setMember0()
 	}
 	smile(error=""){
 		let t=this.sums("get")
@@ -1152,5 +1158,113 @@ class sell extends main{
 	}
 	cmError(re,form,bt){
 		alert("❌ เกิดข้อผิดพลาด "+re["message_error"])
+	}
+	selectMember(did){
+		let ct=this.ce("div",{})
+			let p=this.ce("div",{"class":"popup_member s14"})
+			let tx=""
+			let d0=this.ce("div",{})
+				let img=null
+			let d1=this.ce("div",{})
+			if(this.member.sku_root==""){
+				img=this.ce("img",{"class":"viewimage","src":"img/gallery/128x128_"+this.member.icon,"onclick":"G.view(this,0)"})
+				tx="ลูกค้า"+this.member.name+" ไม่ใช่สมาชิก"
+				this.end(d1,[this.cn(tx)])
+			}else{
+					img=this.ce("img",{"class":"viewimage","src":"img/gallery/128x128_"+this.member.icon,"onclick":"G.view(this)"})
+					let d2=this.ce("div",{})
+					this.end(d2,[this.cn("ชื่อ-นามสกุล:"+this.member.name+" "+this.member.lastname)])
+						
+					let d4=this.ce("div",{})
+					this.end(d4,[this.cn("รหัส:"+this.member.sku)])
+		
+					let d6=this.ce("div",{})
+					this.end(d6,[this.cn("ประเภท:"+this.mb_type[this.member.mb_type])])
+				this.end(d1,[d2,d4,d6])	
+				
+			}
+			this.end(d0,[img])
+			this.end(p,[d0,d1])
+			let q=this.ce("a",{"onclick":"M.popupClear();S.setMember0(this)"})
+			this.end(q,[this.cn("เลือกเป็นบุคลทั่วไปไม่ใช่สมาชิก")])
+			let db=this.ce("div",{"class":"c"})
+				let bthome=this.ce("input",{"type":"button","value":"ลงทะเบียนใหม่","onclick":"S.regisMember(this)"})
+				let btout=this.ce("input",{"type":"button","value":"เลือกสมาชิก","onclick":"M.popupClear();Fsl.ctAddPartner('member','S','form_sell',null,'imember'		,'ipmember','new',1,null,null,		0,'name','',0)"})
+			this.end(db,[bthome,btout])
+		this.end(ct,[p])
+		if(this.member.sku_root!=""){
+			this.end(ct,[q])
+		}
+		this.end(ct,[db])
+		return ct
+	}
+	setMember0(){
+		this.member=Object.assign({},this.member_default)
+		let t=this.id("imember")
+		this.rmc_all(t)
+		let div=this.ce("div",{"class":"form_select_div_one_select"})
+			let div_img=this.ce("div",{"class":"img32"})
+			let img=this.ce("img",{"src":"img/gallery/32x32_"+this.member["icon"],"alt":this.member["name"],"onerror":"this.src='img/pos/32x32_null.png'"})	
+			this.end(div_img,[img])	
+			let span=this.ce("div",{})
+			this.end(span,[this.cn(this.member["name"]+" "+this.member["lastname"])])
+		this.end(div,[div_img,span])	
+		this.end(t,[div])
+		this.setStMember()
+	}
+	selectPartnerOK(display_id,partner,partner_full_data){
+		let t=this.id(display_id)
+		for (let prop in partner[display_id]) {
+			this.member=partner_full_data[display_id][prop]
+			let div=this.ce("div",{"class":"form_select_div_one_select"})
+				let div_img=this.ce("div",{"class":"img32"})
+					let img=this.ce("img",{"src":"img/gallery/32x32_"+partner_full_data[display_id][prop]["icon"],"alt":partner_full_data[display_id][prop]["name"],"onerror":"this.src='img/pos/32x32_null.png'"})	
+				this.end(div_img,[img])	
+				let span=this.ce("div",{})
+				this.end(span,[this.cn(partner_full_data[display_id][prop]["name"]+" "+partner_full_data[display_id][prop]["lastname"])])
+			this.end(div,[div_img,span])	
+			this.end(t,[div])
+		}
+		this.setStMember()
+		this.send2cd({},"changemember")
+	}
+	setStMember(){
+		if(Object.keys(this.dt).length>0){
+			localStorage.setItem(this.datenow+"_member",JSON.stringify(this.member))
+		}
+	}
+	regisMember(did){
+		let rid = this.rid()
+		let ct=this.ce("div",{})
+			let ifm=this.ce("iframe",{"src":"?a=member&b=regis&iframe=1&dialog_id="+rid,"width":"100%","height":"400"})
+		this.end(ct,[ifm])
+		let bts=[]
+		M.dialog({"rid":rid,"display":1,"bts":bts,"ct":ct,"title":"ลงทะเบียนสมาชิก","width":"400","bts0":1,"ofc":0})
+	}
+	setMemberFromSt(sku_root){
+		let dt={"data":{"a":"member","b":"getmember1","sku_root":sku_root},"result":S.getMember1Result,"error":S.getMember1Error}
+		this.setFec(dt)
+	}
+	getMember1Result(re,form,bt){
+		if(re["result"]){
+			if(re["data"].hasOwnProperty("name")){
+				S.member=re["data"]
+				Fsl.partner["imember"]={}
+				Fsl.partner["imember"][re["data"]["sku_root"]]=re["data"]
+				M.l(re["data"])
+				if(!Fsl.partner_full_data.hasOwnProperty("imember")){
+					Fsl.partner_full_data["imember"]={}
+				}
+				Fsl.partner_full_data["imember"][re["data"]["sku_root"]]=re["data"]
+				Fsl.setEmptyTable("imember")
+				S.selectPartnerOK("imember",Fsl.partner,Fsl.partner_full_data)
+			}
+		}else{
+			S.member=Object.assign({},S.member_default)
+			S.setMember0()
+		}
+	}
+	getMember1Error(re,form,bt){
+		alert(555555555555555)
 	}
 }

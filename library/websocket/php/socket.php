@@ -48,6 +48,8 @@ class PHPWebSockets{
 										unset($read[$key]);																	
 									}		
 								}
+							}
+							if($num_changed_sockets!=0){
 								foreach($read as $client){
 									echo ".";
 									$disc=true;	
@@ -92,6 +94,7 @@ class PHPWebSockets{
 									}		
 									unset($read[$key]);										
 								}	
+								$num_changed_sockets=0;
 							}
 						} while (true);
 					}else{

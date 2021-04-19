@@ -6,7 +6,7 @@
 		#cdlogo > span{display:inline-block;}
 		#cdusercd{display: grid;grid-template-columns:auto auto;background-color:transparent;align-content: center;padding: 0px 5px;color:white;font-size:18px;}
 			#cduser:before {content: "ผู้ขาย:";}
-			#cdcd:before {content: "ลูกค้า:";}
+			#cdmember:before {content: "ลูกค้า:";}
 	#divvdo_out{display:grid;grid-template-columns:auto 360px;grid-template-rows:100%;/*justify-content: center;align-content: center;*/background-color:red;overflow:hidden;height:100%;}
 		#divvdo{display:block}
 			video{height:100%;width:100%;background-color:black;}
@@ -67,7 +67,7 @@
 
 
 @media screen and (max-width: 639px) {
-#cd_display{grid-template-rows:60px auto 30px;}
+#cd_display{grid-template-rows:65px auto 30px;}
 	#cdlogousercd{grid-template-columns:auto;}
 		#cdlogo{justify-content: center;}
 	#divvdo_out{grid-template-columns:100%;grid-template-rows:360px auto;}

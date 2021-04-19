@@ -2,6 +2,7 @@
 class form_selects{
 	constructor(main){
 		this.main=main
+		this.partner_full_data={}
 		this.partner_old={}
 		this.partner={}
 		this.search={}
@@ -10,7 +11,9 @@ class form_selects{
 	run(){
 
 	}
-	ctAddPartner(a,callback=null,form_name,dialog_id=null,display_id,partner_list_id,get_type="new",page=1,oshid=null,ipshid=null,lid=0,fl="name",tx=""){
+	ctAddPartner(	a						,callback=null		,form_name		,dialog_id=null		,display_id,
+							partner_list_id	,get_type="new"	,page=1			,oshid=null			,ipshid=null,
+							lid=0					,fl="name"				,tx=""				,ofc=1){
 		if(this.partner[display_id]==undefined){
 			this.partner[display_id]={}
 			this.search[display_id]={}
@@ -26,7 +29,7 @@ class form_selects{
 		
 		let dt={"data":{"a":"form_selects","b":a,"callback":callback,"dialog_id":dialog_id,"display_id":display_id,
 				"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"get_type":get_type,"page":page,
-				"oshid":oshid,"ipshid":ipshid,"lid":lid,"fl":fl,"tx":tx},"result":Fsl.getListPartnerResult,"error":Fsl.getListPartnerError}		
+				"oshid":oshid,"ipshid":ipshid,"lid":lid,"fl":fl,"tx":tx,"ofc":ofc},"result":Fsl.getListPartnerResult,"error":Fsl.getListPartnerError}		
 		if(a=="product"){
 			if((eval(callback)).partner!=null){
 				dt.data.partner=eval(callback).partner
@@ -72,6 +75,7 @@ class form_selects{
 		let form_name = form.get("from_name")
 		let get_type=form.get("get_type")
 		let partner_list = form.get("partner_list")
+		let ofc = form.get("ofc")
 		let tsh=tsh_prop[a]
 		let cpn=this.main.ce("div",{"id":"cpn0_partner_"+display_id,"class":"selected_list_partner_search"})
 			let oshid="option_search_partner_id_"+display_id
@@ -95,7 +99,7 @@ class form_selects{
 			let d1 = this.main.ce("div",{"class":"selects_list_partner"})
 
 			let lid=form.get("lid")
-					
+				
 			let partner_has = F.valueListToArray(partner_list)
 										
 				for(let i=0;i<arr.length;i++){
@@ -110,9 +114,17 @@ class form_selects{
 							let img=this.main.ce("img",{"src":"img/gallery/32x32_"+arr[i]["icon"],"alt":arr[i]["name"],"onerror":"this.src='img/pos/64x64_null.png'"})	
 						this.main.end(div_img,[img])	
 						let boc = this.main.ce("label",{"for":ckrid})		
-							let tn = this.main.cn(arr[i]["name"])
-						this.main.end(boc,[tn])
-						let s=this.main.ce("div",{"data-rid_close":rid,"onclick":"Fsl.select1Partner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')"})
+							//let tn = this.main.cn(arr[i]["name"])
+							let tn = this.setNameContent(form,arr[i])
+							let tn1=this.main.cn(tn[0])
+							let tna=tn[1]!=undefined?tn[1]:""
+							let tn2=this.main.cn(tna)
+						this.main.end(boc,[tn1])
+						if(tna!=""){
+							//let br=this.main.ce("span",{})
+							this.main.end(boc,[tn2])
+						}
+						let s=this.main.ce("div",{"data-rid_close":rid,"onclick":"Fsl.select1Partner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"',"+ofc+")"})
 						this.main.end(s,[this.main.cn("⬆")])
 					this.main.end(div1,[ck,div_img,boc,s])
 					this.main.end(d1,[div1])
@@ -127,18 +139,47 @@ class form_selects{
 
 		let count=Object.keys(this.partner[display_id]).length
 
+
+
 		let bts = [
 			{"value":"⬅ เลือกเพิ่ม","style":"visibility:hidden","id":"bt_back_select_"+display_id,"onclick":"Fsl.backSelectPartner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')"},
 			{"value":"ดูที่เลือก ("+count+")","rid_close":rid,"id":"bt_select_n_"+display_id,"onclick":"Fsl.viewSlectedPartner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"')"}
 		]
+		
+		let select_type=null
+		if(this.main.id(display_id)!=null){
+			select_type=this.main.id(display_id).getAttribute("data-select_type")
+		}
+		if(select_type=="one"){
+			bts[1]["style"]="visibility:hidden"
+		}		
+		
 		if(get_type=="new"){
-			
-			M.dialog({"rid":rid,"display":1,"pn":cpn,"ct":ct,"bts":bts,"title":title_bar[a],"width":"250"})
+			let dty={"rid":rid,"display":1,"pn":cpn,"ct":ct,"bts":bts,"title":title_bar[a],"width":"400","ofc":ofc}
+			if(select_type=="one"){
+				dty["bts0"]=1
+			}
+			M.dialog(dty)
 		}else if(get_type=="update"){
 			this.main.rmc_all(this.main.id("ct0_partner_"+display_id))
 			this.main.end(this.main.id("ct0_partner_"+display_id),[fron,div_page])	
 			//this.main.id("ct0_partner_"+display_id).appenChild()
 		}
+	}
+	setNameContent(form,arr){
+		let display_id = form.get("display_id")
+		let t=[arr["name"]]
+		let a=form.get("b")
+		if(a=="member"){
+
+			t[1]=" "+arr["name"]+" "+arr["lastname"]
+			t[0]="["+arr["sku"]+"]"
+			if(this.partner_full_data[display_id]==undefined){
+				this.partner_full_data[display_id]={}
+			}
+			this.partner_full_data[display_id][arr["sku_root"]]=arr
+		}
+		return t
 	}
 	setValueDel(id){
 		let o=M.id(id)
@@ -312,7 +353,7 @@ class form_selects{
 		}
 		this.partner[display_id]=no
 	}
-	selectPartnerOK(did,a,callback,display_id,partner_list_id){
+	selectPartnerOK(did,a,callback,display_id,partner_list_id,ofc=1){
 		this.setEmptyTable(display_id)
 		let rid_close=did.getAttribute("data-rid_close")
 		this.selectPartnerListValue(a,display_id,partner_list_id)
@@ -324,7 +365,11 @@ class form_selects{
 		}else if(a=="member"){
 			let select_type=this.main.id(display_id).getAttribute("data-select_type")
 			if(select_type=="one"){
-				this.selectPartnerOKAppendOne(a,display_id)
+				if(callback!=""){
+					eval(callback).selectPartnerOK(display_id,this.partner,this.partner_full_data)
+				}else{
+					this.selectPartnerOKAppendOne(a,display_id)
+				}
 			}else{
 				
 			}
@@ -333,7 +378,7 @@ class form_selects{
 		}
 		
 		this.partner_old[display_id]=Object.assign({}, this.partner[display_id]);
-		M.dialogClose(rid_close)
+		M.dialogClose(rid_close,ofc)
 	}
 	selectPartnerOKAppend(a,display_id){
 		let t=this.main.id(display_id)
@@ -496,7 +541,7 @@ class form_selects{
 			v.value+=","+prop+","
 		}
 	}
-	select1Partner(did,a,callback,display_id,partner_list_id){
+	select1Partner(did,a,callback,display_id,partner_list_id,ofc=1){
 		let d=did.parentNode.childNodes[0]
 		let sku_root=d.value
 		let name=d.getAttribute("data-name")
@@ -510,7 +555,7 @@ class form_selects{
 		let count=Object.keys(this.partner[display_id]).length
 		this.partner_old[display_id]=Object.assign({}, this.partner[display_id]);
 		this.main.id("bt_select_n_"+display_id).value="ดูที่เลือก ("+count+")"
-		this.selectPartnerOK(did,a,callback,display_id,partner_list_id)
+		this.selectPartnerOK(did,a,callback,display_id,partner_list_id,ofc)
 	}
 	deletePartner(did,display_id,sku_root){
 		did.parentNode.parentNode.removeChild(did.parentNode)

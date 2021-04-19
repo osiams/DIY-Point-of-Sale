@@ -3,6 +3,9 @@ function tran(ob,mt,dt){
 	let js=JSON.parse(dt)
 	return eval(ob+"."+mt+"(js)")
 }
+function tran2(ob,mt,ar_tx){alert(ar_tx)
+	return eval(ob+"."+mt+"("+ar_tx+")")
+}
 class main{
 	constructor(){
 		this.b=document.body
@@ -36,6 +39,15 @@ class main{
 		}else{
 			return String(int).replace(/(.)(?=(\d{3})+$)/g,'$1,')
 		}
+	}
+	jsonToObject(json,object_default={}){
+		let re
+		try{
+			re=JSON.parse(json)
+		}catch (e) {
+			re=object_default
+		}
+		return re
 	}
 	cookie_set_data(){
 		let a=document.cookie.split(';')
@@ -98,11 +110,23 @@ class main{
 		.then(response =>callBackOk(response))
 		.catch(error=> callBackError(error))
 	}
-	tooltups(did,text){
+	tooltups(did,text,width=200){
 		let ct=this.ce("div",{"class":"qbox"})
-		did.setAttribute("data-width","200")
+		did.setAttribute("data-width",width)
 		this.end(ct,[this.cn(text)])
 		this.popup(did,ct)
+	}
+	getClipboard(did,id,width){
+		let cp=document.getElementById(id)
+		cp.focus()
+        cp.select()
+        try {
+          let a=document.execCommand("copy");
+          let msg=a? "✔️ คัดลอกข้อความแล้ว":"⚠️ คัดลอกข้อความ ไม่สำเร็จ";
+          this.tooltups(did,msg,width)
+        } catch(err) {
+          this.tooltups(did,"⛔️ ไม่สามารถคัดลอกข้อความได้")
+        }
 	}
 	popup(did,callnext,callBack,event){
 		M.zdl+=1
@@ -173,8 +197,11 @@ class main{
 						left=pt.width+pt.left-popup_width
 						if(window_width-pt.width+pt.left>3){
 							left=pt.width+pt.left-popup_width+3
+							if(left+20>pt.left+pt.width/2){
+								left=(pt.left+pt.width/2)-popup_width/2
+							}
 						}
-						if(window_width>document.body.clientWidth){
+						if(window_width>document.body.clientWidth){alert(8)
 							left=left+(window_width-document.body.clientWidth)
 						}
 					}else if(cklicleft + popup_width < window_width){
@@ -242,6 +269,28 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 				
 				this.id("film_"+id).parentNode.removeChild(this.id("film_"+id))
 			}
+		}else if(id==null){
+			let d=event.target
+			let a=null
+			if(d.parentNode.className=="pp"){
+				a=d.parentNode
+			}else if(d.parentNode.parentNode.className=="pp"){
+				a=d.parentNode.parentNode
+			}else if(d.parentNode.parentNode.parentNode.className=="pp"){
+				a=d.parentNode.parentNode.parentNode
+			}else if(d.parentNode.parentNode.parentNode.parentNode.className=="pp"){
+				a=d.parentNode.parentNode.parentNode.parentNode
+			}
+			if(this.id(a.id)!=undefined){
+				id=a.id
+				this.id(id).style.display="none"
+				this.id("film_"+id).style.display="none"
+				this.id(id).parentNode.removeChild(this.id(id))
+				if(this.id("film_"+id)!=undefined){
+					
+					this.id("film_"+id).parentNode.removeChild(this.id("film_"+id))
+				}
+			}
 		}
 	}
 	printAgain(size,type,sku_root){
@@ -274,7 +323,9 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 			let width= data.hasOwnProperty("width") ?"width:"+data.width+"px;":""
 			let rid = data.hasOwnProperty("rid") ?data.rid:this.rid()
 			let ofc = data.hasOwnProperty("ofc") ?data.ofc:1
-			let dialog = this.ce("div",{"class":"dialog dialog_active1","id":rid+"_dialog","onmousedown":"this.style.transitionDuration='0s'","onmouseup":"M.setDialogSize(this)","style":width})
+			let bts0 = data.hasOwnProperty("bts0") ?"_bts0":""
+
+			let dialog = this.ce("div",{"class":"dialog dialog_tr"+bts0+" dialog_active1","id":rid+"_dialog","onmousedown":"this.style.transitionDuration='0s'","onmouseup":"M.setDialogSize(this)","style":width})
 				let bar = this.ce("div",{})
 					let barname= this.ce("div",{})
 					this.end(barname,[this.cn(title)])
@@ -310,24 +361,26 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 			this.end(this.b,[film,dialog])	
 			let tp = (data.ct.offsetHeight + 76 + 8)/2 - window.scrollY 
 			let lt = (data.ct.offsetWidth+8)/2 - window.scrollX 
-			/*if(width != ""){
-				lt = (width+8)/2
-			}*/
+			
 			dialog.setAttribute("style","z-index:"+(zindex+1)+";top:calc(50% - "+(tp)+"px);left:calc(50% - "+(lt)+"px);"+width)
 			this.setDialogSize(this.id(rid+"_dialog"))
 			//alert(data.ct.offsetHeight)
 		}
 	}
 	setDialogSize(did){
-		let width = (did.offsetWidth > window.innerWidth)?window.innerWidth:did.offsetWidth
+		let width = (did.offsetWidth > window.innerWidth)?window.innerWidth-20:did.offsetWidth
 		width = (width < did.childNodes[2].childNodes[0].offsetWidth+8)?did.childNodes[2].childNodes[0].offsetWidth+8:width
-		let height = (did.offsetHeight > window.innerHeight)?window.innerHeight:did.offsetHeight	
+		let height = (did.offsetHeight > window.innerHeight)?window.innerHeight-20:did.offsetHeight	
 		height = (height < 76 + 20 )?76 +20:height	
 		let tp = (height)/2  - window.scrollY
 		let lt = (width)/2  - window.scrollX
 		let zindex = did.style.zIndex
 
 		did.setAttribute("style","z-index:"+(zindex)+";top:calc(50% - "+(tp)+"px);left:calc(50% - "+(lt)+"px);height:"+(height-2+1)+"px;width:"+(width-2+1)+"px;")
+		let a=did.childNodes[1].childNodes[1].childNodes[0]
+		if(a.tagName=="IFRAME"){
+			a.setAttribute("height",height-34)
+		}
 	}
 	filmActive(did,id){
 		M.l(did.className)
@@ -341,7 +394,7 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 		}
 	}
 	dialogActive(did){
-		if(did.className == "dialog dialog_active1"){
+		if(did.className == "dialog dialog_tr_bts0 dialog_active1"||did.className == "dialog dialog_tr dialog_active1"){
 			did.classList.remove("dialog_active1")
 			did.classList.add("dialog_active2");
 		}else{

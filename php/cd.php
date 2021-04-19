@@ -33,7 +33,7 @@ class cd extends main{
 				<div id="cdlogo"><div>'.htmlspecialchars($this->shop->name).'</div></div>
 				<div id="cdusercd">
 					<div id="cduser"></div>
-					<div id="cdcd"></div>
+					<div id="cdmember"></div>
 				</div>
 			</div>
 			<div id="divvdo_out">

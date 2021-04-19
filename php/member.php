@@ -21,7 +21,7 @@ class member extends main{
 		require($file);		
 		$this->img=new image($this->gallery_dir);		
 		$this->page=$this->setPageR();
-		$q=["regis","edit","delete","details"];
+		$q=["regis","edit","delete","details","iframeregissuccess"];
 		$this->addDir("?a=".$this->a,$this->title);
 		if(isset($_GET["b"])&&in_array($_GET["b"],$q)){
 			$t=$_GET["b"];
@@ -38,10 +38,46 @@ class member extends main{
 				}else{
 					$this->pageMember();
 				}
+			}else if($t=="iframeregissuccess"){
+				$this->iframeRegisSuccess();
 			}
 		}else{
 			$this->pageMember();
 		}
+	}
+	public function fetch(){
+		$re=["result"=>false,"message_error"=>"","data"=>[]];
+		if(isset($_POST["b"])&&$_POST["b"]=="getmember1"){
+			if(isset($_POST["sku_root"])&&$this->isSKU($_POST["sku_root"])){
+				$se=$this->fetchGetMember1($_POST["sku_root"]);
+				if(count($se["data"])>0){
+					$re["result"]=true;
+					$re["data"]=$se["data"];
+				}else{
+					$re["message_error"]=$se["message_error"];
+				}
+			}		
+		}
+		header('Content-type: application/json');
+		echo json_encode($re);
+	}
+	private function fetchGetMember1(string $sku_root):array{
+		$re=["result"=>false,"message_error"=>"","data"=>[]];
+		$sql=[];
+		$sql["get"]="SELECT `name`,IFNULL(`lastname`,'') AS `lastname`,IFNULL(`icon`,'null.png') AS `icon`,`sku`,`sku_root` ,
+				`mb_type`
+			FROM `member` 
+			WHERE `sku_root`='".$sku_root."'";
+		$se=$this->metMnSql($sql,["get"]);
+		if($se["result"]){
+			if(count($se["data"]["get"])>0){
+				$re["result"]=true;
+				$re["data"]=$se["data"]["get"][0];
+			}
+		}else{
+			$re["message_error"]=$se["message_error"];
+		}
+		return $re;
 	}
 	private function deleteMember():void{
 		if(isset($_POST["sku_root"])){
@@ -351,7 +387,13 @@ class member extends main{
 					if($img["result"]){
 						$this->img->imgSave($img,$key,$this->max_squar);
 					}
-					header('Location:?a='.$this->a.'&ed='.$key);
+					$iframe=(isset($_GET["iframe"])&&$_GET["iframe"]=="1")?1:0;
+					$dialog_id=(isset($_GET["dialog_id"]))?$_GET["dialog_id"]:"";
+					if($iframe==1){
+						header('Location:?a='.$this->a.'&b=iframeregissuccess&dialog_id='.$dialog_id);
+					}else{
+						header('Location:?a='.$this->a.'&ed='.$key);
+					}
 				}
 			}
 			if($error!=""){
@@ -361,6 +403,13 @@ class member extends main{
 			$this->regisMemberPage($error);
 		}
 	}
+	private function iframeRegisSuccess(){
+		$dialog_id=(isset($_GET["dialog_id"]))?$_GET["dialog_id"]:"";
+		$this->home=1;
+		$this->pageHead([]);
+		$ar_tx='\\\''.$dialog_id.'\\\',0';
+		echo '<div class="c"><img src="img/pos/64x64_member.png"><br /><b>ลงทะเบียน สมาชิกสำเร็จ</b><br /><button onclick="window.parent.tran2(\'M\',\'dialogClose\',\''.$ar_tx.'\')">ปิดหน้าต่างนี้</button></div>';
+	}
 	private function regisMemberInsert(string $keyi,array $img,string $mime=""):array{
 		//print_r($this->dn_value);exit;
 		$name=$this->getStringSqlSet($_POST["name"]);
@@ -369,7 +418,7 @@ class member extends main{
 		$idc=$this->getStringSqlSet($_POST["idc"]);
 		$tel=$this->getStringSqlSet($_POST["tel"]);
 		$mb_type = $this->getStringSqlSet($_POST["mb_type"]);
-		$sex=(isset($_POST["sex"])&&isset($this->sex[$_POST["sex"]]))?$this->getStringSqlSet($_POST["sex"]):"\"n\"";
+		$sex=(isset($_POST["sex"])&&isset($this->sex[$_POST["sex"]]))?$this->getStringSqlSet($_POST["sex"]):"NULL";
 		$birthday=$_POST["birthday"];
 		$birthday=$this->setDateR($birthday,"00:00:00");
 		$birthday=($birthday=="")?"NULL":$this->getStringSqlSet($birthday);
@@ -450,6 +499,8 @@ class member extends main{
 		return $se;
 	}
 	protected function regisMemberPage(string $error):void{
+		$iframe=(isset($_GET["iframe"])&&$_GET["iframe"]=="1")?1:0;
+		$dialog_id=(isset($_GET["dialog_id"]))?$_GET["dialog_id"]:"";
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
 		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
 		$lastname=(isset($_POST["lastname"]))?htmlspecialchars($_POST["lastname"]):"";
@@ -467,15 +518,22 @@ class member extends main{
 		$province=(isset($_POST["province"]))?htmlspecialchars($_POST["province"]):"";
 		$post_no=(isset($_POST["post_no"]))?htmlspecialchars($_POST["post_no"]):"";
 		$disc=(isset($_POST["disc"]))?htmlspecialchars($_POST["disc"]):"";
+
+		$text_qr_iframe="";
+		if($iframe==1){
+			$this->home=1;
+			$text_qr_iframe="&iframe=1&dialog_id=$dialog_id";
+		}	
 		$this->addDir("","เพิ่ม".$this->title);
 		$this->pageHead(["title"=>"เพิ่ม".$this->title." DIYPOS","js"=>["member","Mb","fileupload","Ful"],"run"=>["Mb"],"css"=>["member","fileupload"]]);
+		
 		echo '<div class="content">
 			<div class="form">
 				<h1 class="c">เพิ่ม'.$this->title.' </h1>';
 		if($error!=""){
 			echo '<div class="error">'.$error.'</div>';
 		}		
-		echo '		<form name ="add_member" method="post">
+		echo '		<form name ="add_member" method="post" action="?a=member&b=regis'.$text_qr_iframe.'">
 			<input type="hidden" name="submit" value="clicksubmit" />
 			<input type="hidden" id="icon_id" name="icon" value="'.$icon.'" />
 			<p><label for="member_name">ชื่อ</label></p>
@@ -526,10 +584,15 @@ class member extends main{
 			</div>	
 			<script type="text/javascript">Ful.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')</script>
 		';			
-		echo '</table>
-					<br />
-					<input type="submit" value="เพิ่ม'.$this->title.'" />
-				</form>
+		echo '';
+		
+		if($iframe==1){
+			echo '<div class="member_submit_iframe"><input type="submit" value="➕ เพิ่ม'.$this->title.'" /></div>';
+		}else{
+			echo'<br />
+					<input type="submit" value="➕ เพิ่ม'.$this->title.'" />';
+		}
+		echo '		</form>
 			</div>
 		</div>';
 		$this->pageFoot();

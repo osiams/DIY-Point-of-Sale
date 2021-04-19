@@ -140,14 +140,17 @@ class setting extends main{
 			<br />
 			<table>
 				<caption>WebSockets</caption>
-				<tr><th>รายละเอียด</th><th>ค่า</th></tr>
+				<tr><th>รายละเอียด</th><th  colspan="2">ค่า</th></tr>
 				<tr><td class="l">คำสั่ง ทำงาน</td>
 					<td class="l">
-					<p class="terminal">'.$this->getCmdSock().'</p>
+					<input type="text" id="getcmdsock" class="terminal" value="'.$this->getCmdSock().'" />
+					</td>
+					<td>
+						<input type="button"  onclick="M.getClipboard(this,\'getcmdsock\',100)" value="📋 คัดลอก"/>
 					</td>
 				</tr>	
 				<tr><td class="l">สถานะ</td>
-					<td class="l">
+					<td class="l"  colspan="2">
 						<button id="ws_status" class="readystate">ไม่ทำงาน</button>
 						<script type="text/javascript">Ws.statSet("ws_status")</script>
 					</td>

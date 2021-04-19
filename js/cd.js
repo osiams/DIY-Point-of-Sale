@@ -12,6 +12,7 @@ class cd extends main{
 		this.inst = null
 		this.cdlogo = null
 		this.cduser = null
+		this.cdmember = null
 		this.cdvdo = null
 		this.divvdo = null
 		this.divvdo_out = null
@@ -40,6 +41,7 @@ class cd extends main{
 			this.cdstnby = this.id("cdstnby")
 			this.cdlogo = this.id("cdlogo")
 			this.cduser = this.id("cduser")
+			this.cdmember = this.id("cdmember")
 			this.cdvdo = this.id("cdvideo")
 			this.cdvdo_empty = this.id("cd_video_empty")
 			
@@ -97,10 +99,14 @@ class cd extends main{
 		}else if(data.key == this.ip){
 			if(data.command == "now" && data._key==Ws.mykey){
 				data.message.user_name = data.user_name
+				data.message.member = data.member
 				this.setNowLNS(data.message)
 			}else if(data.command == "sell"){
 				data.message.user_name = data.user_name
+				data.message.member = data.member
 				this.setNowLNS(data.message)
+			}else if(data.command == "changemember"){
+				this.setNowMember(data.member)
 			}else if(data.command == "success"){
 				//data.change="2,025.30"
 				this.cd_change.innerHTML = this.nb(data.change.replace(/,/g,""))
@@ -154,10 +160,14 @@ class cd extends main{
 			this.cd_sum_float.innerHTML = this.getIntFloat(data.sum.replace(/,/g,""),"float")
 			this.cdlistitem.scrollTo({top:this.cdlistitem.scrollHeight,behavior: "smooth"});
 			this.cduser.innerHTML = data.user_name
+			this.cdmember.innerHTML = data.member
 		}else{
 			this.empty = 1
 			this.showVDO()
 		}
+	}
+	setNowMember(name){
+		this.cdmember.innerHTML = name
 	}
 	showVDO(){
 		if(this.empty == 1){

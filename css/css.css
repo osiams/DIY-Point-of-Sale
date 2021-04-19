@@ -84,7 +84,7 @@ form >  fieldset  >  div{direction:ltr;text-align:left;}
 .bgyl{background-color:yellow;}
 
 .q{background-color:DeepSkyBlue;display:inline-block;width:16px;height:16px;text-align:center;line-height:16px;border-radius: 8px 8px 8px 8px;font-size:11px;cursor:pointer;color:black}
-.qbox{font-size:12px;text-align:left;white-space: pre-wrap;}
+.qbox{font-size:var(--font-size-body);;text-align:left;white-space: pre-wrap;}
 .none{display:none;color:red}
 .bghome{}
 div.setting{padding:2px 5px 2px 2px;white-space: nowrap;}
@@ -171,7 +171,9 @@ div.page{margin:2px auto;}
 .imgbill{border:1px solid #dddddd;width:calc(100% - 20px);max-width:384px;box-shadow: 3px 3px 15px #000000;margin:0 auto;}
 
 /*dialog*/
-.dialog{display:grid;grid-template-rows:30px auto 46px;position:absolute;border:1px solid gray;background-color:#eeeeee;
+.dialog_tr{grid-template-rows:30px auto 46px;}
+.dialog_tr_bts0{grid-template-rows:30px auto 0px;}
+.dialog{display:grid;position:absolute;border:1px solid gray;background-color:#eeeeee;
 	border-radius: 8px 8px 0px 8px;box-shadow:10px 10px 10px 0px rgba(0,0,0,0.5);resize: both;overflow: hidden;transition-duration:0.3s}
 .dialog > div:nth-child(1){display:grid;grid-template-columns:auto 30px;background-color:#dddddd;}
 .dialog > div:nth-child(1) >div:nth-child(1){display:grid;align-content: center;justify-content: start;height:100%;padding:0px 3px;font-weight:bold;white-space: nowrap;}

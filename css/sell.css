@@ -53,9 +53,12 @@ body{overflow:hidden;}
 #sell > div:nth-child(3){display:grid;grid-template-rows:auto 32px;grid-template-columns:auto;background-color:transparent;text-align:left}
 }
 .sellws{height:100%;}
-.selllist > div:nth-child(1) {display:grid;grid-template-columns:25px  130px auto 60px ; width:100%;font-size:14px;padding:2px 0px;border-bottom:1px solid #cccccc}
+.selllist > div:nth-child(1) {display:grid;grid-template-columns:25px auto  100px 60px ; width:100%;font-size:14px;padding:2px 0px;border-bottom:1px solid #cccccc}
 .selllist > div:nth-child(2) {height:200px;overflow-y: auto;width:100%}
-.selllist > div:nth-child(2) > div{display:grid;grid-template-columns:25px  130px auto 90px;width:100%;align-items: center;font-size:14px;grid-gap: 2px 2px;padding:2px 0px;border-bottom:1px solid #cccccc}
+.selllist > div:nth-child(2) > div{display:grid;grid-template-columns:25px  auto 50px 90px;width:100%;align-items: center;font-size:14px;grid-gap: 2px 2px;padding:2px 0px;border-bottom:1px solid #cccccc}
+.selllist > div:nth-child(2) > div > div:nth-child(2){text-align:left}
+.selllist > div:nth-child(2) > div > div:nth-child(2) >p{text-align:right;color:blue}
+.selllist > div:nth-child(2) > div > div:nth-child(2) >p >span{color:DarkGreen}
 .selllist > div:nth-child(2) > div > div:nth-child(4)> span{cursor:pointer;padding :0px 3px;margin:0px  2px;text-align:center;}
 .selllist_curent{background-color:rgba(144, 238, 144,1);animation-name:dlbb1;animation-duration:2s;animation-iteration-count:10;} 
 
@@ -128,3 +131,7 @@ body{overflow:hidden;}
 .cal_d_press > input[type="text"]:nth-child(2){width:calc(100% - 8px);text-align:right;font-weight:bold;font-size:25px;margin:2px 0;padding:5px 3px;font-family:"Lucida Console", "Courier New", monospace;color:green}
 .cal_d_press > div{display:grid;grid-template-columns:auto auto auto;width:100%;}
 .cal_d_press > div > button{height:40px;}
+
+.popup_member{display:grid;grid-template-columns:128px  auto;grid-gap:1px;padding:2px;background-color:PowderBlue;margin:0px auto 0px auto;}
+.popup_member > div:nth-child(1){font-size:0px;}
+.popup_member > div:nth-child(2){text-align:left;background-color:PowderBlue;padding:3px;}
