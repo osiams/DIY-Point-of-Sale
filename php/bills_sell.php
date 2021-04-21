@@ -4,6 +4,10 @@ class bills_sell extends bills{
 		parent::__construct();
 		$this->per=10;
 		$this->page=1;
+		$this->mb_type = [
+			"s"=>["icon"=>"🏠","name"=>"ผู้ประกอบการ"],
+			"p"=>["icon"=>"🧑","name"=> "ผู้บริโภค"]
+		];
 	}
 	public function run(){
 		$this->page=$this->setPageR();
@@ -48,7 +52,7 @@ class bills_sell extends bills{
 		}
 	}
 	private function writeContentpageView(array $head,array $list):void{
-		//print_r($list);
+		//print_r($head);
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
 		echo '<div class="content">
 			<h2 class="c">ใบเสร็จเลขที่ '.$head["sku"].'</h2>
@@ -68,9 +72,21 @@ echo $mo->format('U')-$reg->format("U");*/
 			หลังจากออกใบเสร็จไป '.$this->ago($head["dif"]).'
 			</div>';
 		}
-		echo '	<div class="l">👫 ผู้ขาย : '.htmlspecialchars($head["user_name"]).'
-				🕒วันที่ : '.$head["date_reg"].' น.
-			</div>
+		echo '	<div class="l"><b>👫 ผู้ขาย</b> : '.htmlspecialchars($head["user_name"]).' ,
+				<b>🕒 วันที่</b> : '.$head["date_reg"].' น.
+			</div>';
+		if($head["member_sku"]!=""){
+			$mbty="?";
+			if(isset($this->mb_type[$head["mb_type"]])){
+				$mbty=$this->mb_type[$head["mb_type"]]["icon"]." ".$this->mb_type[$head["mb_type"]]["name"];
+			}
+			echo '<div class="l"><b>🧾 ผู้ซื้อ</b> : <a href="?a=member&amp;b=details&amp;sku_root='.$head["member_sku_root"].'">'.htmlspecialchars($head["member_name"]).'</a> ,
+				<b>ประเภท</b> : '.$mbty.' ,
+				<b>รหัส</b> : '.$head["member_sku"];
+		}else{
+			echo '<div class="l">🧾 ผู้ซื้อ : บุคลทั่วไปไม่ใช่สมาชิก</div>';
+		}
+		echo '	</div>
 			<table class="billlsselllist">
 				<tr>
 					<th>ที่</th>
@@ -261,12 +277,17 @@ echo $mo->format('U')-$reg->format("U");*/
 				`bill_sell`.`price` AS `price`,bill_sell.w, `bill_sell`.`modi_date` AS `modi_date`, `bill_sell`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
 				CONCAT(`user_ref2`.`name`,' ', `user_ref2`.`lastname`) AS `user_name_edit`,
-				TIMESTAMPDIFF(SECOND,bill_sell.date_reg,bill_sell.modi_date) AS dif
+				TIMESTAMPDIFF(SECOND,bill_sell.date_reg,bill_sell.modi_date) AS dif,
+				IFNULL(NVL2(`member_ref`.`id`,CONCAT(`member_ref`.`name`,' ', `member_ref`.`lastname`),''),'') AS `member_name`,
+				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`,IFNULL(`member_ref`.`sku`,'') AS `member_sku`,
+				`member_ref`.`sku_root` AS `member_sku_root`
 			FROM `bill_sell` 
 			LEFT JOIN `user_ref`
 			ON( `bill_sell`.`user`=`user_ref`.`sku_key`)
 			LEFT JOIN `user_ref` AS user_ref2
 			ON( `bill_sell`.`user_edit`=`user_ref`.`sku_key`)
+			LEFT JOIN `member_ref`
+			ON( `bill_sell`.`member_sku_key`=`member_ref`.`sku_key`)
 			WHERE bill_sell.sku=".$sku." LIMIT 1
 		";
 		$sql["list"]="SELECT  
@@ -341,13 +362,15 @@ echo $mo->format('U')-$reg->format("U");*/
 			if($se[$i]["stat"]!="c"){
 				$pf=$se[$i]["price"]-$se[$i]["pricer"]-($se[$i]["cost"]-$se[$i]["costr"]);
 			}
+			$mb=htmlspecialchars($this->setMemberTxt($se[$i]["member_name"],$se[$i]["mb_type"],""));
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
 				<td>
 					<div><a href="?a=bills&amp;c=sell&amp;b=view&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$wn.''.$stat.'</a></div>
 					<div>'.$se[$i]["date_reg"].'</div>
 					<div>'.$se[$i]["user_name"].'</div>
+					<div>'.$mb.'</div>
 				</td>
-				<td  class="showhide l"><a href="?a=bills&amp;c=sell&amp;b=view&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$wn.''.$stat.'</a></td>
+				<td  class="showhide l"><a href="?a=bills&amp;c=sell&amp;b=view&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$wn.''.$stat.'</a><div>'.$mb.'</div></td>
 				<td class="r">'.$se[$i]["n"].'</td>
 				<td class="r">'.number_format($se[$i]["price"],2,'.',',').'</td>
 				<td class="r darkgreen">'.number_format($pf,2,'.',',').'</td>
@@ -369,10 +392,14 @@ echo $mo->format('U')-$reg->format("U");*/
 		$sql["count"]="SELECT @count:=bs_c FROM `s` WHERE `tr`=1";
 		$sql["get"]="SELECT  `bill_sell`.`id`  AS  `id`,`bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`,`bill_sell`.`stat`  AS  `stat`,
 				`bill_sell`.`cost`,`bill_sell`.`costr`,`bill_sell`.`price` AS `price`,`bill_sell`.`pricer` AS `pricer`,IFNULL(bill_sell.w,0) AS `w`, `bill_sell`.`date_reg` AS `date_reg`,
-				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`
+				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
+				IFNULL(NVL2(`member_ref`.`id`,CONCAT(`member_ref`.`name`,' ', `member_ref`.`lastname`),''),'') AS `member_name`,
+				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`
 			FROM `bill_sell` 
 			LEFT JOIN `user_ref`
 			ON( `bill_sell`.`user`=`user_ref`.`sku_key`)
+			LEFT JOIN `member_ref`
+			ON( `bill_sell`.`member_sku_key`=`member_ref`.`sku_key`)
 			ORDER BY `bill_sell`.`id` DESC LIMIT ".(($this->page-1)*$this->per).",".$this->per."";
 		$sql["result"]="SELECT @count AS count";
 		$se=$this->metMnSql($sql,["get","result"]);
@@ -406,18 +433,20 @@ echo $mo->format('U')-$reg->format("U");*/
 			}
 			$stat="";
 			if($se[$i]["stat"]=="c"){
-				$stat=' <apan class="red bold">[ถูกยกเลิก]</span>';
+				$stat=' <span class="red bold">[ถูกยกเลิก]</span>';
 			}else if($se[$i]["stat"]=="r"){
-				$stat=' <apan class="saddlebrown bold"> [มีคืนสินค้า]</span>';
+				$stat=' <span class="saddlebrown bold"> [มีคืนสินค้า]</span>';
 			}
+			$mb=htmlspecialchars($this->setMemberTxt($se[$i]["member_name"],$se[$i]["mb_type"],""));
 			$cm=($i%2!=0)?" class=\"i2\"":"";
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
 				<td>
 					<div><a href="?a=bills&amp;c=sell&amp;b=selectview&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$stat.'</a></div>
 					<div>'.$se[$i]["date_reg"].'</div>
 					<div>'.$se[$i]["user_name"].'</div>
+					<div>'.$mb.'</div>
 				</td>
-				<td  class="showhide l"><a href="?a=bills&amp;c=sell&amp;b=selectview&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$stat.'</a></td>
+				<td  class="showhide l"><a href="?a=bills&amp;c=sell&amp;b=selectview&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$stat.'</a><div>'.$mb.'</div></td>
 				<td class="r">'.$se[$i]["n"].'</td>
 				<td class="r">'.number_format($se[$i]["price"],2,'.',',').'</td>
 				<td class="l">'.$se[$i]["user_name"].'</td>
@@ -432,6 +461,15 @@ echo $mo->format('U')-$reg->format("U");*/
 		$count=(isset($sea["count"]))?$sea["count"]:0;
 		$this->page($count,$this->per,$this->page,"?a=bills&amp;b=select&amp;c=sell&amp;page=");
 		$this->pageFoot();
+	}
+	private function setMemberTxt(string $name="",string $type="",string $default=""):string{
+		$mb=$default;
+		if($name!=""){
+			if(isset($this->mb_type[$type])){
+				$mb=$this->mb_type[$type]["icon"]." ".$name;
+			}
+		}
+		return $mb;
 	}
 	private function pageSelectView(string $sku):void{
 		$se=$this->getBillsSellList($sku);

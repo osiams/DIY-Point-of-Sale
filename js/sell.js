@@ -876,10 +876,12 @@ class sell extends main{
 		this.dlast.innerHTML="ยังไม่มีสินค้าถูกเลือก"
 		this.dsums.innerHTML="0.00"
 		this.spnlist.innerHTML="[0]"
+		this.setMember0()
 		this.popupClear('ileave')
 		if(this.datenow!=null){
 			localStorage.removeItem(this.datenow.toString());
 			localStorage.removeItem(this.datenow.toString()+"_last");
+			localStorage.removeItem(this.datenow.toString()+"_member");
 		}
 		this.clearItemStList()
 		this.setiplus()
@@ -954,6 +956,7 @@ class sell extends main{
 		formData.append("sum",sum)	
 		formData.append("get",get)	
 		formData.append("pd",pd)		
+		formData.append("member",this.member.sku_root)	
 		M.fec("POST","",S.successResult,S.successError,null,formData)
 	}
 	successResult(re,form,bt){
@@ -1171,7 +1174,7 @@ class sell extends main{
 				tx="ลูกค้า"+this.member.name+" ไม่ใช่สมาชิก"
 				this.end(d1,[this.cn(tx)])
 			}else{
-					img=this.ce("img",{"class":"viewimage","src":"img/gallery/128x128_"+this.member.icon,"onclick":"G.view(this)"})
+					img=this.ce("img",{"class":"viewimage","src":"img/gallery/128x128_"+this.member.icon,"onclick":"G.view(this,0)"})
 					let d2=this.ce("div",{})
 					this.end(d2,[this.cn("ชื่อ-นามสกุล:"+this.member.name+" "+this.member.lastname)])
 						

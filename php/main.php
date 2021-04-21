@@ -49,6 +49,23 @@ class main{
 				"primary"=>"id",
 				"index"=>["lot","stkey","stroot","bill_in_sku","product_sku_key","product_sku_root","balance"]
 			],
+			"bill_sell"=>[
+				"name"=>"bill_sell",
+				"column"=>["id","sku","n","cost","costr","price","pricer","user","user_edit","member_sku_key","member_sku_root","stat","stath","note","w","r_","_r","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pricer"=>0,"costr"=>0,"member_sku_key"=>"NULL","member_sku_root"=>"NULL"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
+				"primary"=>"sku",
+				"index"=>["member_sku_key","member_sku_root","user","stat","stath","w","date_reg"]
+			],
+			"bill_sell_list"=>[
+				"name"=>"bill_sell_list",
+				"column"=>["id","sku","bill_in_list_id","lot","product_sku_key","product_sku_root",
+					"n","n_wlv","c","u","r","h","sq","unit_sku_key","unit_sku_root","note","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","r"=>0,"h"=>0,"n_wlv"=>1,"sq"=>1],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
+				"primary"=>"id",
+				"index"=>["sku","bill_in_list_id","lot","product_sku_key","product_sku_root","n_wlv"]
+			],
 			"gallery"=>[
 				"name"=>"gallery",
 				"column"=>["id","sku_key","gl_key","name","a_type","mime_type","md5","user","size","width","height","date_reg"],
@@ -73,6 +90,23 @@ class main{
 				"primary"=>"sku_key",
 				"index"=>["sku_root"],
 				"check"=>" prop IS NULL OR JSON_VALID(prop)"
+			],
+			"it"=>[
+				"name"=>"it",
+				"column"=>["id","sku","sku_key","sku_root","name","note","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_root",
+				"not_null"=>["name"],
+				"unique"=>["name","sku"]
+			],
+			"it_ref"=>[
+				"name"=>"it_ref",
+				"column"=>["id","sku","sku_key","sku_root","name","note","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
+				"primary"=>"sku_key",
+				"index"=>["sku_root"]
 			],
 			"member"=>[
 				"name"=>"member",
@@ -211,23 +245,6 @@ class main{
 				"primary"=>"sku_key",
 				"index"=>["sku_root"]
 			],
-			"bill_sell"=>[
-				"name"=>"bill_sell",
-				"column"=>["id","sku","n","cost","costr","price","pricer","user","user_edit","stat","stath","note","w","r_","_r","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pricer"=>0,"costr"=>0],
-				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
-				"primary"=>"sku",
-				"index"=>["user","stat","stath","w","date_reg"]
-			],
-			"bill_sell_list"=>[
-				"name"=>"bill_sell_list",
-				"column"=>["id","sku","bill_in_list_id","lot","product_sku_key","product_sku_root",
-					"n","n_wlv","c","u","r","h","sq","unit_sku_key","unit_sku_root","note","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","r"=>0,"h"=>0,"n_wlv"=>1,"sq"=>1],
-				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
-				"primary"=>"id",
-				"index"=>["sku","bill_in_list_id","lot","product_sku_key","product_sku_root","n_wlv"]
-			],
 			"mmm"=>[
 				"name"=>"mmm",
 				"column"=>["id","bill_in_id",
@@ -236,23 +253,6 @@ class main{
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","skuroot_n"=>0,"skuroot1_n"=>0,"skuroot2_n"=>0],
 				"primary"=>"bill_in_id",
 				"index"=>["skuroot"]
-			],
-			"it"=>[
-				"name"=>"it",
-				"column"=>["id","sku","sku_key","sku_root","name","note","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
-				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
-				"primary"=>"sku_root",
-				"not_null"=>["name"],
-				"unique"=>["name","sku"]
-			],
-			"it_ref"=>[
-				"name"=>"it_ref",
-				"column"=>["id","sku","sku_key","sku_root","name","note","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
-				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
-				"primary"=>"sku_key",
-				"index"=>["sku_root"]
 			],
 			"s"=>[
 				"name"=>"s",
@@ -347,6 +347,8 @@ class main{
 			"mb_type"=>["name"=>"ประเภทสมาชิก","type"=>"ENUM","length_value"=>["s","p"]],
 			"md5"=>["name"=>"md5","type"=>"CHAR","length_value"=>32],
 			"memberceo"=>["name"=>"ระดับสมาชิก","type"=>"ENUM","length_value"=>["0","1","2","3","4","5","6","7","8","9"]],
+			"member_sku_key"=>["name"=>"รหัสอ้างอิงสมาชิก","type"=>"CHAR","length_value"=>25],
+			"member_sku_root"=>["name"=>"รหัสรากสมาชิก","type"=>"CHAR","length_value"=>25],
 			"mime_type"=>["name"=>"ประเภทไฟล์","type"=>"ENUM","length_value"=>["image/png","image/gif","image/jpeg"]],
 			"modi_date"=>["name"=>"วันปรับปรุง","type"=>"TIMESTAMP",],
 			"money_type"=>["name"=>"รูปแบบเงิน","type"=>"ENUM","length_value"=>["ca","tr","ck","cd"]],

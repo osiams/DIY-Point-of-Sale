@@ -3,7 +3,7 @@ function tran(ob,mt,dt){
 	let js=JSON.parse(dt)
 	return eval(ob+"."+mt+"(js)")
 }
-function tran2(ob,mt,ar_tx){alert(ar_tx)
+function tran2(ob,mt,ar_tx){
 	return eval(ob+"."+mt+"("+ar_tx+")")
 }
 class main{

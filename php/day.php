@@ -21,9 +21,11 @@ class day extends main{
 		//print_r($dt);
 		echo '<div class="content">
 			<h2 class="c">สรุปประจำวัน </h2>
-			<label for="daydate">เลือกวันที่:</label>
-			<input id="daydate" type="date" value="'.$day.'" />
-			<input type="button" value="ไป"  onclick="D.go()"/>
+			<div class="day_select_day">
+				<label for="daydate">เลือกวันที่:</label>
+				<input id="daydate" type="date" value="'.$day.'" />
+				<input type="button" value="ไป"  onclick="D.go()"/>
+			</div>
 			';
 		echo '<table class="day_bill">
 			 <caption>ใบเสร็จรับเงิน</caption>

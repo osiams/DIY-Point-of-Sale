@@ -194,6 +194,7 @@ class setting extends main{
 				<tr><td class="l">วันที่</td><td class="l">'.htmlspecialchars($this->about->date).'</td></tr>
 				<tr><td class="l">คำอธิบาย</td><td class="l">'.htmlspecialchars($this->about->description).'</td></tr>
 				<tr><td class="l">ภาษาที่ใช้</td><td class="l">'.htmlspecialchars($this->about->develop).'</td></tr>
+				<tr><td class="l">มีอะไรใหม่</td><td class="l">'.htmlspecialchars($this->about->news).'</td></tr>
 				<tr><td class="l">เซรฟ์เวอร์ที่ใช้ทดสอบ</td><td class="l">'.htmlspecialchars($this->about->server).'</td></tr>
 				<tr><td class="l">www</td><td class="l">'.str_replace("\n","<br />",htmlspecialchars($this->about->contact)).'</td></tr>
 			</table>

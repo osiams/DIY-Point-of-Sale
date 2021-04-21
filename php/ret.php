@@ -320,8 +320,19 @@ class ret extends main{
 				🕒วันที่ : '.$head["date_reg"].' น.
 			</div><div class="r">📃 จำนวน : <b>'.count($list).'</b> รายการ
 						💰รวมเงิน : <b>'.$head["price"].'</b> บาท
-					</div>
-			<form class="form100" name="ret" method="post" action="?a=retr">
+					</div>';
+		if($head["member_sku"]!=""){
+			$mbty="?";
+			if(isset($this->mb_type[$head["mb_type"]])){
+				$mbty=$this->mb_type[$head["mb_type"]]["icon"]." ".$this->mb_type[$head["mb_type"]]["name"];
+			}
+			echo '<div class="r"><b>🧾 ผู้ซื้อ</b> : <a href="?a=member&amp;b=details&amp;sku_root='.$head["member_sku_root"].'">'.htmlspecialchars($head["member_name"]).'</a> ,
+				<b>ประเภท</b> : '.$mbty.' ,
+				<b>รหัส</b> : '.$head["member_sku"];
+		}else{
+			echo '<div class="r">🧾 ผู้ซื้อ : บุคลทั่วไปไม่ใช่สมาชิก</div>';
+		}
+		echo '<form class="form100" name="ret" method="post" action="?a=retr">
 			<input type="hidden" name="a" value="ret" />
 			<input type="hidden" name="confirm" value="" />
 			<input type="hidden" name="sku" value="'.$head["sku"].'" />
@@ -378,12 +389,17 @@ class ret extends main{
 				`bill_sell`.`price` AS `price`, `bill_sell`.`modi_date` AS `modi_date`, `bill_sell`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
 				CONCAT(`user_ref2`.`name`,' ', `user_ref2`.`lastname`) AS `user_name_edit`,
-				TIMESTAMPDIFF(SECOND,bill_sell.date_reg,bill_sell.modi_date) AS dif
+				TIMESTAMPDIFF(SECOND,bill_sell.date_reg,bill_sell.modi_date) AS dif,
+				IFNULL(NVL2(`member_ref`.`id`,CONCAT(`member_ref`.`name`,' ', `member_ref`.`lastname`),''),'') AS `member_name`,
+				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`,IFNULL(`member_ref`.`sku`,'') AS `member_sku`,
+				`member_ref`.`sku_root` AS `member_sku_root`
 			FROM `bill_sell` 
 			LEFT JOIN `user_ref`
 			ON( `bill_sell`.`user`=`user_ref`.`sku_key`)
 			LEFT JOIN `user_ref` AS user_ref2
 			ON( `bill_sell`.`user_edit`=`user_ref`.`sku_key`)
+			LEFT JOIN `member_ref`
+			ON( `bill_sell`.`member_sku_key`=`member_ref`.`sku_key`)
 			WHERE bill_sell.sku=".$sku." LIMIT 1
 		";
 		$sql["ret_head"]="SELECT note

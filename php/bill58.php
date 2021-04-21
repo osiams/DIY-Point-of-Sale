@@ -423,6 +423,11 @@ class bill58 extends main{
 				["t"=>"#".$se["head"]["sku"]." @".$se["head"]["user_sku"]." " ,"lcr"=>"l"],
 				["t"=>substr($se["head"]["date_reg"],0,-3)."" ,"lcr"=>"r"]
 			];
+			if($se["head"]["member_sku"]!=""){
+				$re["member"]=[
+					["t"=>"สมาชิก : ".$se["head"]["member_name"]." #".$se["head"]["member_sku"]." " ,"lcr"=>"l"]
+				];
+			}
 			$re["recv"]=[["t"=>$this->receipt->receipt58->sale->name,"lcr"=>"c"]];
 			for($i=0;$i<count($se["list"]);$i++){
 				$re["list_".$i]=[
@@ -450,10 +455,14 @@ class bill58 extends main{
 		$sql["head"]="SELECT  `bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`, 
 				`bill_sell`.`price` AS `price`, `bill_sell`.`date_reg` AS `date_reg`,
 				`user_ref`.`sku` AS `user_sku`,
-				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`
+				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
+				IFNULL(NVL2(`member_ref`.`id`,CONCAT(`member_ref`.`name`,' ', `member_ref`.`lastname`),''),'') AS `member_name`,
+				IFNULL(`member_ref`.`sku`,'') AS `member_sku`
 			FROM `bill_sell` 
 			LEFT JOIN `user_ref`
 			ON( `bill_sell`.`user`=`user_ref`.`sku_key`)
+			LEFT JOIN `member_ref`
+			ON( `bill_sell`.`member_sku_key`=`member_ref`.`sku_key`)
 			WHERE bill_sell.sku=".$sku." LIMIT 1
 		";
 		$sql["list"]="SELECT  
@@ -526,6 +535,11 @@ class bill58 extends main{
 				["t"=>" พ:".$se["head"][0]["user_sku"]." " ,"lcr"=>"l"],
 				["t"=>substr($se["head"][0]["date_reg"],0,-3)." " ,"lcr"=>"r"]
 			];
+			if($se["head"][0]["member_sku"]!=""){
+				$re["member"]=[
+					["t"=>"สมาชิก : ".$se["head"][0]["member_name"]." #".$se["head"][0]["member_sku"]." " ,"lcr"=>"l"]
+				];
+			}
 			$re["rt"]=[["t"=>"#".$rt." " ,"lcr"=>"c"]];
 			$re["recv"]=[["t"=>"ใบคืนสินค้า","lcr"=>"c"]];
 			$n_list=0;
@@ -741,10 +755,17 @@ class bill58 extends main{
 		$sql["head"]="SELECT bill_in.id,bill_in.sku,bill_in.bill,
 				bill_in.changto,bill_in.note,bill_in.user,bill_in.date_reg,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,`user_ref`.`sku` AS `user_sku`,
-				bill_in.n
+				bill_in.n,
+				IFNULL(NVL2(`member_ref`.`id`,CONCAT(`member_ref`.`name`,' ', `member_ref`.`lastname`),''),'') AS `member_name`,
+				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`,IFNULL(`member_ref`.`sku`,'') AS `member_sku`,
+				`member_ref`.`sku_root` AS `member_sku_root`
 			FROM bill_in
 			LEFT JOIN `user_ref`
 			ON( `bill_in`.`user`=`user_ref`.`sku_key`)
+			LEFT JOIN `bill_sell`
+			ON( `bill_in`.`bill`=`bill_sell`.`sku`)
+			LEFT JOIN `member_ref`
+			ON( `bill_sell`.`member_sku_key`=`member_ref`.`sku_key`)
 			WHERE bill_in.sku=".$sku."
 		";
 		$sql["list"]="SELECT  `bill_in_list`.`n`  AS  `n`, `bill_in_list`.`n_wlv`  AS  `n_wlv`,bill_in_list.s_type, `bill_in_list`.`note`  AS  `note`, 

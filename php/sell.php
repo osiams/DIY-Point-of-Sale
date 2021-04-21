@@ -65,6 +65,8 @@ class sell extends main{
 		return $re;
 	}
 	private function fetchCutSt():array{
+		$member0=(isset($_POST["member"])&&$this->isSKU($_POST["member"]))?$_POST["member"]:"";
+		$member=$this->getStringSqlSet($member0);
 		$re=["result"=>false,"message_error"=>""];
 		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$pd=json_decode($_POST["pd"],true);
@@ -91,12 +93,23 @@ class sell extends main{
 			@TEST:='',
 			@over:=0,
 			@stock:='{}',
+			@member:=".$member.",
+			@member_key:=".$member.",
 			@id:=(SELECT IFNULL((SELECT MAX(id) FROM `bill_sell`),0)+1),
+			@member_sku_root_count:=(SELECT COUNT(*)  FROM `member` WHERE '".$member0."' != '' AND`sku_root`='".$member0."' ),
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
 		$sql["set2"]="
 			SET @pd_length=JSON_LENGTH(@jspd),
 			@key=JSON_KEYS(@jspd);
+		";
+		$sql["check"]="
+			IF @member_sku_root_count != 1 && '".$member0."' THEN
+				SET @message_error=CONCAT('ไม่พบสมาชิกที่ส่งมา\n');
+				SET @over=1;
+			ELSE 
+				SET @member_key=(SELECT `sku_key` FROM `member` WHERE `sku_root` = '".$member0."' LIMIT 1);
+			END IF;
 		";
 		$sql["set_sums"]="
 			BEGIN NOT ATOMIC
@@ -203,8 +216,8 @@ class sell extends main{
 					SET @bill_sell_save=1;
 					SET pdl=@pd_length;
 					IF @bill_sell_save=1 THEN
-						INSERT INTO `bill_sell`  (sku,n,price,user) 
-						VALUES (@sku,@n,@sums,@user);			
+						INSERT INTO `bill_sell`  (sku,n,price,user,member_sku_key,member_sku_root) 
+						VALUES (@sku,@n,@sums,@user,@member_key,@member);			
 						SET @TEST=CONCAT(@TEST,';pdl=',pdl);		
 						WHILE i < pdl DO
 							SET stn=0;
@@ -347,6 +360,7 @@ class sell extends main{
 				END IF;	
 			END;	
 		";
+		//print_r($sql);exit;
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@sku AS `billid`,@over AS `over`,@stock AS `stock`,@TEST AS `TEST`";
 		$se=$this->metMnSql($sql,["result"]);
 		//print_r($se);
