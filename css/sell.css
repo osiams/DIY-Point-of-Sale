@@ -135,3 +135,10 @@ body{overflow:hidden;}
 .popup_member{display:grid;grid-template-columns:128px  auto;grid-gap:1px;padding:2px;background-color:PowderBlue;margin:0px auto 0px auto;}
 .popup_member > div:nth-child(1){font-size:0px;}
 .popup_member > div:nth-child(2){text-align:left;background-color:PowderBlue;padding:3px;}
+
+.sellpay{padding:5px;}
+.sellpay >div > div{border:1px solid gray;border-radius: 3px 3px 3px 3px;width:calc(100% - 12px)} 
+.sellpay >div > div >table{width:100%;border-radius: 3px 3px 3px 3px;}
+.sellpay >div > div >table > tr >td >a{padding:3px;}
+.sellpay >div > p:nth-child(2){text-align:right;padding-right:20px;}
+.sellpay >div > p:nth-child(2) > span{position:relative;top:10px;color:blue;padding: 0px 5px;background-color:#ffffff}

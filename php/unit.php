@@ -232,7 +232,8 @@ class unit extends main{
 				<div class="form">
 					<h1 class="c">หน่วยสินค้าสินค้า</h1>';
 			$this->writeContentUnit();
-			echo '<br /><p class="c"><input type="button" value="เพิ่มหน่วยสินค้า" onclick="location.href=\'?a=unit&b=regis\'" /></p>';
+			echo '<br /><p class="c"><input type="button" value="เพิ่มหน่วยสินค้า" onclick="location.href=\'?a=unit&amp;b=regis\'" /></p>';
+		echo '</div></div>';
 		$this->pageFoot();
 	}
 	protected function writeContentUnit():void{

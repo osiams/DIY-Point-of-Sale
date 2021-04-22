@@ -4,6 +4,7 @@ class tool extends main{
 		parent::__construct();
 		$this->title = "เครื่องมือ";
 		$this->a = "tool";
+		$this->about=json_decode(file_get_contents("set/about.json"));
 	}
 	public function run(){
 		$this->addDir("?a=".$this->a,$this->title);
@@ -41,6 +42,7 @@ class tool extends main{
 					<div onclick="Tl.resetFactory()">
 						<div class="icon_tool_reset_to_factory"></div>
 						<div>ตั้งค่าโรงงาน
+						<br /><b class="">'.$this->about->name.' Version '.$this->about->version.'</b> ('.$this->about->date.')
 						</div>
 					</div>
 					<div onclick="Tl.pdtxtDownload()">

@@ -4,6 +4,7 @@ class login extends main{
 	public function __construct(){
 		parent::__construct();
 		$this->shop=json_decode(file_get_contents("set/shop.json"));
+		$this->about=json_decode(file_get_contents("set/about.json"));
 	}
 	public function run():void{
 		$login=false;
@@ -127,10 +128,14 @@ class login extends main{
 				<br />
 				<div class="c">
 					<input type="submit" value="เข้าสู่ระบบ" />
-				</div><br />
+				</div>
 				</form>
 				</div>
-				</div></div></td></tr></table>';
+				</div>
+				</div>
+				<div class="version"><b class="">'.$this->about->name.' Version '.$this->about->version.'</b> ('.$this->about->date.')</div>
+				</td></tr></table>
+				';
 		$this->pageFoot();
 	}
 }

@@ -114,7 +114,7 @@ class product_details extends product{
 				echo '<tr><td>'.$this->prop_list[$k]["name"].'</td><td>'.$v.'</td></tr>';
 			}
 		}	
-		echo '</table>';
+		echo '</table></main>';
 	}
 	private function details(array $dt):void{
 		echo '<main><table class="productdetails"><caption>สินค้า</caption>

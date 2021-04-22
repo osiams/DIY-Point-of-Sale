@@ -195,14 +195,16 @@ class main{
 					left=(window_width-popup_width)/2
 					if(left+popup_width<pt.width+pt.left){
 						left=pt.width+pt.left-popup_width
-						if(window_width-pt.width+pt.left>3){
-							left=pt.width+pt.left-popup_width+3
+						if(window_width-pt.width+pt.left>3){//;alert("window_width="+window_width+";\npopup_width="+popup_width+";\nleft="+left+";\npt.left="+pt.left+"\npt.width="+pt.width+";")
+							left=pt.width+pt.left-popup_width+3;
 							if(left+20>pt.left+pt.width/2){
 								left=(pt.left+pt.width/2)-popup_width/2
 							}
 						}
-						if(window_width>document.body.clientWidth){alert(8)
-							left=left+(window_width-document.body.clientWidth)
+						if(window_width>document.body.clientWidth){
+							//left=left+(window_width-document.body.clientWidth)
+							let c=pt.width/2+pt.left
+							left=c-popup_width/2+window.scrollX
 						}
 					}else if(cklicleft + popup_width < window_width){
 						left=cklicleft
@@ -368,9 +370,9 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 		}
 	}
 	setDialogSize(did){
-		let width = (did.offsetWidth > window.innerWidth)?window.innerWidth-20:did.offsetWidth
+		let width = (did.offsetWidth+20 > document.body.clientWidth)?document.body.clientWidth-20:did.offsetWidth
 		width = (width < did.childNodes[2].childNodes[0].offsetWidth+8)?did.childNodes[2].childNodes[0].offsetWidth+8:width
-		let height = (did.offsetHeight > window.innerHeight)?window.innerHeight-20:did.offsetHeight	
+		let height = (did.offsetHeight+20 > document.body.clientHeight)?document.body.clientHeight-20:did.offsetHeight	
 		height = (height < 76 + 20 )?76 +20:height	
 		let tp = (height)/2  - window.scrollY
 		let lt = (width)/2  - window.scrollX

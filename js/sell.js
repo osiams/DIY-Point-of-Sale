@@ -930,7 +930,53 @@ class sell extends main{
 		this.datenow=null
 		this.setMember0()
 	}
-	smile(error=""){
+	smile(error="",c=null){
+		let t=this.sums("get")
+		if(t.n_list>0){
+			
+			if(c!=null){
+				if(!F.isNumber(c)){
+						let error="\n❌ \""+c+"\"  ไม่อยู่ในรูปแบบตัวเลข โปรดลองใหม่"
+				this.smile(error)
+				}else if(Number(c)-t.sums<0){
+					let error="\n❌ "+c+"  น้อยกว่ายอดที่ต้องชำระ"
+					this.smile(error)
+				}else{
+					this.success(t.sums,Number(c))
+				}
+			}else{
+				let ct=this.ce("div",{"class":"sellpay"})
+					let d1=this.ce("div",{})
+						let p=this.ce("p",{})
+							let tn1=this.cn(t.n_list+" รายการ รวมเป็นเงิน "+this.nb(t.sums)+" บาท")
+						this.end(p,[tn1])
+						let p2=this.ce("p",{})
+							let sp=this.ce("span",{})
+							this.end(sp,[this.cn("รูปแบบการชำระ")])
+						this.end(p2,[sp])	
+						let d2=this.ce("div",{})
+							let t1=this.ce("table",{"id":"sellpay"})
+								let tr1=this.ce("tr",{})
+									let td0=this.ce("td",{"colspan":"4","class":"r"})
+										let a=this.ce("a",{})
+										this.end(a,[this.cn("ชำระหลายช่องทาง")])
+									this.end(td0,[a])	
+								this.end(tr1,[td0])
+							this.end(t1,[tr1])
+						this.end(d2,[t1])
+					this.end(d1,[p,p2,d2])
+				this.end(ct,[d1])
+				let rid=this.rid()
+				let bts = [
+					{"value":"ยกเลิก","onclick":""},
+					{"value":"ยืนยัน","onclick":""}
+				]
+				let dt={"title":"ชำระเงิน","ct":ct,"rid":rid,"callback":"","bts":bts,"ofc":0,"display":1,"width":360}
+				this.dialog(dt)
+			}
+		}
+	}
+	xxxxsmile(error=""){
 		let t=this.sums("get")
 		if(t.n_list>0){
 			let c=prompt(t.n_list+" รายการ รวมเป็นเงิน "+this.nb(t.sums)+" บาท\n"+error+"\nกรุณาใส่จำนวนเงิน ที่รับมา")

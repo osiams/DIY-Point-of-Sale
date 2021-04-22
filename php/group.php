@@ -412,8 +412,9 @@ class group extends main{
 			if($this->group_deep <= $this->d_cols){		
 				$text_group_add = ($this->group_deep == 1)?"เพิ่มกลุ่มหลัก":"เพิ่มกลุ่มย่อย";
 				echo $this->noteColorDataType();
-				echo '<br /><p class="c"><input type="button" value="'.$text_group_add.'" onclick="location.href=\'?a=group&b=regis&d='.($this->group_deep).'&parent='.$this->parent.'\'" /></p>';
+				echo '<br /><p class="c"><input type="button" value="'.$text_group_add.'" onclick="location.href=\'?a=group&amp;b=regis&amp;d='.($this->group_deep).'&amp;parent='.$this->parent.'\'" /></p>';
 			}
+		echo '</div></div>';
 		$this->pageFoot();
 	}
 	private function dirTopBar():string{

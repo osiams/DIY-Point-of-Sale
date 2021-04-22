@@ -421,7 +421,7 @@ class payu extends main{
 						 <input  type="submit" value="🔍" /> </label></form>
 				</div>';
 		$this->writeContentPayu();		
-		echo '<br /><p class="c"><input type="button" value="เพิ่ม'.$this->title.'" onclick="location.href=\'?a='.$this->a.'&b=regis\'" /></p>';
+		echo '<br /><p class="c"><input type="button" value="เพิ่ม'.$this->title.'" onclick="location.href=\'?a='.$this->a.'&amp;b=regis\'" /></p>';
 		echo '</div></div>';
 		$this->pageFoot();
 	}

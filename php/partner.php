@@ -582,7 +582,7 @@ class partner extends main{
 						 <input  type="submit" value="🔍" /> </label></form>
 				</div>';
 		$this->writeContentPartner();		
-		echo '<br /><p class="c"><input type="button" value="เพิ่มคู่ค้า" onclick="location.href=\'?a='.$this->a.'&b=regis\'" /></p>';
+		echo '<br /><p class="c"><input type="button" value="เพิ่มคู่ค้า" onclick="location.href=\'?a='.$this->a.'&amp;b=regis\'" /></p>';
 		echo '</div></div>';
 		$this->pageFoot();
 	}
@@ -660,7 +660,7 @@ class partner extends main{
 		$se=$dt["get"];
 		echo '<form class="form100" name="'.$this->a.'" method="post">
 			<input type="hidden" name="sku_root" value="" />';
-		echo '	<table class="partnerview" "style="width:100%;">
+		echo '	<table class="partnerview" style="width:100%;">
 				<tr><th>ที่</th>
 				<th>รูป</th>
 				<th>รหัสภายใน</th>

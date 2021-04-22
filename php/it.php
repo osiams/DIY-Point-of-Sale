@@ -667,7 +667,8 @@ class it extends main{
 				<div class="form">
 					<h2 class="c">คลังสินค้า</h2>';
 			$this->writeContentIt();
-			echo '<br /><p class="c"><input type="button" value="เพิ่มคลังสินค้า" onclick="location.href=\'?a=it&b=regis\'" /></p>';
+			echo '<br /><p class="c"><input type="button" value="เพิ่มคลังสินค้า" onclick="location.href=\'?a=it&amp;b=regis\'" /></p>';
+		echo '</div></div>';
 		$this->pageFoot();
 	}
 	protected function writeContentIt():void{

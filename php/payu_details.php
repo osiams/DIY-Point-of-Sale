@@ -20,6 +20,7 @@ class payu_details extends payu{
 				<h1 class="c">'.$pn_name.'</h1>';
 		$this->writeContentPayu($dt);		
 		echo '<br />';
+		echo '</div></div>';
 		$this->pageFoot();
 	}
 	private function writeContentPayu(array $dt):void{

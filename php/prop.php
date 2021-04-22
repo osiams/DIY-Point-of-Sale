@@ -297,7 +297,8 @@ class prop extends main{
 				<div class="form">
 					<h1 class="c">'.$this->title.'</h1>';
 			$this->writeContentProp();
-			echo '<br /><p class="c"><input type="button" value="เพิ่ม"'.$this->title.' onclick="location.href=\'?a='.$this->a.'&b=regis\'" /></p>';
+			echo '<br /><p class="c"><input type="button" value="เพิ่ม '.$this->title.'" onclick="location.href=\'?a='.$this->a.'&amp;b=regis\'" /></p>';
+		echo '</div></div>';
 		$this->pageFoot();
 	}
 	private function writeContentProp():void{

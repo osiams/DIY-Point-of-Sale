@@ -367,7 +367,8 @@ class user extends main{
 					<h1 class="c">ผู้ใช้</h1>';
 					//echo implode(', ', $this->pem[$this->user_ceo]["user_editto"]);
 			$this->writeContentUser();
-			echo '<br /><p class="c"><input type="button" value="เพิ่มผู้ใช้" onclick="location.href=\'?a=user&b=regis\'" /></p>';
+			echo '<br /><p class="c"><input type="button" value="เพิ่มผู้ใช้" onclick="location.href=\'?a=user&amp;b=regis\'" /></p>';
+		echo '</div></div>';
 		$this->pageFoot();
 	}
 	protected function writeContentUser():void{

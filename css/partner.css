@@ -1,8 +1,10 @@
 .table_details{min-width:350px;}
 .partner_page_search{padding:2px 30px;line-height:3em;}
 @media screen and (max-width: 635px) {
-	.pd_search > form > label > select{width:80px;}
-	.pd_search >form >   label >input[type="text"]{width:calc(100% - 160px);}
-	.pd_search > form > label > input[type="button"]{width:60px;}
+@media screen and (max-width: 635px) {
+	.form100 > label > select{width:80px;}
+	.form100 >  label >input[type="text"]{width:calc(100% - 160px);}
+	.form100  > label > input[type="button"]{width:160px;}
+}
 }
 .partnerview{}

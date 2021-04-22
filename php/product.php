@@ -685,8 +685,9 @@ class product extends main{
 			$this->writeContentProduct();
 			echo '<br /><p class="c">
 				
-				<input type="button" value="ลงทะเบียนสินค้าใหม่" onclick="location.href=\'?a=product&b=regis\'" />
+				<input type="button" value="ลงทะเบียนสินค้าใหม่" onclick="location.href=\'?a=product&amp;b=regis\'" />
 			</p>';
+			echo '</div></div>';
 			$this->pageFoot();
 	}
 	private function writeContentProduct():void{
