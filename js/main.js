@@ -328,12 +328,19 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 			let bts0 = data.hasOwnProperty("bts0") ?"_bts0":""
 
 			let dialog = this.ce("div",{"class":"dialog dialog_tr"+bts0+" dialog_active1","id":rid+"_dialog","onmousedown":"this.style.transitionDuration='0s'","onmouseup":"M.setDialogSize(this)","style":width})
-				let bar = this.ce("div",{})
+			xxxxxx 2021-04-23 bar = this.ce("div",{})
 					let barname= this.ce("div",{})
 					this.end(barname,[this.cn(title)])
+					let barset=this.ce("div",{})
+					this.end(barset,[this.cn("⚙️")])
 					let barclose= this.ce("div",{"title":"กดเพื่อปิด","onclick":"M.dialogClose('"+rid+"',"+ofc+")"})
 					this.end(barclose,[this.cn("×")])
-				this.end(bar,[barname,barclose])
+				this.end(bar,[barname])
+				if(data.stcb!=undefined){
+					bar.setAttribute("style","grid-template-columns:auto 25px 30px;")
+					this.end(bar,[barset])
+				}
+				this.end(bar,[barclose])
 				let pn=this.ce("div",{})
 				if(data.pn!=undefined){
 					pn=data.pn
@@ -381,7 +388,7 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 		did.setAttribute("style","z-index:"+(zindex)+";top:calc(50% - "+(tp)+"px);left:calc(50% - "+(lt)+"px);height:"+(height-2+1)+"px;width:"+(width-2+1)+"px;")
 		let a=did.childNodes[1].childNodes[1].childNodes[0]
 		if(a.tagName=="IFRAME"){
-			a.setAttribute("height",height-34)
+			a.setAttribute("height",height-36)
 		}
 	}
 	filmActive(did,id){

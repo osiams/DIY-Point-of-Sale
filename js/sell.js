@@ -9,6 +9,7 @@ class sell extends main{
 		this.member_default={"name":"บุคลทั่วไป","lastname":"","sku_root":"","icon":"null.png"}
 		this.bc="✂️"
 		this.idn=null
+		this.ipayu=null
 		this.idmb=null
 		this.dpro=null
 		this.dlist=null
@@ -50,6 +51,7 @@ class sell extends main{
 	run(){
 		this.writeContent()
 		this.idn=this.id("n")
+		this.ipayu=this.id("ipayu")
 		this.idmb=this.id("imember")
 		this.dpro="dpro"
 		this.dlist=this.id("dlist")
@@ -137,10 +139,11 @@ class sell extends main{
 					let imember0=this.ce("div",{})
 						let form=this.ce("form",{"name":"form_sell"})
 							let ipmember=this.ce("input",{"id":"ipmember","type":"hidden","value":""})
+							let ipayu=this.ce("input",{"id":"ippayu","type":"hidden","value":",defaultroot,"})
 							let imember=this.ce("div",{"data-select_type":"one","id":"imember","onclick":"M.popup(this,'S.selectMember(did)')"})
 							this.end(imember,[this.cn(this.member.name)])
 							this.end(form,[ipmember])		
-						this.end(form,[imember])
+						this.end(form,[imember,ipayu])
 					this.end(imember0,[form])
 				this.end(dbarl,[iamount,isearch, ileave,iplus,ibills,imember0])
 				let dbarc=this.ce("div",{})
@@ -311,12 +314,14 @@ class sell extends main{
 					this.end(list[i+"at"],[this.cn(i+1)])
 					list[i+"date"]=this.ce("div",{})
 					this.end(list[i+"date"],[this.cn(date)])
-					if(member.sku_root!=""){
-						let mb=this.ce("p",{})
-							let sp=this.ce("span",{})
-							this.end(sp,[this.cn(" "+member.sku)])
-						this.end(mb,[this.cn(member.name+" "+member.lastname),sp])		
-						this.end(list[i+"date"],[mb])				
+					if(member!=null){
+						if(member.sku_root!=""){
+							let mb=this.ce("p",{})
+								let sp=this.ce("span",{})
+								this.end(sp,[this.cn(" "+member.sku)])
+							this.end(mb,[this.cn(member.name+" "+member.lastname),sp])		
+							this.end(list[i+"date"],[mb])				
+						}
 					}
 					
 					list[i+"n_list"]=this.ce("div",{})
@@ -947,33 +952,49 @@ class sell extends main{
 			}else{
 				let ct=this.ce("div",{"class":"sellpay"})
 					let d1=this.ce("div",{})
-						let p=this.ce("p",{})
-							let tn1=this.cn(t.n_list+" รายการ รวมเป็นเงิน "+this.nb(t.sums)+" บาท")
-						this.end(p,[tn1])
-						let p2=this.ce("p",{})
-							let sp=this.ce("span",{})
-							this.end(sp,[this.cn("รูปแบบการชำระ")])
-						this.end(p2,[sp])	
+						let p=this.ce("p",{"style":"padding:5px 5px 0px 5px"})
+							let ps1=this.ce("b",{})
+							this.end(ps1,[this.cn(t.n_list)])
+							let tn1=this.cn(" รายการ รวมเป็นเงิน ")
+							let ps3=this.ce("b",{})
+							this.end(ps3,[this.cn(this.nb(t.sums))])
+							let tn2=this.cn("  บาท")
+						this.end(p,[ps1,tn1,ps3,tn2])
+						let p2=this.ce("div",{})
+							let ps=this.ce("span",{})
+							this.end(ps,[this.cn("รูปแบบการชำระ")])
+						this.end(p2,[ps])	
 						let d2=this.ce("div",{})
-							let t1=this.ce("table",{"id":"sellpay"})
+							let t1=this.ce("table",{"id":"sellpayu","class":"table_select_payu"})
 								let tr1=this.ce("tr",{})
 									let td0=this.ce("td",{"colspan":"4","class":"r"})
-										let a=this.ce("a",{})
+										let a=this.ce("a",{"onclick":"Fsl.ctAddPartner('payu',null,'form_sell',null,'sellpayu','ippayu','new',1,null,null,0,'name','',0)"})
 										this.end(a,[this.cn("ชำระหลายช่องทาง")])
 									this.end(td0,[a])	
-								this.end(tr1,[td0])
+								//this.end(tr1,[td0])
 							this.end(t1,[tr1])
 						this.end(d2,[t1])
-					this.end(d1,[p,p2,d2])
+						this.end(p2,[this.cn(" / "),a])
+					this.end(d1,[p2,d2])
 				this.end(ct,[d1])
 				let rid=this.rid()
 				let bts = [
 					{"value":"ยกเลิก","onclick":""},
 					{"value":"ยืนยัน","onclick":""}
 				]
-				let dt={"title":"ชำระเงิน","ct":ct,"rid":rid,"callback":"","bts":bts,"ofc":0,"display":1,"width":360}
+				let dt={"title":"ชำระเงิน","pn":p,"ct":ct,"rid":rid,"callback":"","bts":bts,"ofc":0,"display":1,"width":360,"stcb":""}
 				this.dialog(dt)
+				let value={"defaultroot":0}
+				//alert(this.id('ippayu'))
+				Fsl.setLoadPartner('payu','form_sell',null,'sellpayu','ippayu',value,'S.setDialogPayu(\''+rid+'\')')
+				
 			}
+		}
+	}
+	setDialogPayu(dialog_id){
+		let p=document.querySelector("input[name=payu_defaultroot]");
+		if(p!=null){
+			p.focus()
 		}
 	}
 	xxxxsmile(error=""){

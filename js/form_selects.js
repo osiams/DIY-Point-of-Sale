@@ -410,7 +410,7 @@ class form_selects{
 			this.main.end(t,[div])
 		}
 	}
-	selectPayuOKAppend(a,display_id){
+	selectPayuOKAppend(a,display_id,callback){
 		let t=this.main.id(display_id)
 		let i=-1
 		for (let prop in this.partner[display_id]) {
@@ -427,8 +427,14 @@ class form_selects{
 			this.main.end(cell1,[div_img])
 			cell2.innerHTML=this.partner[display_id][prop]["name"]
 			let val=this.main.nb(this.partner[display_id][prop]["value"],2)
+			if(this.partner[display_id][prop]["value"]*1==0){
+				val=""
+			}
 			let ip=this.main.ce("input",{"name":"payu_"+prop,"type":"text","value":val,"onchange":"Fsl.setValue(this,'"+display_id+"','"+prop+"')"})
 			this.main.end(cell3,[ip])	
+			if(callback!=""){
+				eval(callback)
+			}
 		}		
 	}
 	panelNum(did,display_id,prop){
@@ -566,8 +572,8 @@ class form_selects{
 			this.main.id("checkboxid_"+sku_root).checked=false
 		}
 	}
-	setLoadPartner(a,form_name,dialog_id=null,display_id,partner_list_id,ob_value){
-		let a_get={"partner":"partner_get","payu":"payu_get"}
+	setLoadPartner(a,form_name,dialog_id=null,display_id,partner_list_id,ob_value,callback=""){
+		let a_get={"partner":"partner_get","payu":"payu_get"};
 		if(a!=null&&!a_get.hasOwnProperty(a)){
 			return false
 		}else{
@@ -580,7 +586,7 @@ class form_selects{
 		dialog_id=(dialog_id==null)?this.main.rid():dialog_id
 		let partner_list=document.forms[form_name][partner_list_id].value
 		let dt={"data":{"a":"form_selects","b":a,"c":a_get[a],"dialog_id":dialog_id,"display_id":display_id,
-			"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"js_value":JSON.stringify(ob_value)},
+			"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"js_value":JSON.stringify(ob_value),"callback":callback},
 			"result":Fsl.getListPartnerLoadResult,"error":Fsl.getListPartnerLoadError
 		}
 		this.main.setFec(dt)
@@ -597,7 +603,7 @@ class form_selects{
 	}
 	loadSetPartner(re,form,bt){
 		let a=form.get("b")
-		
+		let callback=form.get("callback")
 		let partner_list=form.get("partner_list")
 		
 		let ob_value=JSON.parse(form.get("js_value"))
@@ -620,7 +626,7 @@ class form_selects{
 		if(a=="partner"){
 			this.selectPartnerOKAppend(a,display_id)	
 		}else if(a=="payu"){
-			this.selectPayuOKAppend(a,display_id)
+			this.selectPayuOKAppend(a,display_id,callback)
 		}
 	}
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
