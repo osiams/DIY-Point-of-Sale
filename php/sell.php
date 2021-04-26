@@ -23,9 +23,7 @@ class sell extends main{
 			&&isset($_POST["submith"])&&$_POST["submith"]=="clicksubmit"){
 			$re=["result"=>false,"message_error"=>"","billid"=>"0"];	
 			$se=$this->fetchCutSt();
-			
-			header('Content-type: application/json');
-			
+
 			if(isset($se["data"]["result"][0]["result"])&&$se["data"]["result"][0]["result"]==1){
 				$re["result"]=true;
 				$re["billid"]=$se["data"]["result"][0]["billid"];
@@ -41,6 +39,7 @@ class sell extends main{
 			if(isset($se["data"]["result"][0]["message_error"])){
 				$re["message_error"]=$se["data"]["result"][0]["message_error"];
 			}
+			header('Content-type: application/json');
 			echo json_encode($re);
 		}else{
 			header('Content-type: application/json');
@@ -67,8 +66,12 @@ class sell extends main{
 	private function fetchCutSt():array{
 		$member0=(isset($_POST["member"])&&$this->isSKU($_POST["member"]))?$_POST["member"]:"";
 		$member=$this->getStringSqlSet($member0);
+		$payu_doc=(isset($_POST["payu"]))?$_POST["payu"]:'{}';
+		$payu_key_doc=$this->jsonDocToArrayKeyDoc($payu_doc);
+		//print_r($payu_doc);exit;
 		$re=["result"=>false,"message_error"=>""];
 		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
+		$sum_client=(isset($_POST["sum"]))?(float) $_POST["sum"]:0;
 		$pd=json_decode($_POST["pd"],true);
 		$this->getUniqPdData($pd);
 		$n=0;
@@ -88,14 +91,19 @@ class sell extends main{
 			@jspd_wlv:=".$jspd_wlv.",
 			@n:=".$n.",
 			@sums:=0,
+			@sums_client:=".$sum_client.",
+			@payu_doc:='".$payu_doc."',
+			@payu_key_doc:='".$payu_key_doc."',
 			@flag:=0,
 			@bill_sell_save:=0,
 			@TEST:='',
 			@over:=0,
 			@stock:='{}',
+			@credit:=0,
 			@member:=".$member.",
 			@member_key:=".$member.",
 			@id:=(SELECT IFNULL((SELECT MAX(id) FROM `bill_sell`),0)+1),
+			@moneyinfo:=(SELECT PayuInfo_('".$payu_key_doc."')),
 			@member_sku_root_count:=(SELECT COUNT(*)  FROM `member` WHERE '".$member0."' != '' AND`sku_root`='".$member0."' ),
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
@@ -109,6 +117,19 @@ class sell extends main{
 				SET @over=1;
 			ELSE 
 				SET @member_key=(SELECT `sku_key` FROM `member` WHERE `sku_root` = '".$member0."' LIMIT 1);
+			END IF;
+		";
+		$sql["money"]="
+			IF @message_error != '4' THEN
+				SET @len=JSON_LENGTH(@payu_key_doc);
+				FOR i IN 0..(@len-1) DO
+					SET @k=JSON_VALUE(@payu_key_doc,	CONCAT('$[',i,']')	);
+					SET @mm_type=JSON_VALUE(@moneyinfo,	CONCAT('$.',@k,'.money_type')	);
+					IF @mm_type = 'cd' THEN
+						SET @credit=@credit+JSON_VALUE(@payu_doc,	CONCAT('$.',@k)	);
+					END IF;
+				END FOR;	
+				SET @message_error=CONCAT(@message_error,'ยอดค้างชำระ ',@credit,' คุณสูงกว่า ค่าสินค้า ');
 			END IF;
 		";
 		$sql["set_sums"]="
@@ -173,13 +194,16 @@ class sell extends main{
 				END FOR;
 				
 				IF n_list>0 THEN
-					SET @message_error=CONCAT('มีสินค้า ',n_list,' รายการ ไม่มีจำนวนในระบบ\n');
+					SET @message_error=CONCAT(@message_error,'มีสินค้า ',n_list,' รายการ ไม่มีจำนวนในระบบ\n');
 				END IF;
 				IF n_over>0 THEN
 					SET @message_error=CONCAT(@message_error,'มีสินค้า ',n_over,' รายการ มีจำนวนในระบบน้อยกว่า จำนวนที่จะขาย\nและ หรือ\n กรณีสินค้า ชั่งตวงวัด จำนวนสินค้ารวมหลายรายการ อาจมีจำนวนมากกว่า สินค้าที่มีอยู่');
 				END IF;
 				IF n_price_null>0 THEN
 					SET @message_error=CONCAT(@message_error,'มีสินค้า ',n_price_null,' รายการ  ที่ยังไม่ได้ตั้งราคาขาย หรือ ราคาขาย <= 0.00\n');
+				END IF;
+				IF @sums_client < @sums  THEN
+					SET @message_error=CONCAT(@message_error,'ราคารวม ฝั่ง เซร์ฟเวอร์ ได้  ',@sums,' แต่ราคารวมที่ส่งมา ได้ ',@sums_client,'\n');
 				END IF;
 			END ;
 		";
@@ -525,5 +549,11 @@ class sell extends main{
 	}
 	
 		return $re;
+	}
+	private function jsonDocToArrayKeyDoc(string $json_doc):string{
+		$a=json_decode($json_doc,true);
+		$b=array_keys($a);
+		$c=json_encode($b);
+		return $c;
 	}
 }

@@ -7,7 +7,7 @@ class fileupload extends main{
 			"data"=>[],
 			"message_error"=>""
 		];
-		$this->max_squar=["bill_in"=>256,];
+		$this->max_squar=["bill_in"=>256,"device_pos"=>256];
 	}
 	public function fetch(){
 		$file = "php/class/image.php";
@@ -17,7 +17,8 @@ class fileupload extends main{
 	}
 	protected function pc():void{
 		$t=[
-			"bill_in"=>["sku"=>1]
+			"bill_in"=>["sku"=>1],
+			"device_pos"=>["ip"=>1]
 		];
 		if(isset($_POST["icon"])&&$_POST["icon"]!=""){
 			if(isset($_POST["table"])){
@@ -56,7 +57,7 @@ class fileupload extends main{
 										$file=$_POST["icon"];
 										$pt="/^[0-9a-zA-Z]{1,}.png$/";
 										if(preg_match($pt,$file)){
-											$this->delImgs($file);
+											$this->delImg1($file);
 											$this->delIconGl($_POST["table"],$_POST["key"],$_POST["data"],$file);
 											$this->re["icon_name"]=$file;
 											$this->re["result"]=true;
@@ -106,7 +107,7 @@ class fileupload extends main{
 		//print_r($sql);
 		$se=$this->metMnSql($sql,["result"]);
 	}
-	private function delImgs(string $name):void{
+	protected function delImg1(string $name):void{
 		$sq=[16,32,64,128,256,512,1024];
 		$file=$this->gallery_dir."/".$name;
 		if(file_exists($file)){
@@ -145,7 +146,7 @@ class fileupload extends main{
 					`sku_key`		,`gl_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,
 					`user`			,`size`			,`width`		,`height`
 				) VALUES (
-					@sku_key		,\"".$data."\"	,\"".$data."\"		,'billin'		,".$mimefull."				,".$md5.",
+					@sku_key		,\"".$data."\"	,\"".$data."\"		,\"".$table."\"		,".$mimefull."				,".$md5.",
 					".$user."		,".$size."		,".$width."		,".$height."
 				);
 				SET @result=1;
@@ -153,7 +154,7 @@ class fileupload extends main{
 		";
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@icon AS `icon_name`";
 		$se=$this->metMnSql($sql,["result"]);
-		//print_r($se);
+		//print_r($se);exit;
 		if($se["result"]){
 			$re["result"]=$se["data"]["result"][0]["result"];
 			$re["message_error"]=$se["data"]["result"][0]["message_error"];
@@ -187,7 +188,7 @@ class fileupload extends main{
 					`sku_key`		,`gl_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,
 					`user`			,`size`			,`width`		,`height`
 				) VALUES (
-					@sku_key		,\"".$data."\"	,\"".$data."\"		,'billin'		,".$mimefull."				,".$md5.",
+					@sku_key		,\"".$data."\"	,\"".$data."\"		,\"".$table."\"			,".$mimefull."				,".$md5.",
 					".$user."		,".$size."		,".$width."		,".$height."
 				);
 				SET @result=1;

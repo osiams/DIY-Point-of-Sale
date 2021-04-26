@@ -15,6 +15,7 @@ main{padding:0px;text-align:center;display:inline-block;}
 .icon_day{background-image:url('../img/pos/64x64_day.png')}
 .icon_barcode{background-image:url('../img/pos/64x64_barcode.png')}
 .icon_payu{background-image:url('../img/pos/64x64_payu.png')}
+.icon_device{background-image:url('../img/pos/64x64_device.png')}
 .icon_tool{background-image:url('../img/pos/64x64_tool.png')}
 .icon_setting{background-image:url('../img/pos/64x64_setting.png')}
 .icon_cd{background-image:url('../img/pos/64x64_cd.png')}

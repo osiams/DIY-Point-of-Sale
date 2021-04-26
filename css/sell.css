@@ -143,6 +143,4 @@ body{overflow:hidden;}
 .sellpay >div > div:nth-child(1) > span{text-decoration: underline; }
 .sellpay >div > div:nth-child(2){border:0px solid gray;border-radius: 3px 3px 3px 3px;width:calc(100% - 2px);min-height:90px;} 
 .sellpay >div > div:nth-child(2) >table{width:100%;border-radius: 3px 3px 3px 3px;border:0px;}
-.sellpay >div > div:nth-child(2) >table > tr >td >a{padding:3px;}
-.xxsellpay >div > p:nth-child(2){text-align:right;padding-right:20px;}
-.xxsellpay >div > p:nth-child(2) > span{position:relative;top:10px;color:blue;padding: 0px 5px;background-color:#ffffff}
+.xxxxsellpay >div > div:nth-child(2) >table > tr >td >a{padding:3px;}

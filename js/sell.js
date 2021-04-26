@@ -323,7 +323,6 @@ class sell extends main{
 							this.end(list[i+"date"],[mb])				
 						}
 					}
-					
 					list[i+"n_list"]=this.ce("div",{})
 					this.end(list[i+"n_list"],[this.cn(n_list)])
 					list[i+"n_act"]=this.ce("div",{"class":"action"})
@@ -967,10 +966,10 @@ class sell extends main{
 						let d2=this.ce("div",{})
 							let t1=this.ce("table",{"id":"sellpayu","class":"table_select_payu"})
 								let tr1=this.ce("tr",{})
-									let td0=this.ce("td",{"colspan":"4","class":"r"})
+									//let td0=this.ce("td",{"colspan":"4","class":"r"})
 										let a=this.ce("a",{"onclick":"Fsl.ctAddPartner('payu',null,'form_sell',null,'sellpayu','ippayu','new',1,null,null,0,'name','',0)"})
 										this.end(a,[this.cn("ชำระหลายช่องทาง")])
-									this.end(td0,[a])	
+									//this.end(td0,[a])	
 								//this.end(tr1,[td0])
 							this.end(t1,[tr1])
 						this.end(d2,[t1])
@@ -978,18 +977,48 @@ class sell extends main{
 					this.end(d1,[p2,d2])
 				this.end(ct,[d1])
 				let rid=this.rid()
+				let vwh=this.setPayuValueDefault()
+				this.id("ippayu").value=vwh.payu_value
 				let bts = [
-					{"value":"ยกเลิก","onclick":""},
-					{"value":"ยืนยัน","onclick":""}
+					{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"',0)"},
+					{"value":"ยืนยัน","onclick":"S.success()"}
 				]
-				let dt={"title":"ชำระเงิน","pn":p,"ct":ct,"rid":rid,"callback":"","bts":bts,"ofc":0,"display":1,"width":360,"stcb":""}
+				let dt={"title":"ชำระเงิน","pn":p,"ct":ct,"rid":rid,"callback":"","bts":bts,"ofc":0,"display":1,"width":vwh.width,"height":vwh.height,"stcb":"S.setDefaultPayuDialog('"+rid+"')"}
 				this.dialog(dt)
-				let value={"defaultroot":0}
+				let value=vwh.ob_value
 				//alert(this.id('ippayu'))
 				Fsl.setLoadPartner('payu','form_sell',null,'sellpayu','ippayu',value,'S.setDialogPayu(\''+rid+'\')')
 				
 			}
 		}
+	}
+	setPayuValueDefault(){
+		let re={}
+		let dfpy=localStorage.getItem('default_payu_dialog')
+		if(JSON.parse(dfpy)!=null){
+			re=JSON.parse(dfpy)
+			let a=F.valueListToArray(re.payu_value)
+			let y={}
+			for(let i=0;i<a.length;i++){
+				y[a[i]]=0
+			}
+			re["ob_value"]=y
+		}else{
+			re={"payu_value":",defaultroot,","width":360,"height":250,"ob_value":{"defaultroot":0}}
+		}
+		return re
+	}
+	setDefaultPayuDialog(dialog_id_parent){
+		let rid=this.rid()
+		let dt={"title":"ตั้งค่า","msg":"คุณต้องการ ตั้งค่าหน้าต่าง การชำระเงินปัจจุบันนี้ให้เป็นค่า ปริยาย ในการเรียกใช้งานครั้งถัดไป","width":400,"callback":"S.setDefaultPayuDialog2('"+dialog_id_parent+"','"+rid+"')","rid":rid,"ofc":0}
+		this.dialogConfirm(dt)
+	}
+	setDefaultPayuDialog2(dialog_id_parent,dialog_id){
+		let dl=this.id(dialog_id_parent+"_dialog").getBoundingClientRect()
+		M.l(dl)
+		let dt={"payu_value":this.id("ippayu").value,"width":Math.ceil(dl.width),"height":Math.ceil(dl.height)}
+		localStorage.setItem("default_payu_dialog",JSON.stringify(dt))
+		this.dialogClose(dialog_id,0)
 	}
 	setDialogPayu(dialog_id){
 		let p=document.querySelector("input[name=payu_defaultroot]");
@@ -1014,7 +1043,44 @@ class sell extends main{
 			}
 		}
 	}
-	success(sum,get){
+	success(){
+		let t=this.sums("get")
+		if(t.n_list>0){
+			let sum=t.sums
+			let get=this.getMonetPayuForm()
+			let pd=JSON.stringify(this.dt)
+			/*let formData = new FormData()
+			formData.append("a","sell")			
+			formData.append("submith","clicksubmit")		
+			formData.append("b","smile")		
+			formData.append("sum",sum)	
+			formData.append("get",get)	
+			formData.append("pd",pd)		
+			formData.append("member",this.member.sku_root)	*/
+			//M.fec("POST","",S.successResult,S.successError,null,formData)	
+			let dt={"data":{"a":"sell","b":"smile","get":get,"sum":sum,"pd":pd,"submith":"clicksubmit","member":this.member.sku_root,"payu":JSON.stringify(this.getPayuTypeValue())},
+				"result":S.successResult,"error":S.successError}		
+			this.setFec(dt)
+			//M.l(dt)
+		}
+	}
+	getPayuTypeValue(){
+		let re={};
+		let p=Fsl.partner.sellpayu
+		for (let prop in p) {
+			re[prop]=p[prop]["value"]*1
+		}
+		return re
+	}
+	getMonetPayuForm(){
+		let re=0;
+		let p=Fsl.partner.sellpayu
+		for (let prop in p) {
+			re+=p[prop]["value"]*1
+		}
+		return re
+	}
+	xxxsuccess(sum,get){
 		let pd=JSON.stringify(this.dt)
 		let formData = new FormData()
 		formData.append("a","sell")			

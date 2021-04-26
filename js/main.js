@@ -323,17 +323,18 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 		if(data.display ==1){
 			let title= data.hasOwnProperty("title") ?data.title:"..."
 			let width= data.hasOwnProperty("width") ?"width:"+data.width+"px;":""
+			let height= data.hasOwnProperty("height") ?"height:"+data.height+"px;":""
 			let rid = data.hasOwnProperty("rid") ?data.rid:this.rid()
 			let ofc = data.hasOwnProperty("ofc") ?data.ofc:1
 			let bts0 = data.hasOwnProperty("bts0") ?"_bts0":""
 
 			let dialog = this.ce("div",{"class":"dialog dialog_tr"+bts0+" dialog_active1","id":rid+"_dialog","onmousedown":"this.style.transitionDuration='0s'","onmouseup":"M.setDialogSize(this)","style":width})
-			xxxxxx 2021-04-23 bar = this.ce("div",{})
-					let barname= this.ce("div",{})
+			let bar = this.ce("div",{})
+					let barname= this.ce("div",{"class":"dialog_title"})
 					this.end(barname,[this.cn(title)])
-					let barset=this.ce("div",{})
+					let barset=this.ce("div",{"class":"dialog_setting","onclick":data.stcb})
 					this.end(barset,[this.cn("⚙️")])
-					let barclose= this.ce("div",{"title":"กดเพื่อปิด","onclick":"M.dialogClose('"+rid+"',"+ofc+")"})
+					let barclose= this.ce("div",{"class":"dialog_close","title":"กดเพื่อปิด","onclick":"M.dialogClose('"+rid+"',"+ofc+")"})
 					this.end(barclose,[this.cn("×")])
 				this.end(bar,[barname])
 				if(data.stcb!=undefined){
@@ -371,7 +372,7 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 			let tp = (data.ct.offsetHeight + 76 + 8)/2 - window.scrollY 
 			let lt = (data.ct.offsetWidth+8)/2 - window.scrollX 
 			
-			dialog.setAttribute("style","z-index:"+(zindex+1)+";top:calc(50% - "+(tp)+"px);left:calc(50% - "+(lt)+"px);"+width)
+			dialog.setAttribute("style","z-index:"+(zindex+1)+";top:calc(50% - "+(tp)+"px);left:calc(50% - "+(lt)+"px);"+width+""+height)
 			this.setDialogSize(this.id(rid+"_dialog"))
 			//alert(data.ct.offsetHeight)
 		}

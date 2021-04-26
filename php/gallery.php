@@ -17,13 +17,12 @@ class gallery extends main{
 		}
 	}
 	public function writeForm(string $json_value="{}"):void{
-		echo '
-			<p><label>ห้องแสดงภาพ</label></p>
+		echo '	<p><label>ห้องแสดงภาพ</label></p>
 			<div class="gallery_file_set">
 				<div id="'.$this->display_id.'"></div>
 				<div><input type="button" value="เพิ่ม/แก้ไข" onclick="Gl.ctAddGallery(\''.$this->table.'\',\''.$this->key.'\',\''.$this->data_key.'\',\''.$this->form_name.'\',dialog_id=null,\''.$this->display_id.'\',\''.$this->gallery_list.'\',\''.$this->gallery_gl_list.'\',\'new\',\''.$this->icon_ob.'\')" /></div>
 			</div>
-			<script type="text/javascript">Gl.setLoadGallery(\''.$this->table.'\',\''.$this->key.'\',\''.$this->data_key.'\',\'billsin\',dialog_id=null,\''.$this->display_id.'\',\''.$this->gallery_list.'\',\''.$this->gallery_gl_list.'\')</script>
+			<script type="text/javascript">Gl.setLoadGallery(\''.$this->table.'\',\''.$this->key.'\',\''.$this->data_key.'\',\''.$this->form_name.'\',dialog_id=null,\''.$this->display_id.'\',\''.$this->gallery_list.'\',\''.$this->gallery_gl_list.'\')</script>
 		';
 	}
 }

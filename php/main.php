@@ -66,6 +66,17 @@ class main{
 				"primary"=>"id",
 				"index"=>["sku","bill_in_list_id","lot","product_sku_key","product_sku_root","n_wlv"]
 			],
+			"device_pos"=>[
+				"name"=>"device_pos",
+				"column"=>["id"			,"sku"			,"name"		,"ip"		,"no",
+									"onoff"		,"user"			,"balance"		,"drawers_sku_root",
+									"disc"		,"icon_arr"		,"icon_gl"			,"modi_date"	,
+									"date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],					
+				"primary"=>"ip",
+				"unique"=>["sku","name"],
+				"index"=>["onoff"]
+			],
 			"gallery"=>[
 				"name"=>"gallery",
 				"column"=>["id","sku_key","gl_key","name","a_type","mime_type","md5","user","size","width","height","date_reg"],
@@ -288,7 +299,7 @@ class main{
 			]
 		];
 		$this->fills=[
-			"a_type"=>["name"=>"สำหรับแอป","type"=>"ENUM","length_value"=>["partner","billin","payu","member"]],
+			"a_type"=>["name"=>"สำหรับแอป","type"=>"ENUM","length_value"=>["partner","billin","payu","member","device_pos"]],
 			"amount"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
 			"alley"=>["name"=>"ซอย","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"barcode"=>["name"=>"รหัสแท่ง","type"=>"CHAR","length_value"=>80],
@@ -322,6 +333,7 @@ class main{
 			"data_type"=>["name"=>"ชนิดข้อมูล","type"=>"ENUM","length_value"=>["s","n","b","u"]],
 			"disc"=>["name"=>"รายละเอียด","type"=>"VARCHAR","length_value"=>1000,"charset"=>"thai"],
 			"date_reg"=>["name"=>"วันที่สร้าง","type"=>"TIMESTAMP"],
+			"drawers_sku_root"=>["name"=>"รหัสรากลิ้นชัก","type"=>"CHAR","length_value"=>25],
 			"email"=>["name"=>"อีเมล","type"=>"CHAR","length_value"=>30],
 			"fax"=>["name"=>"แฟ็กซ์","type"=>"CHAR","length_value"=>15],
 			"float"=>["name"=>"จำนวน","type"=>"FLOAT","length_value"=>[10,4]],
@@ -338,6 +350,7 @@ class main{
 			"idkey"=>["name"=>"ที่อ้างอิง","type"=>"INT","length_value"=>10],
 			//--"buy","cancel","return",move,x,delete
 			"in_type"=>["name"=>"ประเภทการเข้า","type"=>"ENUM","length_value"=>["b","c","r","m","x","d","mm"]],
+			"ip"=>["name"=>"เลข IP","type"=>"CHAR","length_value"=>25],
 			"lastname"=>["name"=>"นามสกุล","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			"lot"=>["name"=>"งวด","type"=>"CHAR","length_value"=>25],
 			"lot_from"=>["name"=>"งวดอ้างอิง","type"=>"CHAR","length_value"=>25],
@@ -360,6 +373,7 @@ class main{
 			"name"=>["name"=>"ชื่อ","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			"note"=>["name"=>"บันทึกย่อ","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			"od_type"=>["name"=>"รูปแบบการสั่งซื้อ","type"=>"ENUM","length_value"=>["s","a","o","t"]],
+			"onoff"=>["name"=>"เปิดปิดกะ","type"=>"ENUM","length_value"=>["0","1"]],
 			//"partner1"=>["name"=>"คู่ค้า1","type"=>"CHAR","length_value"=>255],
 			//"partner2"=>["name"=>"คู่ค้า2","type"=>"CHAR","length_value"=>255],
 			//"partner3"=>["name"=>"คู่ค้า3","type"=>"CHAR","length_value"=>255],
@@ -989,6 +1003,22 @@ class main{
 			$re= $date."".$tm;
 		}
 		return $re;
+	}
+	protected function delImgs(array $files):void{
+		$sq=[16,32,64,128,256,512,1024];
+		for($g=0;$g<count($files);$g++){
+			$file=$this->gallery_dir."/".$files[$g];
+			echo $file."*";
+			if(file_exists($file)){
+				unlink($file);
+			}
+			for($i=0;$i<count($sq);$i++){
+				$file=$this->gallery_dir."/".$sq[$i]."x".$sq[$i]."_".$files[$g];
+				if(file_exists($file)){
+					unlink($file);
+				}
+			}
+		}
 	}
 }
 ?>

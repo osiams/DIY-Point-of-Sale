@@ -475,23 +475,6 @@ class bills_in extends bills{
 			$this->deletePage($error,$note);
 		}		
 	}
-	private function delImgs(array $files):void{
-		print_r($files);
-		$sq=[16,32,64,128,256,512,1024];
-		for($g=0;$g<count($files);$g++){
-			$file=$this->gallery_dir."/".$files[$g];
-			echo $file."*";
-			if(file_exists($file)){
-				unlink($file);
-			}
-			for($i=0;$i<count($sq);$i++){
-				$file=$this->gallery_dir."/".$sq[$i]."x".$sq[$i]."_".$files[$g];
-				if(file_exists($file)){
-					unlink($file);
-				}
-			}
-		}
-	}
 	private function deletePage(string $error,string $note):void{
 		$this->addDir("","ลบ ".htmlspecialchars($note));
 		$this->pageHead(["title"=>"ลบนำเข้า สินค้า DIYPOS","js"=>["billsin","Bi"],"css"=>["billsin"]]);
