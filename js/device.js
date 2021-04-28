@@ -54,4 +54,42 @@ class device extends main{
 		f.ip.value=ip
 		f.submit()
 	}
+	deviceSumit(){
+		let f=document.forms.device_pos
+		let gl_list_value=""
+		if(f.gallery_list!=undefined){
+			gl_list_value=f.gallery_list.value
+		}
+		let dt={"data":{"a":"device","submith":"clicksubmit","b":"pos","c":"edit",
+			"no":f.no.value,"sku":f.sku.value,gallery_list:gl_list_value,
+			"name":f.name.value,"disc":f.disc.value},
+			"result":Dv.devicePOSEditResult,"error":Dv.devicePOSEditError}	
+		this.setFec(dt)	
+	}
+	devicePOSEditResult(re,form,bt){
+		if(re["result"]){
+			let data=re["data"]["ip"]
+			let url_to="?a=device&b=pos"
+			let url_key=form.get("url_key")
+			let c=form.get("c")
+			let uploadtype=(c=="regis")?"new":"add"
+			let count_img=Object.keys(Dv.icon).length
+			Ful.fileUploadImgs(uploadtype,'device_pos','sku',data,'Dv.icon',url_to,'ed',null,'Dv.posUploafFileError(\''+data+'\')')
+			if(uploadtype=="add"||count_img==0){
+				alert("สำเร็จ")
+				let ed=re["data"]["sku"]
+				location.href="?a=device&b=pos&ed="+ed
+			}
+		}else{
+			Dv.devicePOSEditError(re,form,bt)
+		}
+	}
+	posUploafFileError(ed=""){
+		location.href="?a=device&b=pos&ed="+ed
+	}
+	devicePOSEditError(re,form,bt){M.l(re)
+		if(re["result"]!=undefined){
+			alert("เกิดข้อผิดพลาด\n"+re["message_error"])
+		}
+	}
 }

@@ -26,11 +26,11 @@ class device_pos extends device{
 			}else if($t=="delete"){
 				$this->deletePOS();
 			}else if($t=="details"){
-				if(isset($_GET["sku_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku_root"])){
-					require("php/member_details.php");
-					(new member_details($_GET["sku_root"]))->run();
+				if(isset($_GET["ip"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["ip"])){
+					require("php/device_pos_details.php");
+					(new device_pos_details($_GET["ip"]))->run();
 				}else{
-					$this->pageMember();
+					$this->pagePOS();
 				}
 			}
 		}else{
@@ -73,16 +73,74 @@ class device_pos extends device{
 		}
 	}
 	public function fetch(){
-		$p=["regis"];
+		$p=["regis","edit"];
 		if(isset($_POST["c"])&&in_array($_POST["c"],$p)){
 			$t=$_POST["c"];
 			if($t=="regis"){
 				$this->fetchPOSRegis();
+			}else if($t=="edit"){
+				$this->fetchPOSEdit();
 			}
 		}else{
 			header('Content-type: application/json');
 			print_r("{}");
 		}		
+	}
+	private function fetchPOSEdit():void{
+		$error="";
+		if(isset($_POST["submith"])&&$_POST["submith"]=="clicksubmit"){
+			$se=$this->checkSet("device_pos",["post"=>["name","sku","no","disc"]],"post");
+			if(!$se["result"]){
+				$error=$se["message_error"];
+			}else{
+				$qe=$this->fetchPOSUpdate();
+				if(!$qe["result"]){
+					$error=$qe["message_error"];
+				}else if($qe["data"]["result"][0]["result"]==0){
+					$error=$qe["data"]["result"][0]["message_error"];
+				}else if($qe["data"]["result"][0]["result"]==1){
+					header('Content-type: application/json');
+					$d=["result"=>true,"message_error"=>"","data"=>["ip"=>$qe["data"]["result"][0]["ip"]]];
+					echo json_encode($d,true);
+				}
+			}
+			if($error!=""){
+				$this->fetchPOSPage($error);
+			}
+		}else{
+			$this->fetchPOSPage($error);
+		}
+	}
+	private function fetchPOSUpdate():array{
+		$disc=$this->getStringSqlSet($_POST["disc"]);
+		$name=$this->getStringSqlSet($_POST["name"]);
+		$sku=$this->getStringSqlSet($_POST["sku"]);
+		$no=$this->getStringSqlSet($_POST["no"]);
+		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
+		$ip=$this->getStringSqlSet($this->userIPv4());
+		$icon_arr=$this->setPropR($this->getStringSqlSet($_POST["gallery_list"]));
+		$sql=[];
+		$sql["set"]="SELECT @result:=0,
+			@message_error:='',
+			@ip:=".$ip.",
+			@sku:=".$sku.",
+			@name:=".$name.",
+			@no:=".$no.",
+			@disc:=".$disc.",
+			@icon_arr:=".$this->getStringSqlSet(json_encode($icon_arr)).",
+			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
+		";
+		$sql["run"]="BEGIN NOT ATOMIC 
+			UPDATE `device_pos`  SET
+					`sku`=@sku,	`name`=@name		,`no`=@no	,`ip`=@ip		,`disc`=@disc,`icon_arr`=JSON_UNQUOTE(@icon_arr)
+				WHERE `ip`=@ip;
+			SET @result=1;
+		END;";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@ip AS `ip`";
+		$se=$this->metMnSql($sql,["result"]);
+		$se=$this->metMnSql($sql,["result"]);
+		//print_r($se);
+		return $se;
 	}
 	private function fetchPOSRegis():void{
 		$error="";
@@ -152,7 +210,8 @@ class device_pos extends device{
 				<h1 class="c">'.$this->title.'</h1>
 				<div class="pn_search">
 					<form class="form100" name="pd_search" action="" method="get">
-						<input type="hidden" name="a" value="member" />
+						<input type="hidden" name="a" value="device" />
+						<input type="hidden" name="b" value="pos" />
 						<input type="hidden" name="lid" value="0" />
 						<label><select id="product_search_fl" name="fl">
 							<option value="sku"'.(($this->fl=="sku")?" selected":"").'>รหัสภายใน</option>
@@ -272,7 +331,7 @@ class device_pos extends device{
 			$sn=strlen(trim($se[$i]["sku"]))>0?substr(trim($se[$i]["sku"]),0,15):(mb_substr(trim($se[$i]["name"]),0,15));
 			echo '<tr'.$cm.'><td class="r">'.($se[$i]["id"]).'</td>
 				<td class="l"><div class="img48"><img  class="viewimage" src="img/gallery/64x64_'.$icons[0].'"   onerror="this.src=\'img/pos/64x64_null.png\'" alt="'.$sn.'" onclick="G.view(this)"  title="เปิดดูภาพ" /></div></td>
-				<td class="l"><a href="?a='.$this->a.'&amp;b=device_pos&amp;ip='.$se[$i]["ip"].'">'.$se[$i]["ip"].'</a></td>
+				<td class="l"><a href="?a='.$this->a.'&amp;b=pos&amp;c=details&amp;ip='.$se[$i]["ip"].'">'.$se[$i]["ip"].'</a></td>
 				<td class="l">'.$sku.'</td>
 				<td class="l">'.$name.'</td>
 				<td class="action">';
@@ -375,7 +434,7 @@ class device_pos extends device{
 						$this->pageFoot();
 				}else{
 					$this->addDir("","แก้ไข");
-					$this->pageHead(["title"=>"แก้ไขนำเข้า สินค้า DIYPOS","css"=>["billsin"]]);
+					$this->pageHead(["title"=>"แก้ไขเครื่องขายเงินสด DIYPOS","css"=>["device"]]);
 					echo '<main><p class="error c">ไม่พบข้อมูล ที่ส่งมา</p></main>';
 					$this->pageFoot();
 				}
@@ -410,7 +469,7 @@ class device_pos extends device{
 		$this->gall=new gallery("device_pos","ip",$d["ip"],"device_pos",$gal_id,$gallery_list_id,$gallery_gl_list_id,"Dv.icon");	
 		$this->gall->writeForm();	
 		echo '<br /><br />
-		<input type="button" onclick="Bi.billsinSumit(true)" value="แก้ไข เครื่องขายเงินสด" /></form>';
+		<input type="button" onclick="Dv.deviceSumit()" value="แก้ไข เครื่องขายเงินสด" /></form>';
 	}
 	private function getDataView1(string $ip):array{
 		$ip=$this->getStringSqlSet($ip);
@@ -426,6 +485,17 @@ class device_pos extends device{
 		}
 		//print_r($se);
 		return $re;
+	}
+	protected function setPropR(string $prop):string{
+		$ar = [];
+		if(strlen(trim($prop))>2){
+			$prop =trim($prop);
+			$ar = explode(",,",substr($prop,2,-2));
+		}
+		if($ar[0]==""){
+			$ar=[];
+		}
+		return json_encode($ar);
 	}
 }
 ?>
