@@ -14,16 +14,19 @@ class device extends main{
 			if($t=="pos"){
 				require("php/device_".$t.".php");
 				eval("(new device_".$t."())->run();");
+			}else if($t=="drawers"){
+				require("php/device_".$t.".php");
+				eval("(new device_".$t."())->run();");
 			}
 		}else{
 			$this->defaultDevicePage();
 		}
 	}
 	public function fetch(){
-		$p=["pos"];
+		$p=["pos","drawers"];
 		if(isset($_POST["b"])&&in_array($_POST["b"],$p)){
 			$t=$_POST["b"];
-			if($t=="pos"){
+			if(1==1){
 				require("php/device_".$t.".php");
 				eval("(new device_".$t."())->fetch();");
 			}

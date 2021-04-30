@@ -660,7 +660,7 @@ class partner extends main{
 		$se=$dt["get"];
 		echo '<form class="form100" name="'.$this->a.'" method="post">
 			<input type="hidden" name="sku_root" value="" />';
-		echo '	<table class="partnerview" style="width:100%;">
+		echo '	<table class="table_view_all_partner" style="width:100%;">
 				<tr><th>ที่</th>
 				<th>รูป</th>
 				<th>รหัสภายใน</th>

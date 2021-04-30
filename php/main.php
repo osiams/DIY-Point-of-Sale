@@ -69,13 +69,33 @@ class main{
 			"device_pos"=>[
 				"name"=>"device_pos",
 				"column"=>["id"			,"sku"			,"name"		,"ip"		,"no",
-									"onoff"		,"user"			,"balance"		,"drawers_sku_root",
+									"onoff"		,"time_id"		,"user"			,"balance"		,"drawers_id",
 									"disc"		,"icon_arr"		,"icon_gl"			,"modi_date"	,
 									"date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],					
 				"primary"=>"ip",
 				"unique"=>["sku","name"],
-				"index"=>["onoff"]
+				"index"=>["onoff","drawers_id"]
+			],
+			"device_drawers"=>[
+				"name"=>"device_drawers",
+				"column"=>["id"			,"sku"			,"name"				,"no",		
+									"disc"		,"icon_arr"		,"icon_gl"			,"modi_date"	,
+									"date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],					
+				"primary"=>"sku",
+				"not_null"=>["sku","name"],
+				"unique"=>["name","no"]
+			],
+			"drawers_tran"=>[
+				"name"=>"drawers_tran",
+				"column"=>[	"id"			,"time_id"		,"drawers_id"			,"tran_type"			,"tran_ref"		,"min"				,"mout",		
+									"balance"	,"ip"						,"user"			,"note",
+									"date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],					
+				"primary"=>"id",
+				"not_null"=>["tran_type","tran_ref"],
+				"index"=>["drawers_id","tran_type","ip"]
 			],
 			"gallery"=>[
 				"name"=>"gallery",
@@ -281,6 +301,15 @@ class main{
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","tms"=>00000.000000],
 				"primary"=>"id"
 			],
+			"time"=>[
+				"name"=>"time",
+				"column"=>[	"id"			,"ip"			,"tran_type",	"drawers_id"		,"balance"			,"min"				,"mout",		
+									"r_"			,"_r"			,"user"		,"note"		,"date_reg","date_exp"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],					
+				"primary"=>"id",
+				"not_null"=>["tran_type","tran_ref"],
+				"index"=>["drawers_id","tran_type","ip"]
+			],
 			"unit"=>[
 				"name"=>"unit",
 				"column"=>["id","sku","sku_key","sku_root","name","s_type","modi_date","date_reg"],
@@ -299,7 +328,7 @@ class main{
 			]
 		];
 		$this->fills=[
-			"a_type"=>["name"=>"สำหรับแอป","type"=>"ENUM","length_value"=>["partner","billin","payu","member","device_pos"]],
+			"a_type"=>["name"=>"สำหรับแอป","type"=>"ENUM","length_value"=>["partner","billin","payu","member","device_pos","device_drawers"]],
 			"amount"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
 			"alley"=>["name"=>"ซอย","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"barcode"=>["name"=>"รหัสแท่ง","type"=>"CHAR","length_value"=>80],
@@ -333,7 +362,8 @@ class main{
 			"data_type"=>["name"=>"ชนิดข้อมูล","type"=>"ENUM","length_value"=>["s","n","b","u"]],
 			"disc"=>["name"=>"รายละเอียด","type"=>"VARCHAR","length_value"=>1000,"charset"=>"thai"],
 			"date_reg"=>["name"=>"วันที่สร้าง","type"=>"TIMESTAMP"],
-			"drawers_sku_root"=>["name"=>"รหัสรากลิ้นชัก","type"=>"CHAR","length_value"=>25],
+			"date_exp"=>["name"=>"วันทสิ้นสุด","type"=>"TIMESTAMP"],
+			"drawers_id"=>["name"=>"ลิ้นชักที่","type"=>"INT","length_value"=>10],
 			"email"=>["name"=>"อีเมล","type"=>"CHAR","length_value"=>30],
 			"fax"=>["name"=>"แฟ็กซ์","type"=>"CHAR","length_value"=>15],
 			"float"=>["name"=>"จำนวน","type"=>"FLOAT","length_value"=>[10,4]],
@@ -362,7 +392,9 @@ class main{
 			"memberceo"=>["name"=>"ระดับสมาชิก","type"=>"ENUM","length_value"=>["0","1","2","3","4","5","6","7","8","9"]],
 			"member_sku_key"=>["name"=>"รหัสอ้างอิงสมาชิก","type"=>"CHAR","length_value"=>25],
 			"member_sku_root"=>["name"=>"รหัสรากสมาชิก","type"=>"CHAR","length_value"=>25],
+			"min"=>["name"=>"เงินเข้า","type"=>"FLOAT","length_value"=>[15,2]],
 			"mime_type"=>["name"=>"ประเภทไฟล์","type"=>"ENUM","length_value"=>["image/png","image/gif","image/jpeg"]],
+			"mout"=>["name"=>"เงินออก","type"=>"FLOAT","length_value"=>[15,2]],
 			"modi_date"=>["name"=>"วันปรับปรุง","type"=>"TIMESTAMP",],
 			"money_type"=>["name"=>"รูปแบบเงิน","type"=>"ENUM","length_value"=>["ca","tr","ck","cd"]],
 			"n"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
@@ -425,8 +457,11 @@ class main{
 			"statnote"=>["name"=>"บันทึกย่อ","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			"tax"=>["name"=>"เลขที่ภาษี","type"=>"CHAR","length_value"=>15],
 			"tel"=>["name"=>"เบอร์โทีศัพท์","type"=>"CHAR","length_value"=>15],
+			"time_id"=>["name"=>"เลขที่กะ","type"=>"INT","length_value"=>10],
 			"tms"=>["name"=>"เวลา","type"=>"FLOAT","length_value"=>[12,6]],
 			"tp_type"=>["name"=>"การส่งสินค้า","type"=>"ENUM","length_value"=>["0","1"]],
+			"tran_ref"=>["name"=>"เลขอ้างอิง","type"=>"CHAR","length_value"=>25],
+			"tran_type"=>["name"=>"รูปแบบเข้าออกเงิน","type"=>"ENUM","length_value"=>["sell","min","mout","ret"]],
 			"unit"=>["name"=>"หน่วย","type"=>"CHAR","length_value"=>25],
 			"unit_sku_key"=>["name"=>"รหัสอิงอิงหน่วย","type"=>"CHAR","length_value"=>25],
 			"unit_sku_root"=>["name"=>"รหัสรากหน่วย","type"=>"CHAR","length_value"=>25],

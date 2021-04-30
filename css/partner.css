@@ -7,4 +7,5 @@
 	.form100  > label > input[type="button"]{width:160px;}
 }
 }
-.partnerview{}
+.table_view_all_partner  th:nth-child(2){width:48px;}
+.table_view_all_partner  td:nth-child(2){width:48px;}

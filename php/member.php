@@ -452,9 +452,7 @@ class member extends main{
 			@sku_key:='".$key."',
 			@img_set:=".$img["set"].",
 			@icon:=".($icon!=""?"'".$key."".($mime!=""?".".$mime:"")."'":"NULL").",
-			@lastid:=(SELECT AUTO_INCREMENT
-								FROM information_schema.tables
-								WHERE table_name = 'member'),
+			@lastid:=(SELECT AUTO_INCREMENT FROM information_schema.tables WHERE `TABLE_SCHEMA` = '".$this->cf["database"]."' AND `TABLE_NAME` = 'member' ),
 			@count_name:=(SELECT COUNT(`id`)  FROM `member` WHERE `name`=".$name."),
 			@count_lastname:=(SELECT COUNT(`id`)  FROM `member` WHERE `lastname`=".$lastname."),
 			@count_tel:=(SELECT COUNT(`id`)   FROM `member` WHERE `tel`=".$tel."),
@@ -698,7 +696,7 @@ class member extends main{
 		$se=$dt["get"];
 		echo '<form class="form100" name="'.$this->a.'" method="post">
 			<input type="hidden" name="sku_root" value="" />';
-		echo '	<table class="partnerview" style="width:100%;">
+		echo '	<table class="table_view_all_member" style="width:100%;">
 				<tr><th>ที่</th>
 				<th>รูป</th>
 				<th>รหัส</th>

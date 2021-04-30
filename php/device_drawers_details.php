@@ -1,28 +1,28 @@
 <?php
-class device_pos_details extends device_pos{
-	public function __construct(string $ip){
+class device_drawers_details extends device_drawers{
+	public function __construct(string $sku){
 		parent::__construct();
-		$this->ip=$ip;
+		$this->sku=$sku;
 	}
 	public function run(){
-		$this->addDir("?a=device&amp;b=pos","เครื่องขายเงินสด");
+		$this->addDir("?a=device&amp;b=drawers","ลิ้นชักเก็บเงิน");
 		$this->detailsPage();
 		
 	}
 	private function detailsPage():void{
-		$dt=$this->detailsGetData()["pos"];
+		$dt=$this->detailsGetData()["drawers"];
 		if(count($dt)>0){
-			$pn_name=$dt["ip"];
-			$this->addDir("",htmlspecialchars($pn_name));
+			$pn_name=$dt["sku"];
+			$this->addDir("","รหัส : ".htmlspecialchars($pn_name));
 			$this->pageHead(["title"=>$this->title." ".htmlspecialchars($pn_name),"css"=>["device"],"js"=>[],"run"=>[]]);
 			echo '<div class="content">
 				<div class="form">
-					<h1 class="c">'.$pn_name.'</h1>';
+					<h1 class="c">รหัส : '.$pn_name.'</h1>';
 			$this->writeContentPOS($dt);		
 			echo '<br />';
 			$this->pageFoot();
 		}else{
-			$pn_name="ไม่พบข้อมูลเครื่องขายเงินสด";
+			$pn_name="ไม่พบข้อมูล ลิ้นชักเก็บเงิน";
 			$this->addDir("",htmlspecialchars($pn_name));
 			$this->pageHead(["title"=>htmlspecialchars($pn_name),"css"=>["device"],"js"=>["device","Dv"]]);
 			echo '<div class="content">
@@ -138,21 +138,21 @@ class device_pos_details extends device_pos{
 		echo '</table>';
 	}
 	private function detailsGetData(){
-		$ip=$this->getStringSqlSet($this->ip);
-		$re=["pos"=>[]];
+		$sku=$this->getStringSqlSet($this->sku);
+		$re=["drawers"=>[]];
 		$sql=[];
-		$sql["pos"]="SELECT `sku`,`name`,`no`,`ip`,IFNULL(`icon_arr`,'[]') AS `icon_arr`,
-				`disc`,`date_reg` FROM `device_pos`
-			WHERE `ip`=".$ip.";
+		$sql["drawers"]="SELECT `sku`,`name`,`no`,IFNULL(`icon_arr`,'[]') AS `icon_arr`,
+				`disc`,`date_reg` FROM `device_drawers`
+			WHERE `sku`=".$sku.";
 		";
-		$se=$this->metMnSql($sql,["pos"]);
-		if($se["result"]&&isset($se["data"]["pos"][0])){
-			$re["pos"]=$se["data"]["pos"][0];
-			$icon_arr=json_decode($se["data"]["pos"][0]["icon_arr"],true);
+		$se=$this->metMnSql($sql,["drawers"]);
+		if($se["result"]&&isset($se["data"]["drawers"][0])){
+			$re["drawers"]=$se["data"]["drawers"][0];
+			$icon_arr=json_decode($se["data"]["drawers"][0]["icon_arr"],true);
 			if(count($icon_arr)>0){
-				$re["pos"]["icon"]=$icon_arr[0];
+				$re["drawers"]["icon"]=$icon_arr[0];
 			}
-			$re["pos"]["icon_arr"]=$icon_arr;
+			$re["drawers"]["icon_arr"]=$icon_arr;
 			
 		}
 		return $re;

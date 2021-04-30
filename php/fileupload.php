@@ -7,7 +7,7 @@ class fileupload extends main{
 			"data"=>[],
 			"message_error"=>""
 		];
-		$this->max_squar=["bill_in"=>256,"device_pos"=>256];
+		$this->max_squar=["bill_in"=>256,"device_pos"=>256,"device_drawers"=>256];
 	}
 	public function fetch(){
 		$file = "php/class/image.php";
@@ -18,7 +18,8 @@ class fileupload extends main{
 	protected function pc():void{
 		$t=[
 			"bill_in"=>["sku"=>1],
-			"device_pos"=>["ip"=>1]
+			"device_pos"=>["ip"=>1],
+			"device_drawers"=>["sku"=>1]
 		];
 		if(isset($_POST["icon"])&&$_POST["icon"]!=""){
 			if(isset($_POST["table"])){

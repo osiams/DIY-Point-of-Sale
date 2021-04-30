@@ -6,6 +6,12 @@
 .icon_device_pos{background-image:url('../img/pos/64x64_device_pos.png'); background-repeat: no-repeat;}
 .icon_device_drawers{background-image:url('../img/pos/64x64_device_drawers.png'); background-repeat: no-repeat;}
 
+.table_view_all_device  th:nth-child(2){width:48px;}
+.table_view_all_device  td:nth-child(2){width:48px;}
+
+.device_details_icon{margin:10px 0px;}
+.device_details_gallery{margin:10px auto;width:calc(100% - 8px);border:1px solid gray;padding:3px;}
+.device_details_gallery > img{margin:3px;}
 @media screen and (min-width: calc(720px + 360px)) {
 	.device_main{display:grid;grid-template-columns:33% 33% auto;}
 }
