@@ -89,18 +89,18 @@ class device_pos extends device{
 	private function fetchPOSEdit():void{
 		$error="";
 		if(isset($_POST["submith"])&&$_POST["submith"]=="clicksubmit"){
-			$se=$this->checkSet("device_pos",["post"=>["name","sku","no","disc"]],"post");
+			$se=$this->checkSet("device_pos",["post"=>["name","sku","no","disc","drawers_id"]],"post");
 			if(!$se["result"]){
 				$error=$se["message_error"];
 			}else{
 				$qe=$this->fetchPOSUpdate();
 				if(!$qe["result"]){
 					$error=$qe["message_error"];
-				}else if($qe["data"]["result"][0]["result"]==0){
-					$error=$qe["data"]["result"][0]["message_error"];
-				}else if($qe["data"]["result"][0]["result"]==1){
+				}else if($qe["result"]==0){
+					$error=$qe["message_error"];
+				}else if($qe["result"]==1){
 					header('Content-type: application/json');
-					$d=["result"=>true,"message_error"=>"","data"=>["ip"=>$qe["data"]["result"][0]["ip"]]];
+					$d=["result"=>true,"message_error"=>"","data"=>["ip"=>$qe["ip"]]];
 					echo json_encode($d,true);
 				}
 			}
@@ -116,6 +116,7 @@ class device_pos extends device{
 		$name=$this->getStringSqlSet($_POST["name"]);
 		$sku=$this->getStringSqlSet($_POST["sku"]);
 		$no=$this->getStringSqlSet($_POST["no"]);
+		$drawers_id=(int) $_POST["drawers_id"];
 		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$ip=$this->getStringSqlSet($this->userIPv4());
 		$icon_arr=$this->setPropR($this->getStringSqlSet($_POST["gallery_list"]));
@@ -127,36 +128,51 @@ class device_pos extends device{
 			@name:=".$name.",
 			@no:=".$no.",
 			@disc:=".$disc.",
+			@drawers_id:=".$drawers_id.",
 			@icon_arr:=".$this->getStringSqlSet(json_encode($icon_arr)).",
+			@count_drawers:=(SELECT COUNT(*)  FROM `device_drawers` WHERE `id`=@drawers_id ),
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
+		$sql["check"]="
+			IF @count_drawers = 0 && @drawers_id != 0 THEN 
+				SET @message_error='เกิดขอผิดพลาด ลิ้นชักที่ระบุมมาไม่มี';
+			END IF;			
+		";
 		$sql["run"]="BEGIN NOT ATOMIC 
-			UPDATE `device_pos`  SET
-					`sku`=@sku,	`name`=@name		,`no`=@no	,`ip`=@ip		,`disc`=@disc,`icon_arr`=JSON_UNQUOTE(@icon_arr)
-				WHERE `ip`=@ip;
-			SET @result=1;
+			IF @drawers_id = 0 THEN
+				SET @drawers_id = NULL;
+			END IF;
+			IF LENGTH(@message_error) = 0 THEN
+				UPDATE `device_pos`  SET
+						`sku`=@sku,	`name`=@name		,`drawers_id`=@drawers_id	,`no`=@no	,
+						`ip`=@ip		,`disc`=@disc,`icon_arr`=JSON_UNQUOTE(@icon_arr)
+					WHERE `ip`=@ip;
+				SET @result=1;
+			END IF;
 		END;";
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@ip AS `ip`";
 		$se=$this->metMnSql($sql,["result"]);
-		$se=$this->metMnSql($sql,["result"]);
-		//print_r($se);
-		return $se;
+		//print_r($se);exit;
+		return $se["data"]["result"][0];
 	}
 	private function fetchPOSRegis():void{
 		$error="";
 		if(isset($_POST["submith"])&&$_POST["submith"]=="clicksubmit"){
-			$se=$this->checkSet("device_pos",["post"=>["name","sku","no","disc"]],"post");
+			$se=$this->checkSet("device_pos",["post"=>["name","sku","no","disc","drawers_id"]],"post");
 			if(!$se["result"]){
 				$error=$se["message_error"];
 			}else{
 				$qe=$this->fetchPOSInsert();
 				if(!$qe["result"]){
 					$error=$qe["message_error"];
-				}else if($qe["data"]["result"][0]["result"]==0){
-					$error=$qe["data"]["result"][0]["message_error"];
-				}else if($qe["data"]["result"][0]["result"]==1){
+				}else if($qe["result"]==0){
+					$error=$qe["message_error"];
+				}else if($qe["result"]==1){
+					if(isset($_SESSION["time_stat"])&&$_SESSION["time_stat"]=="device_regis"){
+						$_SESSION["time_stat"]="view_me";
+					}
 					header('Content-type: application/json');
-					$d=["result"=>true,"message_error"=>"","data"=>["ip"=>$qe["data"]["result"][0]["ip"]]];
+					$d=["result"=>true,"message_error"=>"","data"=>["ip"=>$qe["ip"]]];
 					echo json_encode($d,true);
 				}
 			}
@@ -171,6 +187,7 @@ class device_pos extends device{
 		$disc=$this->getStringSqlSet($_POST["disc"]);
 		$name=$this->getStringSqlSet($_POST["name"]);
 		$sku=$this->getStringSqlSet($_POST["sku"]);
+		$drawers_id=(int) $_POST["drawers_id"];
 		$no=$this->getStringSqlSet($_POST["no"]);
 		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$ip=$this->getStringSqlSet($this->userIPv4());
@@ -182,17 +199,29 @@ class device_pos extends device{
 			@name:=".$name.",
 			@no:=".$no.",
 			@disc:=".$disc.",
+			@drawers_id:=".$drawers_id.",
+			@count_drawers:=(SELECT COUNT(*)  FROM `device_drawers` WHERE `id`=@drawers_id ),
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
+		$sql["check"]="
+			IF @count_drawers = 0 && @drawers_id != 0 THEN 
+				SET @message_error='เกิดขอผิดพลาด ลิ้นชักที่ระบุมมาไม่มี';
+			END IF;			
+		";
 		$sql["run"]="BEGIN NOT ATOMIC 
-			INSERT  INTO `device_pos`  (`sku`,`name`,`no`,`ip`,`disc`) 
-			VALUES(@sku,@name,@no,@ip,@disc);
-			SET @result=1;
+			IF @drawers_id = 0 THEN
+				SET @drawers_id = NULL;
+			END IF;
+			IF LENGTH(@message_error) = 0 THEN
+				INSERT  INTO `device_pos`  (`sku`,`name`,`no`,`ip`,`disc`,`drawers_id`) 
+				VALUES(@sku,@name,@no,@ip,@disc,@drawers_id);
+				SET @result=1;
+			END IF;
 		END;";
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@ip AS `ip`";
 		$se=$this->metMnSql($sql,["result"]);
 		//print_r($se);
-		return $se;
+		return $se["data"]["result"][0];
 	}
 	private function fetchPOSPage($error){
 		$re=["result"=>false,"message_error"=>""];
@@ -209,7 +238,7 @@ class device_pos extends device{
 				<div class="form">
 				<h1 class="c">'.$this->title.'</h1>
 				<div class="pn_search">
-					<form class="form100" name="pd_search" action="" method="get">
+					<form class="form100_search" name="pd_search" action="" method="get">
 						<input type="hidden" name="a" value="device" />
 						<input type="hidden" name="b" value="pos" />
 						<input type="hidden" name="lid" value="0" />
@@ -397,10 +426,9 @@ class device_pos extends device{
 			<p><label for="name">ชื่ออุปกรณ์</label></p>
 			<div><input id="name" type="text" value=""  name="name" autocomplete="off" /></div>
 			<p><label for="disc">รายละเอียดย่อ</label></p>
-			<div><textarea   name="disc"></textarea></div>
-			<div>';
-
-		echo '<div class="billinfileimg">
+			<div><textarea   name="disc"></textarea></div>';
+		$this->writeSelectDrawers();
+		echo '<br /><div><div class="billinfileimg">
 			<div>
 				<p><span>รูปภาพอุปกรณ์</span></p>
 				<div>
@@ -415,6 +443,35 @@ class device_pos extends device{
 		<input type="button" onclick="Dv.regisSubmit(\'pos\')" value="ลงทะเบียน" /></form>';
 
 	}
+	private function writeSelectDrawers(array $dt=null,int $drawers_selected=0):void{
+		$a=$dt;
+		if(!is_array($a)){
+			$a=$this->getListDrawers();
+		}
+		echo '<p><label for="drawers">ลิ้นชัก/ทีเก็บเงิน</label></p>
+			<div>
+				<select name="drawers_id">';	
+		$no=["id"=>0,"name"=>"ไม่ใช้งาน","sku"=>""];
+		array_unshift($a, $no);		
+		for($i=0;$i<count($a);$i++){
+			$sl=($a[$i]["id"]==$drawers_selected)?" selected":"";
+			echo '<option value="'.$a[$i]["id"].'"'.$sl.'>'.htmlspecialchars($a[$i]["name"]).' [ '.$a[$i]["sku"].']</option>';
+		}
+		echo '		</select>
+			</div>';
+	}
+	private function getListDrawers():array{
+		$re=[];
+		$sql=[];
+		$sql["get"]="SELECT `id`,`sku`,`name`
+			FROM `device_drawers` ";
+		$se=$this->metMnSql($sql,["get"]);
+		if($se["result"]){
+			$re=$se["data"]["get"];
+		}
+		//print_r($re);
+		return $re;
+	}
 	private function editPage(){
 		$se=$this->checkSet("device_pos",["post"=>["ip"]],"post");
 		if(!$se["result"]){
@@ -422,11 +479,11 @@ class device_pos extends device{
 		}else{
 			$dt=$this->getDataView1($_POST["ip"]);
 				if(count($dt)>0){
-					$this->addDir("","แก้ไขเครื่องขายเงินสด ".htmlspecialchars($dt[0]["ip"]));
+					$this->addDir("","แก้ไขเครื่องขายเงินสด ".htmlspecialchars($dt["pos"]["ip"]));
 					$this->pageHead(["title"=>"แก้ไขเครื่องขายเงินสด DIYPOS","js"=>["device","Dv","fileupload","Ful","gallery","Gl"],"css"=>["device","fileupload","gallery"]]);
 						echo '<div class="content">
 							<div class="form">
-								<h2 class="c">แก้ไข  เครื่องขายเงินสด '.htmlspecialchars($dt[0]["ip"]).'</h2>';
+								<h2 class="c">แก้ไข  เครื่องขายเงินสด '.htmlspecialchars($dt["pos"]["ip"]).'</h2>';
 						$this->writeContentInPOSEdit($_POST["ip"],$dt);
 						echo '</div></div>';
 						//$this->writeJsDataEdit($pd,$editable,$sku_root,$id,$product_list_id);
@@ -441,49 +498,56 @@ class device_pos extends device{
 		}
 	}
 	private function writeContentInPOSEdit(string $sku,array $dt):void{
-		$d=$dt[0];
-		$gallery=$this->propToFromValue($dt[0]["icon_arr"]);
-		$gallery_gl=$this->propToFromValue($dt[0]["icon_gl"]);
+		$pos=$dt["pos"];
+		$drawers=$dt["drawers"];
+		$gallery=$this->propToFromValue($pos["icon_arr"]);
+		$gallery_gl=$this->propToFromValue($pos["icon_gl"]);
 		$gallery_list_id=$this->key("key",7);
 		$gallery_gl_list_id=$this->key("key",7);
 		echo '<form  name="device_pos" method="post">
-			<input type="hidden" name="ip" value="'.htmlspecialchars($d["ip"]).'" />
+			<input type="hidden" name="ip" value="'.htmlspecialchars($pos["ip"]).'" />
 			<input type="hidden" id="'.$gallery_list_id.'" name="gallery_list" value="'.$gallery.'" />
 			<input type="hidden" id="'.$gallery_gl_list_id.'" name="gallery_gl_list" value="'.$gallery_gl.'" />
 			<p><label for="ip">หมายเลข IP</label></p>
-			<div><input id="ip" type="text" value="'.$d["ip"].'"  name="ip" autocomplete="off"  readonly class="want" /></div>
+			<div><input id="ip" type="text" value="'.$pos["ip"].'"  name="ip" autocomplete="off"  readonly class="want" /></div>
 			<p><label for="no">เลขที่ เครื่องบันทึกเงินสด</label></p>
-			<div><input id="no" type="text" value="'.$d["no"].'"  name="no" autocomplete="off" /></div>
+			<div><input id="no" type="text" value="'.$pos["no"].'"  name="no" autocomplete="off" /></div>
 			<p><label for="sku">รหัสภายใน</label></p>
-			<div><input id="sku" type="text" value="'.$d["sku"].'"  name="sku" autocomplete="off" /></div>
+			<div><input id="sku" type="text" value="'.$pos["sku"].'"  name="sku" autocomplete="off" /></div>
 			<p><label for="name">ชื่ออุปกรณ์</label></p>
-			<div><input id="name" type="text" value="'.$d["name"].'"  name="name" autocomplete="off" /></div>
+			<div><input id="name" type="text" value="'.$pos["name"].'"  name="name" autocomplete="off" /></div>
 			<p><label for="disc">รายละเอียดย่อ</label></p>
-			<div><textarea   name="disc">'.$d["disc"].'</textarea></div>
+			<div><textarea   name="disc">'.$pos["disc"].'</textarea></div>
 			';
-
+		$this->writeSelectDrawers($drawers,$pos["drawers_id"]);
 		echo '<br />';
 
 
 		$gal_id=$this->key("key",7);
-		$this->gall=new gallery("device_pos","ip",$d["ip"],"device_pos",$gal_id,$gallery_list_id,$gallery_gl_list_id,"Dv.icon");	
+		$this->gall=new gallery("device_pos","ip",$pos["ip"],"device_pos",$gal_id,$gallery_list_id,$gallery_gl_list_id,"Dv.icon");	
 		$this->gall->writeForm();	
 		echo '<br /><br />
 		<input type="button" onclick="Dv.deviceSumit(\'pos\')" value="แก้ไข เครื่องขายเงินสด" /></form>';
 	}
 	private function getDataView1(string $ip):array{
 		$ip=$this->getStringSqlSet($ip);
-		$re=[];
+		$re=["pos"=>[],"drawers"=>[]];
 		$sql=[];
 		$sql["get"]="SELECT `ip`,`sku`,`name`,`no`,`disc`,
+				IFNULL(`drawers_id`,0) AS `drawers_id`,
 				IFNULL(`icon_arr`,'[]') AS `icon_arr`,
 				IFNULL(`icon_gl`,'[]') AS `icon_gl`
 			FROM `device_pos` WHERE `ip`=".$ip."";
-		$se=$this->metMnSql($sql,["get"]);
+		$sql["drawers"]="SELECT `id`,`sku`,`name`
+			FROM `device_drawers` ";	
+		$se=$this->metMnSql($sql,["get","drawers"]);
 		if($se["result"]){
-			$re=$se["data"]["get"];
+			if(isset($se["data"]["get"][0])){
+				$re["pos"]=$se["data"]["get"][0];
+				$re["drawers"]=$se["data"]["drawers"];
+			}
 		}
-		//print_r($se);
+		//print_r($re);
 		return $re;
 	}
 	protected function setPropR(string $prop):string{

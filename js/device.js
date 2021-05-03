@@ -12,7 +12,7 @@ class device extends main{
 		}
 		let dt={"data":{"a":"device","submith":"clicksubmit","b":device,"c":"regis",
 			"no":f.no.value,"sku":f.sku.value,
-			"name":f.name.value,"disc":f.disc.value},
+			"name":f.name.value,"disc":f.disc.value,"drawers_id":f.drawers_id.value},
 			"result":Dv.devicePOSSaveResult,"error":Dv.devicePOSSaveError}	
 		this.setFec(dt)	
 	}
@@ -113,7 +113,7 @@ class device extends main{
 		if(device=="pos"){
 			dt={"data":{"a":"device","submith":"clicksubmit","b":device,"c":"edit",
 				"no":f.no.value,"sku":f.sku.value,"gallery_list":gl_list_value,
-				"name":f.name.value,"disc":f.disc.value},
+				"name":f.name.value,"disc":f.disc.value,"drawers_id":f.drawers_id.value},
 				"result":Dv.devicePOSEditResult,"error":Dv.devicePOSEditError}	
 		}else if(device=="drawers"){
 			dt={"data":{"a":"device","submith":"clicksubmit","b":device,"c":"edit",

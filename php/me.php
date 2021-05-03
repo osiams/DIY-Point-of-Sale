@@ -27,6 +27,8 @@ class me extends main{
 				$error="รหัสผ่านยืนยันตัวคุณไม่ถูกต้อง คุณไม่ใช่ <b><i>".$_SESSION["name"]." ".$_SESSION["lastname"]."</i></b>";
 			}else if((isset($_POST["ps1"])||isset($_POST["ps2"]))&&trim($_POST["ps1"])!=trim($_POST["ps2"])){
 				$error="รหัสผ่านใหม่ของคุณ กับรหัสผ่านใหม่อีกครั้ง ไม่ตรงกัน ";
+			}else if($_SESSION["onoff"]!=1){
+				$error="คุณต้องเปิดกะทำงานก่อน ถึงจะแก้ไขได้ ";
 			}else{
 				 $qe=$this->editMeUpdate();
 				if(!$qe["result"]){
@@ -139,8 +141,11 @@ class me extends main{
 					<div><input id="me_ps1" type="password" value=""  name="ps1"  autocomplete="off"'.$dis.' /></div>
 					<p><label for="me_ps2">รหัสผ่านใหม่อีกครั้ง</label></p>
 					<div><input id="me_ps2" type="password" value=""  name="ps2"  autocomplete="off"'.$dis.' /></div>
-					<br />
-					<input type="button" name="ok" onclick="G.meSubmit()" value="แก้ไข"'.$dis.' /> <input type="button" name="logoubt" onclick="G.logout()" value="ออกจากระบบ" />
+					<br />';
+		if($_SESSION["onoff"]==1){
+			echo '<input type="button" name="ok" onclick="G.meSubmit()" value="แก้ไข"'.$dis.' /> ';
+		}
+		echo '<input type="button" name="logoubt" onclick="G.logout()" value="ออกจากระบบ" />
 				</form>
 			
 			</div>

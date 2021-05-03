@@ -9,6 +9,7 @@ class main{
 		$this->system=null;
 		$this->user_ceo=isset($_SESSION["userceo"])?$_SESSION["userceo"]:-1;
 		$this->gallery_dir=dirname(__DIR__)."/img/gallery";
+		$this->main_ip=$this->userIPv4();
 		$this->re=[
 			"connect"=>false,
 			"connect_error"=>"",
@@ -69,7 +70,8 @@ class main{
 			"device_pos"=>[
 				"name"=>"device_pos",
 				"column"=>["id"			,"sku"			,"name"		,"ip"		,"no",
-									"onoff"		,"time_id"		,"user"			,"balance"		,"drawers_id",
+									"onoff"		,"time_id"		,"drawers_id",
+									"money_start"	,"money_balance",			"user",
 									"disc"		,"icon_arr"		,"icon_gl"			,"modi_date"	,
 									"date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],					
@@ -303,12 +305,12 @@ class main{
 			],
 			"time"=>[
 				"name"=>"time",
-				"column"=>[	"id"			,"ip"			,"tran_type",	"drawers_id"		,"balance"			,"min"				,"mout",		
+				"column"=>[	"id"			,"ip"			,"drawers_id"		,"balance"			,"min"				,"mout",		"sum",
 									"r_"			,"_r"			,"user"		,"note"		,"date_reg","date_exp"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],					
 				"primary"=>"id",
 				"not_null"=>["tran_type","tran_ref"],
-				"index"=>["drawers_id","tran_type","ip"]
+				"index"=>["drawers_id","ip"]
 			],
 			"unit"=>[
 				"name"=>"unit",
@@ -396,6 +398,8 @@ class main{
 			"mime_type"=>["name"=>"ประเภทไฟล์","type"=>"ENUM","length_value"=>["image/png","image/gif","image/jpeg"]],
 			"mout"=>["name"=>"เงินออก","type"=>"FLOAT","length_value"=>[15,2]],
 			"modi_date"=>["name"=>"วันปรับปรุง","type"=>"TIMESTAMP",],
+			"money_start"=>["name"=>"เงินเริ่มต้น","type"=>"FLOAT","length_value"=>[15,2]],
+			"money_balance"=>["name"=>"เงินคงเหลือ","type"=>"FLOAT","length_value"=>[15,2]],
 			"money_type"=>["name"=>"รูปแบบเงิน","type"=>"ENUM","length_value"=>["ca","tr","ck","cd"]],
 			"n"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
 			"n_wlv"=>["name"=>"จำนวนชั่งตวงวัด","type"=>"FLOAT","length_value"=>[10,4]],
@@ -740,12 +744,14 @@ class main{
 						$barcode=["barcode"];
 						$password=["password"];
 						$money=["price","cost"];
+						$int=["drawers_id"];
 						$float=["vat_p"];
 						$enum = ["data_type","s_type","pn_type","od_type","tp_type","bill_type","sex","mb_type"];
 						$json_arr = ["prop","partner"];
 						$province=["bill_no"];
 						$date=["birthday"];
 						$disc=["disc"];
+						$ip=["ip"];
 						if(in_array($v,$sku)){
 							$pt="/^[0-9a-zA-Z-+\.&\/]{1,25}$/";
 							if(!preg_match($pt,$ry)) {
@@ -830,6 +836,13 @@ class main{
 							if(!in_array($ry,$this->fills[$v]["length_value"])){
 								$re["result"]=false;
 								$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ";
+							}
+						}else if(in_array($v,$int)){
+							$pt="/^[0-9]{1,11}$/";
+							if(!preg_match($pt,$ry)) {
+								$re["result"]=false;
+								$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ จำนวนเต็ม";
+								break;
 							}
 						}else if(in_array($v,$float)){
 							$pt="/^(([0-9])*|([0-9]*\.[0-9]{1,2}))$/";

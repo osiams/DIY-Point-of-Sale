@@ -89,6 +89,7 @@ class device_drawers extends device{
 		$error="";
 		if(isset($_POST["submith"])&&$_POST["submith"]=="clicksubmit"){
 			$se=$this->checkSet("device_drawers",["post"=>["id","name","sku","no","disc"]],"post");
+			
 			if(!$se["result"]){
 				$error=$se["message_error"];
 			}else{
@@ -127,7 +128,7 @@ class device_drawers extends device{
 			@no:=".$no.",
 			@disc:=".$disc.",
 			@count_name:=(SELECT COUNT(`id`)  FROM `device_drawers` WHERE `name`=".$name."),
-			@count_sku:=(SELECT COUNT(`id`)  FROM `device_drawers` WHERE `sku`=".$name." AND `id` != @id),
+			@count_sku:=(SELECT COUNT(`id`)  FROM `device_drawers` WHERE `sku`=".$sku." AND `id` != @id),
 			@icon_arr:=".$this->getStringSqlSet(json_encode($icon_arr)).",
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
@@ -156,6 +157,7 @@ class device_drawers extends device{
 		$error="";
 		if(isset($_POST["submith"])&&$_POST["submith"]=="clicksubmit"){
 			$se=$this->checkSet("device_drawers",["post"=>["name","sku","no","disc"]],"post");
+			
 			if(!$se["result"]){
 				$error=$se["message_error"];
 			}else{
@@ -192,7 +194,7 @@ class device_drawers extends device{
 			@no:=".$no.",
 			@disc:=".$disc.",
 			@count_name:=(SELECT COUNT(`id`)  FROM `device_drawers` WHERE `name`=".$name."),
-			@count_sku:=(SELECT COUNT(`id`)  FROM `device_drawers` WHERE `sku`=".$name."),
+			@count_sku:=(SELECT COUNT(`id`)  FROM `device_drawers` WHERE `sku`=".$sku."),
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
 		$sql["check"]="
@@ -211,7 +213,7 @@ class device_drawers extends device{
 		END;";
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@sku AS `sku`";
 		$se=$this->metMnSql($sql,["result"]);
-		//print_r($se);
+		//print_r($sql);
 		return $se;
 	}
 	private function fetchDrawersPage($error){
@@ -229,7 +231,7 @@ class device_drawers extends device{
 				<div class="form">
 				<h1 class="c">'.$this->title.'</h1>
 				<div class="pn_search">
-					<form class="form100" name="pd_search" action="" method="get">
+					<form class="form100_search" name="pd_search" action="" method="get">
 						<input type="hidden" name="a" value="device" />
 						<input type="hidden" name="b" value="drawers" />
 						<input type="hidden" name="lid" value="0" />

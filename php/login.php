@@ -35,7 +35,9 @@ class login extends main{
 							$_SESSION["email"]=$re["data"]["result"][0]["email"];
 							$_SESSION["userceo"]=$re["data"]["result"][0]["userceo"];
 							$_SESSION["oa"]=CF["userceo"][$_SESSION["userceo"]]["a"];
-							header('Location:index.php');
+							$_SESSION["ip"]=$this->userIPv4();
+							$_SESSION["onoff"]=0;
+							header('Location:index.php?a=time');
 							exit;
 						}else{
 						$rel=array("message_error"=>"ไม่พบผู้ใช้ และ หรือ รหัส ที่รับมา");
@@ -106,7 +108,7 @@ class login extends main{
 					'.htmlspecialchars($this->shop->head).'
 				</p></div>';
 		echo '<div class="login">
-				<div class="div_head">เข้าสู่ระบบ</div>
+				<div class="div_head">เข้าสู่ระบบ : '.$this->findIPv4().'</div>
 				<div class="div_content">';
 		//--TEST
 		//print_r($ck);
@@ -129,6 +131,7 @@ class login extends main{
 				<div class="c">
 					<input type="submit" value="เข้าสู่ระบบ" />
 				</div>
+				<div class="r size0_8 gray">อุปกรณ์คุณ : '.$this->userIPv4().'</div>
 				</form>
 				</div>
 				</div>
