@@ -78,15 +78,17 @@ class time extends main{
 	private function defaultTimePage():void{
 		if(!isset($_SESSION["time_stat"])){
 			$a=$this->checkTime();
+			print_r($a);
 			$this->pageHead(["title"=>$this->title." DIYPOS","css"=>["time"],"js"=>["time","Ti"],"run"=>["Ti"]]);
-			if($a["is_on"]==0&&$a["count_user"]==0){
+			if($a["count_user"]==0){
 				echo '<div class="content">
 					<div class="form">
 						<h2>'.$this->title.'</h2>
 						<form name="time" method="post" action="?a=time">
-							<input type="hidden" name="b" value="" />
-						
-							<div class="c">
+							<input type="hidden" name="b" value="" />';
+				$this->writeLastTime($a["get_pos"]["ip"],$a["get_last_time"]);
+							
+				echo '		<div class="c">
 								<input type="button" value="เริ่มกะทำงานใหม่" onclick="Ti.newTimeSubmit()" />
 								<input type="button" value="ออกจากระบบ" onclick="Ti.logout()" />
 							</div>
@@ -122,41 +124,86 @@ class time extends main{
 		}
 		
 	}
+	private function writeLastTime(string $ip,array $time):void{
+		if(!empty($time["user"])){
+			echo '<div>
+				<table>
+					<tr><td>ผู้ใช้ก่อนหน้า</td><td></td></tr>
+				</table>
+			</div>';
+		}else{
+			if($ip==""){
+				echo 'อุปกณ์ IP '.$_SESSION["ip"].' นี้ยังไม่ได้ลงทะเบียนอุปกรณ์ ในระบบ';
+			}else{
+				echo '<div>ไม่พบประวัติ กะทำงานล่าสุด (อุปกณ์ IP '.$ip.')</div>';
+			}
+		}
+	}
 	private function viewTimeMe(){
+		$this->timeRegis();
 		header('Location:?a=me');
 		exit;
 	}
-	private function timeRegis():array{
+	private function timeRegis():void{
 		$sql=[];
-		$sql["set"]="SELECT @result:=0,
-			@message_error:='',
-		";
 		$sql["run"]="BEGIN NOT ATOMIC 
-			INSERT INTO `time`
+			UPDATE `device_pos` SET 
+				`user`='".$_SESSION["sku_root"]."',
+				`date_reg`=NOW(),
+				`onoff`=1
 		END";
 	}
 	protected function checkTime():array{
-		$re=["count_user"=>0,"is_on"=>0,"get_user"=>[]];
+		$re=["count_user"=>0,"is_regis"=>0,"get_pos"=>[],"get_last_time"=>[]];
 		$sql=[];
+		//--ผู้ใช้มีกะทำงานอยู่ หรือไม่ เข้าใช้งาน 2 เครื่อง
 		$sql["count_user"]="SELECT COUNT(*) AS `count`  FROM `device_pos` 
 					WHERE `user`='".$_SESSION["sku_root"]."' AND `onoff`=1
 		";
-		$sql["is_on"]="SELECT COUNT(*) AS `count`  FROM `device_pos` 
-					WHERE `ip`='".$_SESSION["ip"]."' AND `onoff`=1
+		//--รับค่า ip ที่ผู้ใช้ได้เปิดกะไว้
+		$sql["get_ip_user_on"]="SELECT IFNULL((SELECT `ip` AS `ip`  FROM `device_pos` 
+					WHERE `user`='".$_SESSION["sku_root"]."' AND `onoff`=1 LIMIT 1),'') AS `ip`
 		";
-		$sql["get_user"]="SELECT `id`,`name`,`sku`,`user`,`ip`
+		//--เครื่องที่เข้าใช้งานลงทะเบียนอุปกร์หรือไม่
+		$sql["is_regis"]="SELECT COUNT(*) AS `count`  FROM `device_pos` 
+					WHERE `ip`='".$_SESSION["ip"]."' 
+		";
+		//--ดูข้อมูลปัจจุบันของอุปกณ์ 
+		$sql["get_pos"]="SELECT `id`,`time_id`,`name`,`sku`,`user`,`ip`,
+				IFNULL(`money_start`,0) AS `money_start`,
+				IFNULL(`money_balance`,0) AS `money_balance`
 			FROM `device_pos` 
-			WHERE `user`='".$_SESSION["sku_root"]."' AND `onoff`=1 AND `ip`='".$_SESSION["ip"]."'
+			WHERE `ip`='".$_SESSION["ip"]."'
 		";
-		$se=$this->metMnSql($sql,["count_user","is_on","get_user"]);
+		//--ดูข้อมูลล่าสุดของกะ
+		$sql["get_last_time"]="SELECT `time`.`user`,
+				IFNULL(`time`.`money_start`,0) AS `money_start`,
+				IFNULL(`time`.`money_balance`,0) AS `money_balance`,
+				IFNULL(`time`.`min`,0) AS `min`,
+				IFNULL(`time`.`mout`,0) AS `mout`,
+				`time`.`date_reg`,`time`.`date_exp`,
+				CONCAT(`user`.`name`,' ',`user`.`lastname`) AS `user_name`
+			FROM `device_pos` 
+			LEFT JOIN `time`
+			ON(`device_pos`.`time_id`=`time`.`id`)
+			LEFT JOIN `user`
+			ON(`time`.`user`=`user`.`sku_root`)
+			WHERE `device_pos`.`ip`='".$_SESSION["ip"]."'
+		";
+		$se=$this->metMnSql($sql,["count_user","get_ip_user_on","is_regis","get_pos","get_last_time"]);
 		if($se["result"]){
 			$re["count_user"]=$se["data"]["count_user"][0]["count"];
-			$re["is_on"]=$se["data"]["is_on"][0]["count"];
-			if(isset($se["data"]["get_user"][0])){
-				$re["get_user"]=$se["data"]["get_user"][0];
+			$re["get_ip_user_on"]=$se["data"]["get_ip_user_on"][0]["ip"];
+			$re["is_regis"]=$se["data"]["is_regis"][0]["count"];
+			if(isset($se["data"]["get_pos"][0])){
+				$re["get_pos"]=$se["data"]["get_pos"][0];
 			}
-			//print_r($re);
+			if(isset($se["data"]["get_last_time"][0])){
+				$re["get_last_time"]=$se["data"]["get_last_time"][0];
+			}
+			
 		}
+		//print_r($se);
 		return $re;
 	}
 	protected function getLastTime():array{

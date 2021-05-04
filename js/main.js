@@ -909,4 +909,13 @@ class F{
 			return false
 		}
 	}
+	static showTimeAgo(id,timst){alert(id)
+		let d=new Date(timst)
+		let n = d.getTime()
+		setInterval("F.showTimeAgo2('"+id+"')",1000)
+	}
+	static showTimeAgo2(id){
+		let t=new Date()
+		M.id(id).innerHTML=t
+	}
 }

@@ -12,8 +12,11 @@ class device extends main{
 		}
 		let dt={"data":{"a":"device","submith":"clicksubmit","b":device,"c":"regis",
 			"no":f.no.value,"sku":f.sku.value,
-			"name":f.name.value,"disc":f.disc.value,"drawers_id":f.drawers_id.value},
+			"name":f.name.value,"disc":f.disc.value},
 			"result":Dv.devicePOSSaveResult,"error":Dv.devicePOSSaveError}	
+		if(device=="pos"){
+			dt.data.drawers_id=f.drawers_id.value
+		}	
 		this.setFec(dt)	
 	}
 	devicePOSSaveResult(re,form,bt){

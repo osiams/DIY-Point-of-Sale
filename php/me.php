@@ -2,6 +2,7 @@
 class me extends main{
 	public function __construct(){
 		parent::__construct();
+		$this->my_time=[];
 	}
 	public function run(){
 		$q=["edit"];
@@ -96,8 +97,19 @@ class me extends main{
 		$sku_root=$this->getStringSqlSet($sku_root);
 		$sql=[];
 		$sql["result"]="SELECT * FROM `user` WHERE `sku_root`=".$sku_root."";
-		$re=$this->metMnSql($sql,["result"]);
+		$sql["get_pos"]="SELECT `id`,`time_id`,`name`,`sku`,`user`,`ip`,
+				IFNULL(`money_start`,0) AS `money_start`,
+				IFNULL(`money_balance`,0) AS `money_balance`,
+				`date_reg`
+			FROM `device_pos` 
+			WHERE `ip`='".$_SESSION["ip"]."'
+		";
+		$re=$this->metMnSql($sql,["result","get_pos"]);
+		
 		if(isset($re["data"]["result"][0])){
+			if(isset($re["data"]["get_pos"][0])){
+				$this->my_time=$re["data"]["get_pos"][0];
+			}	
 			return $re["data"]["result"][0];
 		}
 		return [];
@@ -109,12 +121,12 @@ class me extends main{
 		$email=(isset($_POST["email"]))?htmlspecialchars($_POST["email"]):"";
 		$userceo=$_SESSION["userceo"];
 		$this->addDir("","แก้ไข ฉัน");
-		$this->pageHead(["title"=>"ฉัน DIYPOS","js"=>["me","Me"]]);
+		$this->pageHead(["title"=>"ฉัน DIYPOS","css"=>["me"],"js"=>["me","Me"]]);
 		$pem=true;
 		$dis="";
-		echo '<div class="content">
-			<div class="form">
-				<h2 class="c">แก้ไข ฉัน</h2>';
+		echo '<div class="content"><div class="form">';
+		$this->writeMyTime();
+		echo '<h2 class="c">แก้ไข ฉัน</h2>';
 		if($error!=""){
 			echo '<div class="error">'.$error.'</div>';
 		}	
@@ -151,5 +163,21 @@ class me extends main{
 			</div>
 		</div>';
 		$this->pageFoot();
+	}
+	private function writeMyTime():void{
+		$ms=number_format($this->my_time["money_start"],2,'.',',');
+		$mb=number_format($this->my_time["money_balance"],2,'.',',');
+		$d=explode(" ",$this->my_time["date_reg"]);
+		$mb="523,254.75";
+		echo '<div class="me_time">
+			<p>กะทำงานของฉัน</p>
+			<div>
+				<div class="start">ปิดกะ วันที่<div>'.$d[0].'</div></div>
+				<div class="start">เปิดกะ เวลา<div>'.$d[1].' น.</div></div>
+				<div id="time_ago" class="time_ago">เปิดกะมานาน<div></div></div>
+				<div class="money_start">เงินสดเริ่มต้น<div>'.$ms.'</div></div>
+				<div class="money_balance">เงินสดขฌะนี้<div>'.$mb.'</div></div>
+			</div><script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.$this->my_time["date_reg"].'\')</script>
+		</div>';
 	}
 }

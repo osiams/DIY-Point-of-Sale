@@ -305,12 +305,11 @@ class main{
 			],
 			"time"=>[
 				"name"=>"time",
-				"column"=>[	"id"			,"ip"			,"drawers_id"		,"balance"			,"min"				,"mout",		"sum",
-									"r_"			,"_r"			,"user"		,"note"		,"date_reg","date_exp"],
+				"column"=>[	"id"			,"ip"			,"drawers_id"		,"money_start"			,"min"				,"mout",		"money_balance",
+									"r_"			,"_r"			,"user"		,"note"		,"date_reg"	,"date_exp"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],					
 				"primary"=>"id",
-				"not_null"=>["tran_type","tran_ref"],
-				"index"=>["drawers_id","ip"]
+				"index"=>["drawers_id","ip","user"]
 			],
 			"unit"=>[
 				"name"=>"unit",
