@@ -39,17 +39,38 @@ define("CF", [
 #"user_regceoto" คือ ระดับผู้ใช้ที่สามารถลงทะเบียนให้ได้ 
 #"user_editto" คือ ระดับผู้ใช้ที่สามารถแก้ไขได้
 #"user_delto" คือ ระดับผู้ใช้ที่ลบออกจากฐานข้อมูลได้
+#"time_closeto" ปิดกะของผู้ใช้คนอื่นได้
 define("PEM",[
-	0=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[]],
-	1=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[]],
-	2=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[]],
-	3=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[]],
-	4=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[]],
-	5=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[]],
-	6=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[]],
-	7=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[]],
-	8=>["user_regto"=>true,"user_regceoto"=>[1,2,3,4,5,6,7],"user_editto"=>[1,2,3,4,5,6,7],"user_delto"=>[1,2,3,4,5,6,7]],
-	9=>["user_regto"=>true,"user_regceoto"=>[1,2,3,4,5,6,7,8,9],"user_editto"=>[0,1,2,3,4,5,6,7,8,9],"user_delto"=>[0,1,2,3,4,5,6,7,8,9]]
+	0=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[],
+			"time_closeto"=>false
+	],
+	1=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[],
+			"time_closeto"=>false
+	],
+	2=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[],
+			"time_closeto"=>false
+	],
+	3=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[],
+			"time_closeto"=>false
+	],
+	4=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[],
+			"time_closeto"=>false
+	],
+	5=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[],
+			"time_closeto"=>false
+	],
+	6=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[],
+			"time_closeto"=>false
+	],
+	7=>["user_regto"=>false,"user_regceoto"=>[],"user_editto"=>[],"user_delto"=>[],
+			"time_closeto"=>false
+	],
+	8=>["user_regto"=>true,"user_regceoto"=>[1,2,3,4,5,6,7],"user_editto"=>[1,2,3,4,5,6,7],"user_delto"=>[1,2,3,4,5,6,7],
+			"time_closeto"=>true
+	],
+	9=>["user_regto"=>true,"user_regceoto"=>[1,2,3,4,5,6,7,8,9],"user_editto"=>[0,1,2,3,4,5,6,7,8,9],"user_delto"=>[0,1,2,3,4,5,6,7,8,9],
+			"time_closeto"=>true
+	]
 ]);
 
 ?>

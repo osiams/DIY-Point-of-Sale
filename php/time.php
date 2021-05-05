@@ -22,17 +22,76 @@ class time extends main{
 		}
 	}
 	public function fetch(){
-		$p=["pos","drawers"];
+		$p=["close"];
 		if(isset($_POST["b"])&&in_array($_POST["b"],$p)){
 			$t=$_POST["b"];
-			if(1==1){
-				require("php/device_".$t.".php");
-				eval("(new device_".$t."())->fetch();");
+			if($t=="close"){
+				$this->fetchCloseTime();
 			}
 		}else{
 			header('Content-type: application/json');
 			print_r("{}");
 		}		
+	}
+	private function fetchCloseTime():void{
+		$this->closeTime();
+	}
+	private function closeTime():void{
+		$time_closeto=($this->pem[$this->user_ceo]["time_closeto"]==true)?1:0;
+		$re=[];
+		$sql=[];
+		$sql["set"]="SELECT 
+			@result:=0,
+			@time_closeto:=".$time_closeto.",
+			@message_error:='',
+			@TEST:='',
+			@user:='".$_SESSION["sku_root"]."',
+			@ip:='".$_SESSION["ip"]."';
+		";
+		$sql["run"]="BEGIN NOT ATOMIC 
+			DECLARE lastid INT DEFAULT NULL;
+			DECLARE r ROW (
+				`ip`CHAR(25),
+				`onoff` CHAR(1),
+				`drawers_id`INT ,
+				`money_start` FLOAT,
+				`money_balance` FLOAT,
+				`user` CHAR(25),
+				`date_reg` TIMESTAMP
+			);
+			SELECT `ip`		,`onoff`		,`drawers_id`	,`money_start`	,`money_balance`,
+						`user`	,`date_reg` I
+				INTO 	r.ip	,r.onoff			,r.drawers_id		,r.money_start	,r.money_balance	,
+						r.user	,r.date_reg
+				FROM `device_pos` WHERE `ip`= @ip AND `user`=@user AND `onoff`='1' LIMIT 1;
+			IF r.onoff='1' && r.user=@user && r.ip=@ip THEN
+				INSERT INTO `time`(
+					`ip`				,`drawers_id`	,`user`		,`money_start`		,`money_balance`	,
+					`date_reg`	,`date_exp`
+				)VALUES(
+					@ip				,r.drawers_id		,@user		,r.money_start		,r.money_balance	,
+					r.date_reg		,NOW()
+				);
+				 SET lastid=(SELECT LAST_INSERT_ID());
+				 IF lastid > 0 THEN
+					UPDATE `device_pos` 
+						SET `time_id`=lastid ,`onoff`='0' ,`user`=NULL ,`date_reg`=NULL
+						WHERE `ip`=@ip;
+				END IF;
+			ELSEIF r.onoff != '1' THEN
+				SET @message_error='ไม่สามาถปิดกะได้ เนื่องจาก ปิดอยู่แล้ว';
+			ELSEIF r.user != @user  && @time_closeto != 1 THEN
+				SET @message_error='ไม่สามาถปิดกะได้ เนื่องจาก ผู้ที่ปิดกะต้องเป็นผู้ที่เปิดกะ หรอจะต้องเป็นผู้ที่มีสิทธิ์';
+			ELSEIF r.ip != @ip THEN
+				SET @message_error='ไม่สามาถปิดกะได้ เนื่องจาก  IP เครื่องไม่ตรงกับที่บันทึก';
+			END IF;
+			SET @TEST=@time_closeto;
+		END";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@TEST AS `TEST`";
+		$se=$this->metMnSql($sql,["result"]);
+		//echo $this->pem[$this->user_ceo]["time_closeto"];
+		//print_r($_SESSION);
+		print_r($se);
 	}
 	private function newTimeRegisPage():void{
 		$c=$this->checkPOS();
@@ -78,7 +137,7 @@ class time extends main{
 	private function defaultTimePage():void{
 		if(!isset($_SESSION["time_stat"])){
 			$a=$this->checkTime();
-			print_r($a);
+			//print_r($a);
 			$this->pageHead(["title"=>$this->title." DIYPOS","css"=>["time"],"js"=>["time","Ti"],"run"=>["Ti"]]);
 			if($a["count_user"]==0){
 				echo '<div class="content">
@@ -125,11 +184,23 @@ class time extends main{
 		
 	}
 	private function writeLastTime(string $ip,array $time):void{
+		print_r($time);
 		if(!empty($time["user"])){
+			$mb=number_format($time["money_balance"],2,'.',',');
 			echo '<div>
-				<table>
-					<tr><td>ผู้ใช้ก่อนหน้า</td><td></td></tr>
-				</table>
+				<div class="history_last_time">
+					<p>ล่าสุด '.$ip.'<p>
+					<div class="start_time">เปิดกะ เวลา<div>'.$time["date_reg"].' น.</div></div>
+					<div class="start_time">ปิดกะ เวลา<div>'.$time["date_exp"].' น.</div></div>
+					<div class="start_time">ผู้ใช้<div>'.htmlspecialchars($time["user_name"]).'</div></div>
+					<div class="start_time">ลิ้นชัก/ที่เก็บเงิน
+						<div>
+							รหัส : '.$time["drawers_sku"].'
+							<br />ชื่อ : '.htmlspecialchars($time["drawers_name"]).'
+						</div>
+					</div>
+					<div class="start_time">จำนวนเงินในลิ้นชัก<div>'.$mb.'</div></div>
+				</div>
 			</div>';
 		}else{
 			if($ip==""){
@@ -150,8 +221,11 @@ class time extends main{
 			UPDATE `device_pos` SET 
 				`user`='".$_SESSION["sku_root"]."',
 				`date_reg`=NOW(),
-				`onoff`=1
+				`onoff`='1'
+			WHERE `ip`='".$_SESSION["ip"]."' AND `onoff`='0';
 		END";
+		$se=$this->metMnSql($sql,[]);
+		//print_r($se);exit;
 	}
 	protected function checkTime():array{
 		$re=["count_user"=>0,"is_regis"=>0,"get_pos"=>[],"get_last_time"=>[]];
@@ -182,10 +256,14 @@ class time extends main{
 				IFNULL(`time`.`min`,0) AS `min`,
 				IFNULL(`time`.`mout`,0) AS `mout`,
 				`time`.`date_reg`,`time`.`date_exp`,
+				`device_drawers`.`sku` AS `drawers_sku`,
+				`device_drawers`.`name` AS `drawers_name`,
 				CONCAT(`user`.`name`,' ',`user`.`lastname`) AS `user_name`
 			FROM `device_pos` 
 			LEFT JOIN `time`
 			ON(`device_pos`.`time_id`=`time`.`id`)
+			LEFT JOIN `device_drawers`
+			ON(`time`.`drawers_id`=`device_drawers`.`id`)			
 			LEFT JOIN `user`
 			ON(`time`.`user`=`user`.`sku_root`)
 			WHERE `device_pos`.`ip`='".$_SESSION["ip"]."'

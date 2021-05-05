@@ -97,15 +97,18 @@ class me extends main{
 		$sku_root=$this->getStringSqlSet($sku_root);
 		$sql=[];
 		$sql["result"]="SELECT * FROM `user` WHERE `sku_root`=".$sku_root."";
-		$sql["get_pos"]="SELECT `id`,`time_id`,`name`,`sku`,`user`,`ip`,
-				IFNULL(`money_start`,0) AS `money_start`,
-				IFNULL(`money_balance`,0) AS `money_balance`,
-				`date_reg`
+		$sql["get_pos"]="SELECT `device_pos`.`id`,`device_pos`.`time_id`,`device_pos`.`name`,
+				`device_pos`.`sku`,`device_pos`.`user`,`device_pos`.`ip`,
+				IFNULL(`device_pos`.`money_start`,0) AS `money_start`,
+				IFNULL(`device_pos`.`money_balance`,0) AS `money_balance`,
+				`device_pos`.`date_reg`,
+				`device_drawers`.`sku` AS `drawers_sku`,`device_drawers`.`name` AS `drawers_name`
 			FROM `device_pos` 
-			WHERE `ip`='".$_SESSION["ip"]."'
+			LEFT JOIN `device_drawers`
+			ON(`device_pos`.`drawers_id`=`device_drawers`.`id`)
+			WHERE `device_pos`.`ip`='".$_SESSION["ip"]."'
 		";
 		$re=$this->metMnSql($sql,["result","get_pos"]);
-		
 		if(isset($re["data"]["result"][0])){
 			if(isset($re["data"]["get_pos"][0])){
 				$this->my_time=$re["data"]["get_pos"][0];
@@ -164,7 +167,7 @@ class me extends main{
 		</div>';
 		$this->pageFoot();
 	}
-	private function writeMyTime():void{
+	private function writeMyTime():void{//print_r($this->my_time);
 		$ms=number_format($this->my_time["money_start"],2,'.',',');
 		$mb=number_format($this->my_time["money_balance"],2,'.',',');
 		$d=explode(" ",$this->my_time["date_reg"]);
@@ -172,12 +175,21 @@ class me extends main{
 		echo '<div class="me_time">
 			<p>กะทำงานของฉัน</p>
 			<div>
-				<div class="start">ปิดกะ วันที่<div>'.$d[0].'</div></div>
-				<div class="start">เปิดกะ เวลา<div>'.$d[1].' น.</div></div>
-				<div id="time_ago" class="time_ago">เปิดกะมานาน<div></div></div>
+				<div class="me_pos">เครื่องนี้ IP<div>'.$this->userIPv4().'</div></div>
+				<div class="me_pos">เครื่องนี้ ชื่อ<div>'.htmlspecialchars($this->my_time["name"]).'</div></div>
+				<div class="me_drawers">ลิ้นชัก/ที่เก็บเงินสด รหัส<div>'.$this->my_time["drawers_sku"].'</div></div>
+				<div class="me_drawers">ลิ้นชัก/ที่เก็บเงินสด ชื่อ<div>'.htmlspecialchars($this->my_time["drawers_name"]).'</div></div>
+				<div class="start_time">ปิดกะ วันที่<div>'.$d[0].'</div></div>
+				<div class="start_time">เปิดกะ เวลา<div>'.$d[1].' น.</div></div>
+				<div class="start_time">เปิดกะมานาน<div id="time_ago"></div></div>
+				<div></div>
 				<div class="money_start">เงินสดเริ่มต้น<div>'.$ms.'</div></div>
 				<div class="money_balance">เงินสดขฌะนี้<div>'.$mb.'</div></div>
-			</div><script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.$this->my_time["date_reg"].'\')</script>
+				<div><input type="button" value="นำเงินเข้า"></div>
+				<div><input type="button" value="นำเงินออก"></div>
+			</div>
+			<div><input type="button" value="ปิดกะ และออกจากระบบ" onclick="Me.closeTime()" /></div>
+			<script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.$this->my_time["date_reg"].'\')</script>
 		</div>';
 	}
 }

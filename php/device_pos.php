@@ -358,9 +358,10 @@ class device_pos extends device{
 				
 			}
 			$sn=strlen(trim($se[$i]["sku"]))>0?substr(trim($se[$i]["sku"]),0,15):(mb_substr(trim($se[$i]["name"]),0,15));
+			$onoff=($se[$i]["onoff"]==0)?"off":"on";
 			echo '<tr'.$cm.'><td class="r">'.($se[$i]["id"]).'</td>
 				<td class="l"><div class="img48"><img  class="viewimage" src="img/gallery/64x64_'.$icons[0].'"   onerror="this.src=\'img/pos/64x64_null.png\'" alt="'.$sn.'" onclick="G.view(this)"  title="เปิดดูภาพ" /></div></td>
-				<td class="l"><a href="?a='.$this->a.'&amp;b=pos&amp;c=details&amp;ip='.$se[$i]["ip"].'">'.$se[$i]["ip"].'</a></td>
+				<td class="l"><span class="device_pos_'.$onoff.'"><a href="?a='.$this->a.'&amp;b=pos&amp;c=details&amp;ip='.$se[$i]["ip"].'">'.$se[$i]["ip"].'</a></span></td>
 				<td class="l">'.$sku.'</td>
 				<td class="l">'.$name.'</td>
 				<td class="action">';
@@ -390,7 +391,7 @@ class device_pos extends device{
 				$limit_page=$this->per+1;
 		}
 		$sql["count"]="SELECT COUNT(*) AS `count`  FROM `device_pos`";
-		$sql["get"]="SELECT `id`,`name`,`sku` ,IFNULL(`icon_arr`,'[]') AS `icon_arr`,
+		$sql["get"]="SELECT `id`,`name`,`sku`,`onoff` ,IFNULL(`icon_arr`,'[]') AS `icon_arr`,
 				`ip`,`disc`
 			FROM `device_pos` 
 			".$this->sh." 

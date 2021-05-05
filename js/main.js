@@ -909,13 +909,21 @@ class F{
 			return false
 		}
 	}
-	static showTimeAgo(id,timst){alert(id)
+	static showTimeAgo(id,timst){
 		let d=new Date(timst)
-		let n = d.getTime()
-		setInterval("F.showTimeAgo2('"+id+"')",1000)
+		let n = parseInt(d.getTime()/1000)
+		setInterval("F.showTimeAgo2('"+id+"',"+n+")",1000)
 	}
-	static showTimeAgo2(id){
+	static showTimeAgo2(id,n){
 		let t=new Date()
-		M.id(id).innerHTML=t
+		let s1 = parseInt(t.getTime()/1000)
+		let c=(s1-n)/1
+		let h=Math.floor(c/(60*60))
+		let m=Math.floor((c-(h*60*60))/60)
+		let s=c%60
+		let ht=(h<10)?"0"+h:h
+		let mt=(m<10)?"0"+m:m
+		let st=(s<10)?"0"+s:s
+		M.id(id).innerHTML=ht+":"+mt+":"+st
 	}
 }
