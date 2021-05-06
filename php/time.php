@@ -34,11 +34,20 @@ class time extends main{
 		}		
 	}
 	private function fetchCloseTime():void{
-		$this->closeTime();
+		$re=["result"=>false,"message_error"=>"","data"=>[]];
+		$a=$this->closeTime();
+		$re=$a;
+		if($a["result"]){
+			session_unset();
+		}else{
+			$re["message_error"]=$a["message_error"];
+		}
+		header('Content-type: application/json');
+		echo json_encode($re);
 	}
-	private function closeTime():void{
+	private function closeTime():array{
 		$time_closeto=($this->pem[$this->user_ceo]["time_closeto"]==true)?1:0;
-		$re=[];
+		$re=["result"=>false,"message_error"=>""];
 		$sql=[];
 		$sql["set"]="SELECT 
 			@result:=0,
@@ -77,6 +86,7 @@ class time extends main{
 					UPDATE `device_pos` 
 						SET `time_id`=lastid ,`onoff`='0' ,`user`=NULL ,`date_reg`=NULL
 						WHERE `ip`=@ip;
+					SET @result=1;
 				END IF;
 			ELSEIF r.onoff != '1' THEN
 				SET @message_error='ไม่สามาถปิดกะได้ เนื่องจาก ปิดอยู่แล้ว';
@@ -85,13 +95,17 @@ class time extends main{
 			ELSEIF r.ip != @ip THEN
 				SET @message_error='ไม่สามาถปิดกะได้ เนื่องจาก  IP เครื่องไม่ตรงกับที่บันทึก';
 			END IF;
-			SET @TEST=@time_closeto;
+			SET @TEST=r.onoff;
 		END";
-		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@TEST AS `TEST`";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@TEST";
 		$se=$this->metMnSql($sql,["result"]);
-		//echo $this->pem[$this->user_ceo]["time_closeto"];
-		//print_r($_SESSION);
+		if($se["result"]){
+			if(isset($se["data"]["result"][0])){
+				$re=$se["data"]["result"][0];
+			}
+		}
 		print_r($se);
+		return $re;
 	}
 	private function newTimeRegisPage():void{
 		$c=$this->checkPOS();
@@ -139,21 +153,42 @@ class time extends main{
 			$a=$this->checkTime();
 			//print_r($a);
 			$this->pageHead(["title"=>$this->title." DIYPOS","css"=>["time"],"js"=>["time","Ti"],"run"=>["Ti"]]);
-			if($a["count_user"]==0){
-				echo '<div class="content">
-					<div class="form">
-						<h2>'.$this->title.'</h2>
-						<form name="time" method="post" action="?a=time">
-							<input type="hidden" name="b" value="" />';
-				$this->writeLastTime($a["get_pos"]["ip"],$a["get_last_time"]);
-							
-				echo '		<div class="c">
-								<input type="button" value="เริ่มกะทำงานใหม่" onclick="Ti.newTimeSubmit()" />
-								<input type="button" value="ออกจากระบบ" onclick="Ti.logout()" />
+			if($a["is_regis"]==1){
+				//--ผู้ใช้ไม่ได้ใช้เครื่องใดเลย
+				if($a["count_user"]==0 ) {
+					if($a["get_pos"]["onoff"] == 0){
+						echo '<div class="content">
+							<div class="form">
+								<h2>'.$this->title.'</h2>
+								<form name="time" method="post" action="?a=time">
+									<input type="hidden" name="b" value="" />';
+						$this->writeLastTime($a["get_pos"]["ip"],$a["get_last_time"]);
+									
+						echo '		<div class="c">
+										<input type="button" value="เริ่มกะทำงานใหม่" onclick="Ti.newTimeSubmit()" />
+										<input type="button" value="ออกจากระบบ" onclick="Ti.logout()" />
+									</div>
+								</form>
 							</div>
-						</form>
-					</div>
-				</div>';
+						</div>';
+					}else{
+						echo '<div class="content">
+							<div class="form">
+								<h2>'.$this->title.'</h2>
+								<form name="time" method="post" action="?a=time">
+									<input type="hidden" name="b" value="" />';
+						$this->writeLastTime2($a["get_pos"]["ip"],$a["get_last_time"]);
+									
+						echo '		<div class="c">
+										<input type="button" value="เริ่มกะทำงานนี้ต่อ" onclick="Ti.newTimeSubmit()" />
+										<input type="button" value="ออกจากระบบ" onclick="Ti.logout()" />
+									</div>
+								</form>
+							</div>
+						</div>';
+					}
+				}
+			}else{
 				
 			}
 		}else{
@@ -181,10 +216,9 @@ class time extends main{
 				$this->viewTimeMe();
 			}
 		}
-		
 	}
 	private function writeLastTime(string $ip,array $time):void{
-		print_r($time);
+		//print_r($time);
 		if(!empty($time["user"])){
 			$mb=number_format($time["money_balance"],2,'.',',');
 			echo '<div>
@@ -210,6 +244,29 @@ class time extends main{
 			}
 		}
 	}
+	private function writeLastTime2(string $ip,array $time):void{
+		//print_r($time);
+		if(!empty($time["user"])){
+			$mb=number_format($time["money_balance"],2,'.',',');
+			echo '<div>
+				<div class="history_last_time">
+					<p>ล่าสุด '.$ip.'<p>
+					<p class="warning">เปิดกะค้างไว้อยู่<p>
+					<div class="start_time opened">เปิดกะ เวลา<div>'.$time["date_reg"].' น.</div></div>
+					<div class="start_time opened">เปิดกะมานาน<div id="time_ago">00:00:00:</div></div>
+					<div class="start_time opened">ผู้ใช้<div>'.htmlspecialchars($time["user_name"]).'</div></div>
+					<div class="start_time opened">ลิ้นชัก/ที่เก็บเงิน
+						<div>
+							รหัส : '.$time["drawers_sku"].'
+							<br />ชื่อ : '.htmlspecialchars($time["drawers_name"]).'
+						</div>
+					</div>
+					<div class="start_time opened">จำนวนเงินในลิ้นชัก<div>'.$mb.'</div></div>
+				</div>
+			</div>
+			<script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.$time["date_reg"].'\')</script>';
+		}
+	}
 	private function viewTimeMe(){
 		$this->timeRegis();
 		header('Location:?a=me');
@@ -231,7 +288,7 @@ class time extends main{
 		$re=["count_user"=>0,"is_regis"=>0,"get_pos"=>[],"get_last_time"=>[]];
 		$sql=[];
 		//--ผู้ใช้มีกะทำงานอยู่ หรือไม่ เข้าใช้งาน 2 เครื่อง
-		$sql["count_user"]="SELECT COUNT(*) AS `count`  FROM `device_pos` 
+		$sql["count_user"]="SELECT IFNULL(COUNT(*),0) AS `count`  FROM `device_pos` 
 					WHERE `user`='".$_SESSION["sku_root"]."' AND `onoff`=1
 		";
 		//--รับค่า ip ที่ผู้ใช้ได้เปิดกะไว้
@@ -239,11 +296,11 @@ class time extends main{
 					WHERE `user`='".$_SESSION["sku_root"]."' AND `onoff`=1 LIMIT 1),'') AS `ip`
 		";
 		//--เครื่องที่เข้าใช้งานลงทะเบียนอุปกร์หรือไม่
-		$sql["is_regis"]="SELECT COUNT(*) AS `count`  FROM `device_pos` 
+		$sql["is_regis"]="SELECT IFNULL(COUNT(*),0) AS `count`  FROM `device_pos` 
 					WHERE `ip`='".$_SESSION["ip"]."' 
 		";
 		//--ดูข้อมูลปัจจุบันของอุปกณ์ 
-		$sql["get_pos"]="SELECT `id`,`time_id`,`name`,`sku`,`user`,`ip`,
+		$sql["get_pos"]="SELECT `id`,`time_id`,`onoff`,`name`,`sku`,`user`,`ip`,
 				IFNULL(`money_start`,0) AS `money_start`,
 				IFNULL(`money_balance`,0) AS `money_balance`
 			FROM `device_pos` 
@@ -281,7 +338,7 @@ class time extends main{
 			}
 			
 		}
-		//print_r($se);
+		print_r($re);
 		return $re;
 	}
 	protected function getLastTime():array{

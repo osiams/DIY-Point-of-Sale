@@ -1,7 +1,7 @@
 .history_last_time{border:1px solid gray;margin:20px auto;padding:5px;background-color:PowderBlue}
 .history_last_time> p{font-size:1.5em;text-align:center;font-weight:bold;margin:1px 0px 5px 0px;}
 .history_last_time > div{display:grid;grid-template-columns:100%;grid-gap:5px;width:calc(100% - 6px);padding:5px 3px;background-color:DarkBlue;color:white;margin-top:5px;}
-
+.history_last_time > div.opened{background-color:SeaGreen;}
 .history_last_time > div >   div:nth-child(1){font-family: monospace;font-size:1.2em;font-weight:bold;}
 
 

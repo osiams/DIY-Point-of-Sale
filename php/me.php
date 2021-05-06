@@ -171,7 +171,7 @@ class me extends main{
 		$ms=number_format($this->my_time["money_start"],2,'.',',');
 		$mb=number_format($this->my_time["money_balance"],2,'.',',');
 		$d=explode(" ",$this->my_time["date_reg"]);
-		$mb="523,254.75";
+		//$mb="523,254.75";
 		echo '<div class="me_time">
 			<p>กะทำงานของฉัน</p>
 			<div>
@@ -181,7 +181,7 @@ class me extends main{
 				<div class="me_drawers">ลิ้นชัก/ที่เก็บเงินสด ชื่อ<div>'.htmlspecialchars($this->my_time["drawers_name"]).'</div></div>
 				<div class="start_time">ปิดกะ วันที่<div>'.$d[0].'</div></div>
 				<div class="start_time">เปิดกะ เวลา<div>'.$d[1].' น.</div></div>
-				<div class="start_time">เปิดกะมานาน<div id="time_ago"></div></div>
+				<div class="start_time">เปิดกะมานาน<div id="time_ago">00:00:00</div></div>
 				<div></div>
 				<div class="money_start">เงินสดเริ่มต้น<div>'.$ms.'</div></div>
 				<div class="money_balance">เงินสดขฌะนี้<div>'.$mb.'</div></div>
