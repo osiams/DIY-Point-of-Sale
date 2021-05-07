@@ -15,12 +15,25 @@ class me extends main {
 	}
 	closeTime2Result(re,form,bt){
 		if(re["result"]){
-			alert(111111)
+			let rid=M.rid()
+			let msg="ปิดกะ และ ออกจากระบบ สำเร็จ "
+			let dt={"msg":msg,"rid":rid,"callback":"M.dialogClose('"+rid+"',1,);location.href='index.php'","width":300}
+			M.dialogAlert(dt)
 		}else{
 			Me.closeTime2Error(re,form,bt)
 		}
 	}
 	closeTime2Error(re,form,bt){
-		alert(9999)
+		alert("555555555555555555")
+	}
+	min(){
+		let rid = this.rid()
+		let ct=this.ce("div",{})
+			let l1=this.ce("label",{})
+			this.end(l1,[this.cn("จำนวนเงิน : ")])
+			let i1=this.ce("input",{"type":"text"})
+		this.end(ct,[l1,i1])
+		let bts=[]
+		this.dialog({"rid":rid,"display":1,"bts":bts,"ct":ct,"title":"นำเงินออกจากลิ้นชัก","width":"400","ofc":1})
 	}
 }

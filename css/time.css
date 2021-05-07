@@ -4,4 +4,4 @@
 .history_last_time > div.opened{background-color:SeaGreen;}
 .history_last_time > div >   div:nth-child(1){font-family: monospace;font-size:1.2em;font-weight:bold;}
 
-
+.history_last_time > p.history_drawers_wn{display:block;font-size:1.2em}

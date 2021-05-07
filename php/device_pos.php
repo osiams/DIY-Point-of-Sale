@@ -130,12 +130,15 @@ class device_pos extends device{
 			@disc:=".$disc.",
 			@drawers_id:=".$drawers_id.",
 			@icon_arr:=".$this->getStringSqlSet(json_encode($icon_arr)).",
+			@drawers_pair:=(SELECT (SELECT `ip`  FROM `device_pos` WHERE `drawers_id`=@drawers_id AND `drawers_id` > 0 LIMIT 1)),
 			@count_drawers:=(SELECT COUNT(*)  FROM `device_drawers` WHERE `id`=@drawers_id ),
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
 		$sql["check"]="
 			IF @count_drawers = 0 && @drawers_id != 0 THEN 
 				SET @message_error='เกิดขอผิดพลาด ลิ้นชักที่ระบุมมาไม่มี';
+			ELSEIF @drawers_pair IS NOT NULL THEN
+				SET @message_error=CONCAT('ลิ้นชักที่ระบุมมา ถูกจับคู่ กับ ',CAST(@drawers_pair AS CHAR CHARACTER SET utf8), ' ไปแล้ว ');
 			END IF;			
 		";
 		$sql["run"]="BEGIN NOT ATOMIC 
@@ -200,12 +203,15 @@ class device_pos extends device{
 			@no:=".$no.",
 			@disc:=".$disc.",
 			@drawers_id:=".$drawers_id.",
+			@drawers_pair:=(SELECT (SELECT `ip`  FROM `device_pos` WHERE `drawers_id`=@drawers_id AND `drawers_id` > 0 LIMIT 1)),
 			@count_drawers:=(SELECT COUNT(*)  FROM `device_drawers` WHERE `id`=@drawers_id ),
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
 		$sql["check"]="
 			IF @count_drawers = 0 && @drawers_id != 0 THEN 
-				SET @message_error='เกิดขอผิดพลาด ลิ้นชักที่ระบุมมาไม่มี';
+				SET @message_error='ลิ้นชักที่ระบุมมาไม่มี';
+			ELSEIF @drawers_pair IS NOT NULL THEN
+				SET @message_error=CONCAT('ลิ้นชักที่ระบุมมา ถูกจับคู่ กับ ',CAST(@drawers_pair AS CHAR CHARACTER SET utf8), ' ไปแล้ว ');
 			END IF;			
 		";
 		$sql["run"]="BEGIN NOT ATOMIC 

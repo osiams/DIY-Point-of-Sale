@@ -311,6 +311,16 @@ class main{
 				"primary"=>"id",
 				"index"=>["drawers_id","ip","user"]
 			],
+			"tran"=>[
+				"name"=>"tran",
+				"column"=>[	"id"			,"tran_type"		,"ref"						,"ip"			,"drawers_id",
+									"min"		,"mout"				,"money_balance"	,"user"		,"note",
+									"date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],					
+				"primary"=>"id",
+				"unique"=>["ref"],
+				"index"=>["drawers_id","ip","user","tran_type"]
+			],
 			"unit"=>[
 				"name"=>"unit",
 				"column"=>["id","sku","sku_key","sku_root","name","s_type","modi_date","date_reg"],
@@ -432,6 +442,7 @@ class main{
 			"r"=>["name"=>"คืน","type"=>"INT","length_value"=>10],
 			"r_"=>["name"=>"เริ่ม","type"=>"INT","length_value"=>10],
 			"_r"=>["name"=>"สิ้นสุด","type"=>"INT","length_value"=>10],
+			"ref"=>["name"=>"อ้างอิง","type"=>"CHAR","length_value"=>25],
 			"road"=>["name"=>"ถนน","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"s_type"=>["name"=>"รูปแบบการขาย","type"=>"ENUM","length_value"=>["p","w","l","v"]],
 			"sex"=>["name"=>"เพศ","type"=>"ENUM","length_value"=>["m","f"]],
