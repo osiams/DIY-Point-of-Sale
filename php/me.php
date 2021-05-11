@@ -125,7 +125,7 @@ class me extends main{
 		$email=(isset($_POST["email"]))?htmlspecialchars($_POST["email"]):"";
 		$userceo=$_SESSION["userceo"];
 		$this->addDir("","แก้ไข ฉัน");
-		$this->pageHead(["title"=>"ฉัน DIYPOS","css"=>["me"],"js"=>["me","Me"]]);
+		$this->pageHead(["title"=>"ฉัน DIYPOS","css"=>["me"],"js"=>["me","Me"],"run"=>["Me"]]);
 		$pem=true;
 		$dis="";
 		echo '<div class="content"><div class="form">';
@@ -183,9 +183,13 @@ class me extends main{
 			echo '<div>
 					<div class="me_pos">เครื่องนี้ IP<div>'.$this->userIPv4().'</div></div>
 					<div class="me_pos">เครื่องนี้ ชื่อ<div>'.htmlspecialchars($this->my_time["name"]).'</div></div>';
+			$drawers_sku="";
+			$drawers_name="";
 			if($this->my_time["drawers_sku"]!=""){		
-				echo '	<div class="me_drawers">ลิ้นชัก/ที่เก็บเงินสด รหัส<div>'.$this->my_time["drawers_sku"].'</div></div>
-					<div class="me_drawers">ลิ้นชัก/ที่เก็บเงินสด ชื่อ<div>'.htmlspecialchars($this->my_time["drawers_name"]).'</div></div>';
+				$drawers_sku=$this->my_time["drawers_sku"];
+				$drawers_name=htmlspecialchars($this->my_time["drawers_name"]);
+				echo '	<div class="me_drawers">ลิ้นชัก/ที่เก็บเงินสด รหัส<div>'.$drawers_sku.'</div></div>
+					<div class="me_drawers">ลิ้นชัก/ที่เก็บเงินสด ชื่อ<div>'.$drawers_name.'</div></div>';
 			}
 			echo '<div class="start_time">ปิดกะ วันที่<div>'.$d[0].'</div></div>
 					<div class="start_time">เปิดกะ เวลา<div>'.$d[1].' น.</div></div>
@@ -193,9 +197,9 @@ class me extends main{
 					<div></div>';
 			if($this->my_time["drawers_sku"]!=""){		
 				echo '	<div class="money_start">เงินสดเริ่มต้น<div>'.$ms.'</div></div>
-					<div class="money_balance">เงินสดขฌะนี้<div>'.$mb.'</div></div>
-					<div><input type="button" value="นำเงินเข้า" onclick="Me.min()" /></div>
-					<div><input type="button" value="นำเงินออก"></div>
+					<div class="money_balance">เงินสดขฌะนี้<div id="me_money_balance">'.$mb.'</div></div>
+					<div><input type="button" value="นำเงินเข้า" onclick="Me.min(\''.$drawers_sku.'\',\''.$drawers_name.'\')" /></div>
+					<div><input type="button" value="นำเงินออก" onclick="Me.mout(\''.$drawers_sku.'\',\''.$drawers_name.'\')" /></div>
 				
 				';
 			}

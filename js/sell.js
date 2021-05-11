@@ -1340,7 +1340,7 @@ class sell extends main{
 		this.rmc_all(t)
 		let div=this.ce("div",{"class":"form_select_div_one_select"})
 			let div_img=this.ce("div",{"class":"img32"})
-			let img=this.ce("img",{"src":"img/gallery/32x32_"+this.member["icon"],"alt":this.member["name"],"onerror":"this.src='img/pos/32x32_null.png'"})	
+			let img=this.ce("img",{"src":"img/gallery/32x32_"+this.member["icon"],"alt":this.member["name"],"onerror":"this.src='img/pos/64x64_null.png'"})	
 			this.end(div_img,[img])	
 			let span=this.ce("div",{})
 			this.end(span,[this.cn(this.member["name"]+" "+this.member["lastname"])])
@@ -1354,7 +1354,7 @@ class sell extends main{
 			this.member=partner_full_data[display_id][prop]
 			let div=this.ce("div",{"class":"form_select_div_one_select"})
 				let div_img=this.ce("div",{"class":"img32"})
-					let img=this.ce("img",{"src":"img/gallery/32x32_"+partner_full_data[display_id][prop]["icon"],"alt":partner_full_data[display_id][prop]["name"],"onerror":"this.src='img/pos/32x32_null.png'"})	
+					let img=this.ce("img",{"src":"img/gallery/32x32_"+partner_full_data[display_id][prop]["icon"],"alt":partner_full_data[display_id][prop]["name"],"onerror":"this.src='img/pos/64x64_null.png'"})	
 				this.end(div_img,[img])	
 				let span=this.ce("div",{})
 				this.end(span,[this.cn(partner_full_data[display_id][prop]["name"]+" "+partner_full_data[display_id][prop]["lastname"])])

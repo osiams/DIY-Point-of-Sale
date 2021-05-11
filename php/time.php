@@ -85,7 +85,7 @@ class time extends main{
 				 SET lastid=(SELECT LAST_INSERT_ID());
 				 IF lastid > 0 THEN
 					UPDATE `device_pos` 
-						SET `time_id`=lastid ,`onoff`='0' ,`user`=NULL ,`date_reg`=NULL
+						SET `time_id`=lastid ,`onoff`='0' ,`money_start`=`money_balance`,`user`=NULL ,`date_reg`=NULL
 						WHERE `ip`=@ip;
 					SET @result=1;
 				END IF;
@@ -374,7 +374,7 @@ class time extends main{
 				`user`='".$_SESSION["sku_root"]."',
 				`date_reg`=NOW(),
 				`onoff`='1'
-			WHERE `ip`='".$_SESSION["ip"]."' AND (`onoff`='0' OR `onoff` IS NULL) AND `user` != '".$_SESSION["sku_root"]."';
+			WHERE `ip`='".$_SESSION["ip"]."' AND (`onoff`='0' OR `onoff` IS NULL) AND (`user` != '".$_SESSION["sku_root"]."' OR `user` IS NULL) ;
 		END";
 		$se=$this->metMnSql($sql,[]);
 		//print_r($sql);exit;
@@ -396,7 +396,7 @@ class time extends main{
 		";
 		//--ดูข้อมูลปัจจุบันของอุปกณ์ 
 		$sql["get_pos"]="SELECT 
-				`device_pos`.`id`		,`device_pos`.`time_id`		,`device_pos`.`onoff`	,`device_pos`.`name`,
+				`device_pos`.`id`		,`device_pos`.`time_id`		,IFNULL(`device_pos`.`onoff`,'0') AS `onoff`	,`device_pos`.`name`,
 				`device_pos`.`sku`	,IFNULL(`device_pos`.`user`,'') AS `user`			,`device_pos`.`ip`,
 				IFNULL(`device_pos`.`money_start`,0) AS `money_start`,
 				IFNULL(`device_pos`.`money_balance`,0) AS `money_balance`,

@@ -416,13 +416,19 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 		if(this.id(id)!=undefined){
 			this.id(id).parentNode.removeChild(this.id(id))
 			this.id(id+"_dialog").parentNode.removeChild(this.id(id+"_dialog"))
-			if(ofc==1){
-				this.b.style.overflow = "auto"
-			}
-			if(idfc!=""&&this.id(idfc)!=undefined){
-				this.id(idfc).focus()
+
+		}else{
+			let a= document.querySelectorAll(".dialog_close"); 
+			if(a.length > 0){
+				a[a.length-1].click()
 			}
 		}
+		if(ofc==1){
+			this.b.style.overflow = "auto"
+		}
+		if(idfc!=""&&this.id(idfc)!=undefined){
+			this.id(idfc).focus()
+		}		
 	}
 	dialogConfirm(dt){
 		let rid=dt.hasOwnProperty("rid")?dt.rid:this.rid()

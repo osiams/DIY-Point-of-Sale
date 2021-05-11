@@ -12,12 +12,12 @@ input[type="button"],input[type="submit"],input[type="reset"]{
 input[type="password"],input[type="text"],input[type="number"],input[type="date"]{height:25px;padding:3px;border:1px solid #bbbbbb;
 	border-radius: 3px 3px 3px 3px;font-size:var(--font-size-input);}
 textarea{font-size:14px;padding:3px;border:1px solid #bbbbbb;border-radius: 3px 3px 3px 3px;font-size:14px;}	
-input:focus,textarea:focus{border:1px solid blue;box-shadow: 0px 3px 15px blue;}
+input:focus,textarea:focus{border:1px solid blue;box-shadow: 0px 0px 5px blue;outline: #4CAF50 solid 0px;}
 input[type="button"]:active{animation-name:bttive;animation-duration:0.5s;animation-iteration-count:1; }
 input[type="button"]:hover{background-color:#aaaaaa;}
 button{font-family:var(--font-family-input);font-size:var(--font-size-input);height:32px;padding:3px 20px;border:1px solid #bbbbbb;border-radius: 3px 3px 3px 3px;background-color:#d5d5d5;color:black;margin:1px;}
 button:hover{background-color:#afafaf;cursor:pointer}
-button:active{border:1px solid blue;box-shadow: 0px 3px 15px blue;}
+button:active{border:1px solid blue;box-shadow: 0px 0px 5px blue;}
 select{height:32px;}
 optgroup{}
 iframe{border:0px;}

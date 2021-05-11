@@ -89,16 +89,6 @@ class main{
 				"not_null"=>["sku","name"],
 				"unique"=>["name","no"]
 			],
-			"drawers_tran"=>[
-				"name"=>"drawers_tran",
-				"column"=>[	"id"			,"time_id"		,"drawers_id"			,"tran_type"			,"tran_ref"		,"min"				,"mout",		
-									"balance"	,"ip"						,"user"			,"note",
-									"date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],					
-				"primary"=>"id",
-				"not_null"=>["tran_type","tran_ref"],
-				"index"=>["drawers_id","tran_type","ip"]
-			],
 			"gallery"=>[
 				"name"=>"gallery",
 				"column"=>["id","sku_key","gl_key","name","a_type","mime_type","md5","user","size","width","height","date_reg"],
@@ -262,6 +252,14 @@ class main{
 				"primary"=>"sku_key",
 				"index"=>["sku_root"]
 			],
+			"ref"=>[
+				"name"=>"ref",
+				"column"=>["id"	,"ref_stat"			,"ref_table_"	,"ref__table"	,"ref_table_id_",
+					"sku_key"			,"ref__table_id"	,"ref_ip_"		,"ref__ip"		,"user"				,"date_exp"	,"date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","data_type"=>"u"],
+				"primary"=>"sku_key",
+				"index"=>["ref_stat","ref_table_","ref__table"]
+			],
 			"user"=>[
 				"name"=>"user",
 				"column"=>["id","sku","sku_key","sku_root","name","lastname","email","password","userceo","modi_date","date_reg"],
@@ -316,7 +314,7 @@ class main{
 				"column"=>[	"id"			,"tran_type"		,"ref"						,"ip"			,"drawers_id",
 									"min"		,"mout"				,"money_balance"	,"user"		,"note",
 									"date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],					
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","min"=>0,"mout"=>0,"money_balance"=>0],					
 				"primary"=>"id",
 				"unique"=>["ref"],
 				"index"=>["drawers_id","ip","user","tran_type"]
@@ -443,6 +441,13 @@ class main{
 			"r_"=>["name"=>"เริ่ม","type"=>"INT","length_value"=>10],
 			"_r"=>["name"=>"สิ้นสุด","type"=>"INT","length_value"=>10],
 			"ref"=>["name"=>"อ้างอิง","type"=>"CHAR","length_value"=>25],
+			"ref_ip_"=>["name"=>"อ้างไอพี_","type"=>"CHAR","length_value"=>25],
+			"ref__ip"=>["name"=>"อ้าง_ไอพี","type"=>"CHAR","length_value"=>25],
+			"ref_stat"=>["name"=>"สถานะอ้างอิง","type"=>"ENUM","length_value"=>["w","s","e","c"]],
+			"ref__table"=>["name"=>"อ้างอิง_ตาราง","type"=>"CHAR","length_value"=>25],
+			"ref_table_"=>["name"=>"อ้างอิงตาราง_","type"=>"CHAR","length_value"=>25],
+			"ref__table_id"=>["name"=>"อ้างอิง_ตารางที่","type"=>"INT","length_value"=>10],
+			"ref_table_id_"=>["name"=>"อ้างอิงตารางที่_","type"=>"INT","length_value"=>10],
 			"road"=>["name"=>"ถนน","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"s_type"=>["name"=>"รูปแบบการขาย","type"=>"ENUM","length_value"=>["p","w","l","v"]],
 			"sex"=>["name"=>"เพศ","type"=>"ENUM","length_value"=>["m","f"]],
@@ -747,13 +752,13 @@ class main{
 						break;
 					}else if(strlen(trim($ry))>0){
 						$name=["name","brand_name","no","alley","road","distric","country","province","note","lastname"];
-						$sku=["sku","unit"];
+						$sku=["sku","unit","ref"];
 						$tax=["tax","tel","fax","post_no"];
 						$url=["web"];
 						$idc=["idc"];
 						$barcode=["barcode"];
 						$password=["password"];
-						$money=["price","cost"];
+						$money=["price","cost","min"];
 						$int=["drawers_id"];
 						$float=["vat_p"];
 						$enum = ["data_type","s_type","pn_type","od_type","tp_type","bill_type","sex","mb_type"];
