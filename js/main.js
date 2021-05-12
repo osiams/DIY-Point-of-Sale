@@ -568,6 +568,27 @@ class gpu extends main {
 		super()
 		this.load={"id":{"has":0,"get":0}}
 	}
+	rMore(did){
+		let a=did.parentNode
+		let w = this.b.offsetWidth;
+		let c=document.querySelector("body > div.content"); 
+		if(a.className=="menu_more menu_more_min"){
+			if(w>360+250+20){
+				c.style.margin="0px 250px 0px 0px"
+			}
+			a.className="menu_more menu_more_max"
+			did.innerHTML="❱"
+			a.childNodes[3].className="menu_more_max_r"
+			window.scrollTo({ top:0,left:0,behavior: "smooth"})
+		}else{
+			a.className="menu_more menu_more_min"
+			did.innerHTML="☰"
+			a.childNodes[3].className="menu_more_min_r"
+			c.style.margin="0px 0px 0px 0px"
+		}
+		
+		
+	}
 	view(did,overflow=1){
 		let a=did.src.split("_")
 		let b=a.length>1?a[a.length-1]:"64x64_null.png"

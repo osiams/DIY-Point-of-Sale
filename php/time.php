@@ -181,7 +181,7 @@ class time extends main{
 								<br />
 								<div class="error">ผู้ใช้ '.htmlspecialchars($a["get_pos"]["user_name"]).' เปิดกะทำงานค้างไว้อยู่ ยังไม่สามารถเข้าใช้งานได้ขณะนี้ </div>
 								<br />
-								<input type="button" value="ข้อมูลฉัน" onclick="location.href=\'?a=me\'" />
+								<input type="button" value="ข้อมูลฉัน" onclick="location.href=\'?a=me&amp;b=time\'" />
 							</div>
 						</div>';
 					}else{
@@ -364,7 +364,7 @@ class time extends main{
 	}
 	private function viewTimeMe(){
 		$this->timeRegis();
-		header('Location:?a=me');
+		header('Location:?a=me&b=time');
 		exit;
 	}
 	private function timeRegis():void{

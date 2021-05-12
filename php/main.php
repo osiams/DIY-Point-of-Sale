@@ -257,7 +257,8 @@ class main{
 				"column"=>["id"	,"ref_stat"			,"ref_table_"	,"ref__table"	,"ref_table_id_",
 					"sku_key"			,"ref__table_id"	,"ref_ip_"		,"ref__ip"		,"user"				,"date_exp"	,"date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","data_type"=>"u"],
-				"primary"=>"sku_key",
+				"primary"=>"id",
+				"unique"=>["sku_key"],
 				"index"=>["ref_stat","ref_table_","ref__table"]
 			],
 			"user"=>[
@@ -632,6 +633,7 @@ class main{
 	}
 	protected function pageHead(array $data){
 		$title=(isset($data["title"]))?$data["title"]:"DIYPOS";
+		$r_more=(isset($data["r_more"]))?$data["r_more"]:[];
 		echo '<!DOCTYPE html>
 					<html xmlns="http://www.w3.org/1999/xhtml" lang="th">
 					<head>
@@ -654,7 +656,7 @@ class main{
 			<script type="text/javascript">let M=new main();let G=new gpu();'.$this->pageHeadOb($data).'</script>
 			';
 		if(!isset($data["dir"])){
-			$this->topBar();
+			$this->topBar($r_more);
 		}
 	}
 	private function pageHeadJs(array $data):string{
@@ -695,7 +697,7 @@ class main{
 		}
 		return $re;
 	}
-	private function topBar(){
+	private function topBar(array $r_more):void{
 		if($this->home==0){
 			echo '<div class="topbar">';
 			$this->avatarWrite();
@@ -705,7 +707,26 @@ class main{
 				 echo ' » '.$v;
 			 }
 			 echo '	</div>';
+			 if(count($r_more)>0){
+				 $this->rMore($r_more);
+			 }
 		}
+	}
+	protected function rMore(array $data):void{
+		//print_r($data);
+		//--tap ,spacebar เป็น childNodes ของ .menu_more อยู่ ห้ามเอาอะไรมาใส่ หรือลบ
+		echo '<div class="menu_more menu_more_min" >	 
+			<div onclick="G.rMore(this)">☰</div>	
+			<div class="menu_more_min_r">
+				<div>';
+		for($i=0;$i<count($data["menu"]);$i++){
+			$a=($data["menu"][$i]["b"]==$data["active"])?" class=\"menu_more_active\"":"";
+			$b=($a!="")?"👀 ":"";
+			echo '<div'.$a.'><a href="'.$data["menu"][$i]["link"].'">'.$b.''.$data["menu"][$i]["name"].'</a></div>';
+		}
+		echo '	</div>
+			</div>
+		</div>';
 	}
 	protected function avatarWrite(string $page=null){
 		if(isset($_SESSION["sku_root"])){

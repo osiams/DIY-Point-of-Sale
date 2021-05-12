@@ -3,18 +3,34 @@ class me extends main{
 	public function __construct(){
 		parent::__construct();
 		$this->my_time=[];
+		$this->r_more=[];
 	}
 	public function run(){
-		$q=["edit"];
+		$q=["edit","time"];
 		$this->addDir("?a=me","ฉัน");
+		$this->setRMore();
 		if(isset($_GET["b"])&&in_array($_GET["b"],$q)){
 			$t=$_GET["b"];
+			$this->r_more["active"]=$t;
 			if($t=="edit"){
-				$this->editMe();
+				$this->editMe();			
+			}else if($t="time"){
+				$this->timeMe();
 			}
 		}else{
-			$this->editMe();
+			$this->timeMe();
 		}
+	}
+	private function setRMore():void{
+		$url="?a=me";
+		$data=[
+			"menu"=>[
+				["b"=>"time","name"=>"กะทำงานฉัน","link"=>$url."&amp;b=time"],
+				["b"=>"edit","name"=>"แก้ไขฉัน","link"=>$url."&amp;b=edit"]
+			],
+			"active"=>""
+		];
+		$this->r_more=$data;
 	}
 	private function editMe():void{
 		$error="";
@@ -97,27 +113,13 @@ class me extends main{
 		$sku_root=$this->getStringSqlSet($sku_root);
 		$sql=[];
 		$sql["result"]="SELECT * FROM `user` WHERE `sku_root`=".$sku_root."";
-		$sql["get_pos"]="SELECT `device_pos`.`id`,`device_pos`.`time_id`,`device_pos`.`name`,
-				`device_pos`.`sku`,`device_pos`.`user`,`device_pos`.`ip`,
-				IFNULL(`device_pos`.`money_start`,0) AS `money_start`,
-				IFNULL(`device_pos`.`money_balance`,0) AS `money_balance`,
-				`device_pos`.`date_reg`,
-				IFNULL(`device_drawers`.`sku`,'') AS `drawers_sku`,
-				IFNULL(`device_drawers`.`name`,'') AS `drawers_name`
-			FROM `device_pos` 
-			LEFT JOIN `device_drawers`
-			ON(`device_pos`.`drawers_id`=`device_drawers`.`id`)
-			WHERE `device_pos`.`ip`='".$_SESSION["ip"]."'
-		";
-		$re=$this->metMnSql($sql,["result","get_pos"]);
+		$re=$this->metMnSql($sql,["result"]);
 		if(isset($re["data"]["result"][0])){
-			if(isset($re["data"]["get_pos"][0])){
-				$this->my_time=$re["data"]["get_pos"][0];
-			}	
 			return $re["data"]["result"][0];
 		}
 		return [];
 	}
+	
 	private function editMePage(string $error):void{
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
 		$lastname=(isset($_POST["lastname"]))?htmlspecialchars($_POST["lastname"]):"";
@@ -125,11 +127,10 @@ class me extends main{
 		$email=(isset($_POST["email"]))?htmlspecialchars($_POST["email"]):"";
 		$userceo=$_SESSION["userceo"];
 		$this->addDir("","แก้ไข ฉัน");
-		$this->pageHead(["title"=>"ฉัน DIYPOS","css"=>["me"],"js"=>["me","Me"],"run"=>["Me"]]);
+		$this->pageHead(["title"=>"ฉัน DIYPOS","css"=>["me"],"js"=>["me","Me"],"run"=>["Me"],"r_more"=>$this->r_more]);
 		$pem=true;
 		$dis="";
 		echo '<div class="content"><div class="form">';
-		$this->writeMyTime();
 		echo '<h2 class="c">แก้ไข ฉัน</h2>';
 		if($error!=""){
 			echo '<div class="error">'.$error.'</div>';
@@ -166,6 +167,40 @@ class me extends main{
 			
 			</div>
 		</div>';
+		$this->pageFoot();
+	}
+	private function getMyTime():void{
+		$sql=[];
+		$sql["get_pos"]="SELECT `device_pos`.`id`,`device_pos`.`time_id`,`device_pos`.`name`,
+				`device_pos`.`sku`,`device_pos`.`user`,`device_pos`.`ip`,
+				IFNULL(`device_pos`.`money_start`,0) AS `money_start`,
+				IFNULL(`device_pos`.`money_balance`,0) AS `money_balance`,
+				`device_pos`.`date_reg`,
+				IFNULL(`device_drawers`.`sku`,'') AS `drawers_sku`,
+				IFNULL(`device_drawers`.`name`,'') AS `drawers_name`
+			FROM `device_pos` 
+			LEFT JOIN `device_drawers`
+			ON(`device_pos`.`drawers_id`=`device_drawers`.`id`)
+			WHERE `device_pos`.`ip`='".$_SESSION["ip"]."'
+		";
+		$re=$this->metMnSql($sql,["get_pos"]);
+		if(isset($re["data"]["get_pos"][0])){
+			$this->my_time=$re["data"]["get_pos"][0];
+		}
+	}
+	private function timeMe():void{
+		$this->getMyTime();
+		$this->timeMePage();
+	}
+	private function timeMePage():void{
+		$tl="กะทำงาน ฉัน";
+		$this->addDir("",$tl);
+		$this->pageHead(["title"=>"ฉัน DIYPOS","css"=>["me"],"js"=>["me","Me"],"run"=>["Me"],"r_more"=>$this->r_more]);
+		$pem=true;
+		$dis="";
+		echo '<div class="content">';
+		$this->writeMyTime();
+		echo '</div>';
 		$this->pageFoot();
 	}
 	private function writeMyTime():void{//print_r($this->my_time);

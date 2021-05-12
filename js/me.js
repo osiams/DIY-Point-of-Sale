@@ -89,14 +89,20 @@ class me extends main {
 	formTransSend(type,min,ref,note){
 		let min_=this.id(min).value
 		let note_=this.id(note).value
-		let dt={"data":{"a":"tran","b":"savetran_"+type,"min":min_,"note":note_},"result":Me.formTransSendResult,"error":Me.formTransSendError}		
+		let dt={"data":{"a":"tran","b":"savetran_"+type,"note":note_},"result":Me.formTransSendResult,"error":Me.formTransSendError}		
+		if(type=="min"){
+			dt.data.min=min_
+		}else if(type=="mout"){
+			dt.data.mout=min_
+		}
 		this.setFec(dt)
 	}
 	formTransSendResult(re,form,bt){
 		if(re["result"]){
 			M.dialogClose()
 			let balance=re.data.money_balance
-			Me.formSetBalanceHtml(balance)
+			let type=form.get("type")
+			Me.formSetBalanceHtml("type",balance)
 		}else{
 			Me.formTransSendError(re,form,bt)
 		}
@@ -104,12 +110,18 @@ class me extends main {
 	formTransSendError(re,form,bt){
 		alert(re["message_error"])
 	}
-	formSetBalanceHtml(balance){
+	formSetBalanceHtml(type,balance){
 		if(this.id("me_money_balance")!=undefined){
 			let t=this.nb(balance,2)
 			this.id("me_money_balance").innerHTML=t
 			let rid=this.rid()
-			let msg="บันทึก การนำเงินเข้าลิ้นชัก สำเร็จ ลิ้นชักคุณจะมีเงินอยู่ "+t+ "บาท"
+			let io=""
+			if(type=="min"){
+				io="เข้า"
+			}else if(type=="out"){
+				io="ออก"
+			}
+			let msg="บันทึก การนำเงิน "+io+" ลิ้นชัก สำเร็จ ลิ้นชักคุณจะมีเงินอยู่ "+t+ "บาท"
 			let dt={"msg":msg,"rid":rid,"width":300,"callback":"M.dialogClose('"+rid+"',1)"}
 			this.dialogAlert(dt)
 		}
