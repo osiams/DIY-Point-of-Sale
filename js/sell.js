@@ -978,6 +978,7 @@ class sell extends main{
 				this.end(ct,[d1])
 				let rid=this.rid()
 				let vwh=this.setPayuValueDefault()
+				M.l(vwh)
 				this.id("ippayu").value=vwh.payu_value
 				let bts = [
 					{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"',0)"},
@@ -1025,6 +1026,8 @@ class sell extends main{
 		if(p!=null){
 			p.focus()
 		}
+		let c=document.querySelector("div.sellpay > div:nth-child(1)");
+		alert(c.innerHTML)
 	}
 	xxxxsmile(error=""){
 		let t=this.sums("get")

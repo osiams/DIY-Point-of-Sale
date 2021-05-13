@@ -731,7 +731,7 @@ class main{
 	protected function avatarWrite(string $page=null){
 		if(isset($_SESSION["sku_root"])){
 			$cs=($page=="home")?" style=\"float:none;display:block;text-align:right;\"":"";
-			echo '<div class="avatar"'.$cs.'><a href="?a=me&amp;b=edit">👤 '.$_SESSION["name"].' '.$_SESSION["lastname"].'</a></div>';
+			echo '<div class="avatar"'.$cs.'><a href="?a=me&amp;b=time">👤 '.$_SESSION["name"].' '.$_SESSION["lastname"].'</a></div>';
 		}
 	}
 	protected function addDir(string $href,string $text){

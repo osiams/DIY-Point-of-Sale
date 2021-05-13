@@ -410,7 +410,7 @@ class form_selects{
 			this.main.end(t,[div])
 		}
 	}
-	selectPayuOKAppend(a,display_id,callback){
+	selectPayuOKAppend(a,display_id,callback){//alert(callback)
 		let t=this.main.id(display_id)
 		let i=-1
 		for (let prop in this.partner[display_id]) {

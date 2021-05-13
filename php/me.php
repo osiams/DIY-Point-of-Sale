@@ -3,10 +3,11 @@ class me extends main{
 	public function __construct(){
 		parent::__construct();
 		$this->my_time=[];
+		$this->my_tran=[];
 		$this->r_more=[];
 	}
 	public function run(){
-		$q=["edit","time"];
+		$q=["edit","time","tran_log"];
 		$this->addDir("?a=me","ฉัน");
 		$this->setRMore();
 		if(isset($_GET["b"])&&in_array($_GET["b"],$q)){
@@ -14,19 +15,127 @@ class me extends main{
 			$this->r_more["active"]=$t;
 			if($t=="edit"){
 				$this->editMe();			
-			}else if($t="time"){
+			}else if($t=="time"){
 				$this->timeMe();
+			}else if($t=="tran_log"){
+				$this->tranLog();
 			}
 		}else{
 			$this->timeMe();
 		}
+	}
+	private function tranLog():void{
+		$this->getTranLog();
+		//print_r($this->my_tran);
+		$this->tranLogPage();
+	}
+	private function getTranLog():void{
+		$sql=[];
+		$sql["get_pos"]="SELECT `device_pos`.`id`,`device_pos`.`time_id`,`device_pos`.`name`,
+				`device_pos`.`sku`,`device_pos`.`user`,`device_pos`.`ip`,
+				IFNULL(`device_pos`.`money_start`,0) AS `money_start`,
+				IFNULL(`device_pos`.`money_balance`,0) AS `money_balance`,
+				@time_start:=`device_pos`.`date_reg` AS `date_reg`,
+				IFNULL(`device_drawers`.`sku`,'') AS `drawers_sku`,
+				IFNULL(`device_drawers`.`name`,'') AS `drawers_name`,
+				IFNULL(`time`.`money_balance`,0) AS `money_start`
+			FROM `device_pos` 
+			LEFT JOIN `device_drawers`
+			ON(`device_pos`.`drawers_id`=`device_drawers`.`id`)
+			LEFT JOIN `time`
+			ON(`device_pos`.`time_id`=`time`.`id`)
+			WHERE `device_pos`.`ip`='".$_SESSION["ip"]."'
+		";
+		$sql["get_tran"]="SELECT 
+				`tran`.`id`			,`tran`.`tran_type`			,`tran`.`min`		,`tran`.`mout`,
+				`tran`.`money_balance`,`tran`.`note`		,`tran`.`date_reg`
+			FROM `tran` 
+			WHERE `tran`.`ip`='".$_SESSION["ip"]."' AND `date_reg` >= @time_start
+		";
+		$re=$this->metMnSql($sql,["get_pos","get_tran"]);
+		if(isset($re["data"]["get_tran"])){
+			$this->my_tran=$re["data"]["get_tran"];
+		}
+		if(isset($re["data"]["get_pos"][0])){
+			$this->my_time=$re["data"]["get_pos"][0];
+		}
+	}
+	private function tranLogPage():void{
+		$tl="บันทึกเงินสด เข้า-ออก ลิ้นชัก";
+		$this->addDir("",$tl);
+		$this->pageHead(["title"=>$tl." DIYPOS","css"=>["me"],"js"=>["me","Me"],"run"=>["Me"],"r_more"=>$this->r_more]);
+		echo '<div class="content">
+			<h2>'.$tl.'</h2>';
+		$this->writeTranLog();
+		echo '</div>';
+		$this->pageFoot();
+	}
+	private function writeTranLog():void{//print_r($this->my_time);
+		$type=[
+			"min"=>["icon"=>"📥","name"=>"นำเงินเข้าลิ้นชัก"],
+			"mout"=>["icon"=>"📤","name"=>"นำเงินออกลิ้นชัก"],
+			"sell"=>["icon"=>"🛒","name"=>"ขายสินค้า"],
+			"ret"=>["icon"=>"↪️","name"=>"คืนสินค้า"],
+		];
+		$today=date('Y-m-d') ;//== date('Y-m-d', strtotime($timestamp));
+		$yesterday= Date('Y-m-d', strtotime('-1 day'));
+		$date="";
+		//print_r($this->my_time);
+		echo '<div class="me_time_log_disc_head">
+			<div class="r">เริ่มเปิดกะ : </div><div class="l bold">'.$this->my_time["date_reg"].'</div>
+			<div class="r">ชื่อลิ้นชัก : </div><div class="l bold">'.$this->my_time["name"].'</div>
+			<div class="r">รหัสลิ้นชัก : </div><div class="l bold">'.$this->my_time["sku"].'</div>
+			<div class="r">เงินสดเริ่มต้น : </div><div class="l bold">'.number_format($this->my_time["money_start"],2,".",",").'</div>
+		</div>';
+		echo '<table>
+			<tr><th>ที่</th><th>เวลา</th><th>ประเภท</th><th>💬</th><th>เข้า</th><th>ออก</th><th>คงเหลือ</th></tr>';		
+		$q=0;
+		for($i=0;$i<count($this->my_tran);$i++){
+			$d=explode(" ",$this->my_tran[$i]["date_reg"]);
+			
+			if($d[0]!=$date){
+				$q=1;
+				if($d[0]==$today){
+					echo '<tr><td colspan="7" class="me_time_log_date_th">↓ วันนี้</td></tr>';
+				}else if($d[0]==$yesterday){
+					echo '<tr><td colspan="7" class="me_time_log_date_th">↓ เมื่อวานนี้</td></tr>';
+				}else{
+					echo '<tr><td colspan="7" class="me_time_log_date_th">↓ '.$d[0].'</td></tr>';
+				}
+				$date=$d[0];
+			}
+			$min_txt=($this->my_tran[$i]["min"]>0)?"+".number_format($this->my_tran[$i]["min"],2,".",","):"";
+			$mout_txt=($this->my_tran[$i]["mout"]>0)?"-".number_format($this->my_tran[$i]["mout"],2,".",","):"";
+			$balance_txt=($this->my_tran[$i]["money_balance"]>0)?number_format($this->my_tran[$i]["money_balance"],2,".",","):"";
+			
+			$type_tx=$type[$this->my_tran[$i]["tran_type"]]["icon"];
+			$q+=1;
+			$tr=($q%2)+1;
+			$cm=($this->my_tran[$i]["note"]!="")?"<span class=\"me_time_log_note\" onclick=\"M.tooltups(this,'".htmlspecialchars($this->my_tran[$i]["note"])."',200)\">💬</span>":"";
+			echo '<tr class="i'.$tr.'">
+				<td>'.($i+1).'.</td>
+				<td>'.substr($d[1],0,5).'</td>
+				<td>'.$type_tx.'</td>
+				<td class="c">'.$cm.'</td>
+				<td class="r">'.$min_txt.'</td>
+				<td class="r">'.$mout_txt.'</td>
+				<td class="r">'.$balance_txt.'</td>
+			</tr>';
+		}
+		echo '</table>';	
+		echo '<p class="c">';
+		foreach($type as $k=>$v){
+			echo '<span class="me_time_log_note_disc">'.$v["icon"].' = '.$v["name"].'</span>';
+		}
+		echo '</p>';
 	}
 	private function setRMore():void{
 		$url="?a=me";
 		$data=[
 			"menu"=>[
 				["b"=>"time","name"=>"กะทำงานฉัน","link"=>$url."&amp;b=time"],
-				["b"=>"edit","name"=>"แก้ไขฉัน","link"=>$url."&amp;b=edit"]
+				["b"=>"edit","name"=>"แก้ไขฉัน","link"=>$url."&amp;b=edit"],
+				["b"=>"tran_log","name"=>"ประวัติ เงินเข้า-ออก ลิ้นชัก","link"=>$url."&amp;b=tran_log"]
 			],
 			"active"=>""
 		];
