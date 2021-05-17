@@ -982,7 +982,7 @@ class sell extends main{
 				this.id("ippayu").value=vwh.payu_value
 				let bts = [
 					{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"',0)"},
-					{"value":"ยืนยัน","onclick":"S.success()"}
+					{"value":"ยืนยัน","onclick":"S.success('"+rid+"')"}
 				]
 				let dt={"title":"ชำระเงิน","pn":p,"ct":ct,"rid":rid,"callback":"","bts":bts,"ofc":0,"display":1,"width":vwh.width,"height":vwh.height,"stcb":"S.setDefaultPayuDialog('"+rid+"')"}
 				this.dialog(dt)
@@ -1026,8 +1026,10 @@ class sell extends main{
 		if(p!=null){
 			p.focus()
 		}
-		let c=document.querySelector("div.sellpay > div:nth-child(1)");
-		alert(c.innerHTML)
+		let c=document.querySelector("div.sellpay");
+		let a=c.scrollHeight
+		let b=c.childNodes[0].offsetHeight
+		this.id(dialog_id+"_dialog").style.height=(a+100)+"px"
 	}
 	xxxxsmile(error=""){
 		let t=this.sums("get")
@@ -1046,22 +1048,13 @@ class sell extends main{
 			}
 		}
 	}
-	success(){
+	success(dialog_id){
 		let t=this.sums("get")
 		if(t.n_list>0){
 			let sum=t.sums
 			let get=this.getMonetPayuForm()
 			let pd=JSON.stringify(this.dt)
-			/*let formData = new FormData()
-			formData.append("a","sell")			
-			formData.append("submith","clicksubmit")		
-			formData.append("b","smile")		
-			formData.append("sum",sum)	
-			formData.append("get",get)	
-			formData.append("pd",pd)		
-			formData.append("member",this.member.sku_root)	*/
-			//M.fec("POST","",S.successResult,S.successError,null,formData)	
-			let dt={"data":{"a":"sell","b":"smile","get":get,"sum":sum,"pd":pd,"submith":"clicksubmit","member":this.member.sku_root,"payu":JSON.stringify(this.getPayuTypeValue())},
+			let dt={"data":{"a":"sell","b":"smile","get":get,"sum":sum,"pd":pd,"submith":"clicksubmit","member":this.member.sku_root,"payu":JSON.stringify(this.getPayuTypeValue()),"dialog_id":dialog_id},
 				"result":S.successResult,"error":S.successError}		
 			this.setFec(dt)
 			//M.l(dt)
@@ -1098,6 +1091,7 @@ class sell extends main{
 	successResult(re,form,bt){
 		if(re["result"]){
 			let id=re.billid
+			let dialog_id=form.get("dialog_id")
 			let s=form.get("sum")*1
 			let g=form.get("get")*1
 			let formData = new FormData()
@@ -1111,6 +1105,7 @@ class sell extends main{
 			
 			alert("✅ สำเร็จ บันทึกรายการเรียบร้อย\nรับมา  \t "+M.nb(g)+"\tบาท\nเงินทอน\t "+M.nb(g-s)+"\tบาท")
 			S.clearSellOk()
+			M.dialogClose(dialog_id,0)
 		}else{
 			S.successError(re,form,bt)
 		}

@@ -52,7 +52,8 @@ class main{
 			],
 			"bill_sell"=>[
 				"name"=>"bill_sell",
-				"column"=>["id","sku","n","cost","costr","price","pricer","user","user_edit","member_sku_key","member_sku_root","stat","stath","note","w","r_","_r","modi_date","date_reg"],
+				"column"=>["id","sku","n","cost","costr","price","pricer","user","user_edit","member_sku_key","member_sku_root","stat","stath","note","w","r_","_r",
+					"min","mout","credit","payu_json","payu_key_json","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pricer"=>0,"costr"=>0,"member_sku_key"=>"NULL","member_sku_root"=>"NULL"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
 				"primary"=>"sku",
@@ -134,7 +135,7 @@ class main{
 			"member"=>[
 				"name"=>"member",
 				"column"=>["id","sku","sku_key","sku_root",
-					"name","lastname","mb_type","icon",
+					"name","lastname","mb_type","credit","icon",
 					"sex","birthday",
 					"password","memberceo",
 					"no","alley","road","distric","country",
@@ -151,7 +152,7 @@ class main{
 			"member_ref"=>[
 				"name"=>"member_ref",
 				"column"=>["id","sku","sku_key","sku_root",
-					"name","lastname","mb_type","icon",
+					"name","lastname","mb_type","credit","icon",
 					"sex","birthday",
 					"password","memberceo",
 					"no","alley","road","distric","country",
@@ -261,6 +262,14 @@ class main{
 				"unique"=>["sku_key"],
 				"index"=>["ref_stat","ref_table_","ref__table"]
 			],
+			"rca"=>[
+				"name"=>"rca",
+				"column"=>["id"		,"bill_sell_id"			,"user"		,"member_sku_root"	,"min",
+					"money_balance"	,"date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","money_balance"=>0],
+				"primary"=>"id",
+				"index"=>["bill_sell_id","user","member_sku_root"]
+			],
 			"user"=>[
 				"name"=>"user",
 				"column"=>["id","sku","sku_key","sku_root","name","lastname","email","password","userceo","modi_date","date_reg"],
@@ -351,6 +360,7 @@ class main{
 			"bill_no"=>["name"=>"เลขที่ในใบเส็จ","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"bill_po_sku"=>["name"=>"เลขที่ใบสั่งซื้อ","type"=>"CHAR","length_value"=>25],
 			"bill_in_sku"=>["name"=>"รหัสภายในใบนำเข้าสินค้า","type"=>"CHAR","length_value"=>25],
+			"bill_sell_id"=>["name"=>"ที่ใบขาย","type"=>"INT","length_value"=>10],
 			"bill_type"=>["name"=>"ประเภทใบเสร็จ","type"=>"ENUM","length_value"=>["c","v0","v1"]],
 			"birthday"=>["name"=>"วันเกิด","type"=>"TIMESTAMP",],
 			"brand_name"=>["name"=>"ชื่อการค้า","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
@@ -364,6 +374,7 @@ class main{
 			"costr"=>["name"=>"ต้นทุนคืน","type"=>"FLOAT","length_value"=>[15,4]],
 			"costa"=>["name"=>"ต้นทุนเฉลี่ย","type"=>"FLOAT","length_value"=>[15,4]],
 			"country"=>["name"=>"เขต/อำเภอ","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
+			"credit"=>["name"=>"เชื่อ","type"=>"FLOAT","length_value"=>[15,2]],
 			"d1"=>["name"=>"ระดับ1","type"=>"CHAR","length_value"=>25],
 			"d2"=>["name"=>"ระดับ2","type"=>"CHAR","length_value"=>25],
 			"d3"=>["name"=>"ระดับ3","type"=>"CHAR","length_value"=>25],

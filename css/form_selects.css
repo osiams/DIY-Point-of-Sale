@@ -30,7 +30,7 @@
 .table_select_payu td:nth-child(2){width:32px;}
 .table_select_payu td:nth-child(3){text-align:left}
 .table_select_payu td:nth-child(4){text-align:center}
-.table_select_payu td:nth-child(4) >input{width:calc(100% - 8px);text-align:right;font-weight:bold}
+.table_select_payu td:nth-child(4) >input{width:calc(100% - 8px);text-align:right;font-weight:bold;text-indent:  10px;direction: rtl;}
 
 
 .num_panel{position:absolute;margin:0px auto;background-color:transparent;z-index:2;}

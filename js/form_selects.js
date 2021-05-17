@@ -430,7 +430,7 @@ class form_selects{
 			if(this.partner[display_id][prop]["value"]*1==0){
 				val=""
 			}
-			let ip=this.main.ce("input",{"name":"payu_"+prop,"type":"text","value":val,"onchange":"Fsl.setValue(this,'"+display_id+"','"+prop+"')"})
+			let ip=this.main.ce("input",{"name":"payu_"+prop,"type":"number","step":"0.01","value":val,"onchange":"Fsl.setValue(this,'"+display_id+"','"+prop+"')"})
 			this.main.end(cell3,[ip])	
 			if(callback!=""){
 				eval(callback)

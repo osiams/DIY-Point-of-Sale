@@ -68,7 +68,12 @@ class sell extends main{
 		$member=$this->getStringSqlSet($member0);
 		$payu_doc=(isset($_POST["payu"]))?$_POST["payu"]:'{}';
 		$payu_key_doc=$this->jsonDocToArrayKeyDoc($payu_doc);
-		//print_r($payu_doc);exit;
+		$min=0;
+		$mout=0;
+		$cash=json_decode($payu_doc,true);
+		if(isset($cash["defaultroot"])){
+			$min=(float) $cash["defaultroot"];
+		}
 		$re=["result"=>false,"message_error"=>""];
 		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$sum_client=(isset($_POST["sum"]))?(float) $_POST["sum"]:0;
@@ -90,10 +95,12 @@ class sell extends main{
 			@jspd:=".$jspd.",
 			@jspd_wlv:=".$jspd_wlv.",
 			@n:=".$n.",
+			@min:=".$min.",
 			@sums:=0,
 			@sums_client:=".$sum_client.",
 			@payu_doc:='".$payu_doc."',
 			@payu_key_doc:='".$payu_key_doc."',
+			@payu_sum:=0,
 			@flag:=0,
 			@bill_sell_save:=0,
 			@TEST:='',
@@ -125,11 +132,11 @@ class sell extends main{
 				FOR i IN 0..(@len-1) DO
 					SET @k=JSON_VALUE(@payu_key_doc,	CONCAT('$[',i,']')	);
 					SET @mm_type=JSON_VALUE(@moneyinfo,	CONCAT('$.',@k,'.money_type')	);
+					SET @payu_sum=@payu_sum+JSON_VALUE(@payu_doc,	CONCAT('$.',@k)	);
 					IF @mm_type = 'cd' THEN
 						SET @credit=@credit+JSON_VALUE(@payu_doc,	CONCAT('$.',@k)	);
 					END IF;
 				END FOR;	
-				SET @message_error=CONCAT(@message_error,'ยอดค้างชำระ ',@credit,' คุณสูงกว่า ค่าสินค้า ');
 			END IF;
 		";
 		$sql["set_sums"]="
@@ -205,6 +212,18 @@ class sell extends main{
 				IF @sums_client < @sums  THEN
 					SET @message_error=CONCAT(@message_error,'ราคารวม ฝั่ง เซร์ฟเวอร์ ได้  ',@sums,' แต่ราคารวมที่ส่งมา ได้ ',@sums_client,'\n');
 				END IF;
+				IF @credit > @sums THEN
+					SET @message_error=CONCAT(@message_error,'ยอดค้างชำระ ',@credit,' คุณสูงกว่า ค่าสินค้า ');
+				END IF;
+				IF @credit > 0 AND @member IS NULL THEN
+					SET @message_error=CONCAT(@message_error,'กรณี มียอดค้างชำระ  โปรดระบุสมาชิกลูกค้าด้วย ');
+				END IF;
+				IF @payu_sum < @sums THEN
+					SET @message_error=CONCAT(@message_error,'ยอดชำระรวม น้อยกว่า ค่าสินค้า ');
+				END IF;
+				IF @credit > 0 AND @payu_sum > @sums THEN
+					SET @message_error=CONCAT(@message_error,'ยอดค้างชำระ เกิน ยอดค้างชำระจริง');
+				END IF;
 			END ;
 		";
 		$sql["bill_sell_list_save"]="
@@ -232,16 +251,25 @@ class sell extends main{
 				DECLARE `cut_mod` INT DEFAULT 0;
 				DECLARE w CHAR(1) DEFAULT '0';
 				DECLARE lastid INT DEFAULT NULL;	
+				DECLARE lastid_bill_sell INT DEFAULT NULL;
 				DECLARE r__ INT DEFAULT 0;
 				DECLARE __r INT DEFAULT 0;
+				DECLARE date_reg TIMESTAMP DEFAULT NOW();
 				DECLARE addsku CHAR(25) CHARACTER SET ascii DEFAULT '';
 				SET @TEST='';
-				IF @over=0 THEN 
+				IF @over=0 AND @message_error = '' THEN 
 					SET @bill_sell_save=1;
 					SET pdl=@pd_length;
 					IF @bill_sell_save=1 THEN
-						INSERT INTO `bill_sell`  (sku,n,price,user,member_sku_key,member_sku_root) 
-						VALUES (@sku,@n,@sums,@user,@member_key,@member);			
+						INSERT INTO `bill_sell`  (
+							sku		,n			,price			,user			,member_sku_key			,member_sku_root,
+							min		,mout						,credit		,payu_json			,payu_key_json		,`date_reg`
+							
+						)VALUES (
+							@sku,	@n		,@sums			,@user		,@member_key				,@member,
+							@min	,(@payu_sum-@min)	,@credit	,@payu_doc		,@payu_key_doc	,date_reg
+						);		
+						SET lastid_bill_sell=(SELECT LAST_INSERT_ID());	
 						SET @TEST=CONCAT(@TEST,';pdl=',pdl);		
 						WHILE i < pdl DO
 							SET stn=0;
@@ -378,16 +406,25 @@ class sell extends main{
 						IF __r=0 THEN 
 							SET __r=r__;
 						END IF;
-						UPDATE bill_sell SET `cost`=pdcoat,`w`=w,`r_`=r__,`_r`=__r WHERE `sku` = addsku ;
+						IF lastid_bill_sell > 0 THEN
+							IF @credit > 0 THEN
+								INSERT INTO `rca` (
+									`bill_sell_id`		,`min`		,`money_balance`		,`member_sku_root`		,`user`	,`date_reg`
+								)VALUES(
+									lastid_bill_sell	,NULL		,@credit					,@member					,@user	,date_reg
+								);
+							END IF;
+							UPDATE bill_sell SET `cost`=pdcoat,`w`=w,`r_`=r__,`_r`=__r WHERE `sku` = addsku ;
+						END IF;
 					END IF;
 					SET @result=1;
 				END IF;	
 			END;	
 		";
 		//print_r($sql);exit;
-		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@sku AS `billid`,@over AS `over`,@stock AS `stock`,@TEST AS `TEST`";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@sku AS `billid`,@over AS `over`,@stock AS `stock`,@TEST AS `TEST`,@payu_sum,@sums";
 		$se=$this->metMnSql($sql,["result"]);
-		//print_r($se);
+		//print_r($sql);
 		return $se;
 	}
 	private function fetchGetBc(string $field,string $barcode):void{
