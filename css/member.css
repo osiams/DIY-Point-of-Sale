@@ -1,5 +1,4 @@
-.member_page_search{padding:2px 30px;line-height:3em;}
-.member_submit_iframe{position: sticky;margin:2px auto;bottom:0px;width:100%;}
+
 @media screen and (max-width: 635px) {
 .form100 > label > select{width:80px;}
 .form100 >  label >input[type="text"]{width:calc(100% - 160px);}

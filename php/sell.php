@@ -107,10 +107,15 @@ class sell extends main{
 			@over:=0,
 			@stock:='{}',
 			@credit:=0,
+			@ip:='".$_SESSION["ip"]."',
 			@member:=".$member.",
 			@member_key:=".$member.",
+			@member_id:=(SELECT `id` FROM `member` WHERE `sku_root`=".$member."),
+			@user_id:=".$_SESSION["id"].",
 			@id:=(SELECT IFNULL((SELECT MAX(id) FROM `bill_sell`),0)+1),
 			@moneyinfo:=(SELECT PayuInfo_('".$payu_key_doc."')),
+			@drawers_id:=(SELECT `drawers_id` FROM `device_pos` WHERE `ip`='".$_SESSION["ip"]."' AND `user` = '".$_SESSION["sku_root"]."' AND `onoff` = '1'),
+			@money_balance:=(SELECT IFNULL(`money_balance`,0) FROM `device_pos` WHERE `ip`='".$_SESSION["ip"]."' AND `user` = '".$_SESSION["sku_root"]."' AND `onoff` = '1'),
 			@member_sku_root_count:=(SELECT COUNT(*)  FROM `member` WHERE '".$member0."' != '' AND`sku_root`='".$member0."' ),
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
@@ -218,10 +223,10 @@ class sell extends main{
 				IF @credit > 0 AND @member IS NULL THEN
 					SET @message_error=CONCAT(@message_error,'กรณี มียอดค้างชำระ  โปรดระบุสมาชิกลูกค้าด้วย ');
 				END IF;
-				IF @payu_sum < @sums THEN
+				IF @payu_sum < @sums AND ABS(@payu_sum - @sums) >= 1 THEN
 					SET @message_error=CONCAT(@message_error,'ยอดชำระรวม น้อยกว่า ค่าสินค้า ');
 				END IF;
-				IF @credit > 0 AND @payu_sum > @sums THEN
+				IF @credit > 0 AND @payu_sum > @sums AND ABS(@payu_sum - @credit) >= 1 THEN
 					SET @message_error=CONCAT(@message_error,'ยอดค้างชำระ เกิน ยอดค้างชำระจริง');
 				END IF;
 			END ;
@@ -267,7 +272,7 @@ class sell extends main{
 							
 						)VALUES (
 							@sku,	@n		,@sums			,@user		,@member_key				,@member,
-							@min	,(@payu_sum-@min)	,@credit	,@payu_doc		,@payu_key_doc	,date_reg
+							@min	,(@payu_sum-@sums)	,@credit	,@payu_doc		,@payu_key_doc	,date_reg
 						);		
 						SET lastid_bill_sell=(SELECT LAST_INSERT_ID());	
 						SET @TEST=CONCAT(@TEST,';pdl=',pdl);		
@@ -409,10 +414,27 @@ class sell extends main{
 						IF lastid_bill_sell > 0 THEN
 							IF @credit > 0 THEN
 								INSERT INTO `rca` (
-									`bill_sell_id`		,`min`		,`money_balance`		,`member_sku_root`		,`user`	,`date_reg`
+									`bill_sell_id`		,`credit`		,`member_id`		,`user_id`	,`date_reg`
 								)VALUES(
-									lastid_bill_sell	,NULL		,@credit					,@member					,@user	,date_reg
+									lastid_bill_sell	,@credit		,@member_id		,@user_id	,date_reg
 								);
+								UPDATE `member` SET `credit`=((IFNULL(`credit`,0))+@credit) WHERE `sku_root` = @member;
+							END IF;
+							IF @min > 0 OR (@payu_sum-@sums) > 0 THEN
+								INSERT INTO `tran`(
+									`min`			,`mout`					,`tran_type`			,`ref`	,`ip`,
+									`drawers_id`	,`user`,
+									`money_balance`	,
+									`date_reg`
+								)VALUES(
+									@min			,(@payu_sum-@sums)	,'sell'						,@sku	,@ip,
+									@drawers_id	,@user, 
+									(@money_balance+@min - (@payu_sum-@sums)),
+									date_reg
+								);
+								UPDATE `device_pos` 
+									SET `money_balance` = (@money_balance+@min - (@payu_sum-@sums))
+									WHERE `ip`= @ip;
 							END IF;
 							UPDATE bill_sell SET `cost`=pdcoat,`w`=w,`r_`=r__,`_r`=__r WHERE `sku` = addsku ;
 						END IF;

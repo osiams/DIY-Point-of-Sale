@@ -75,6 +75,8 @@ echo $mo->format('U')-$reg->format("U");*/
 		echo '	<div class="l"><b>👫 ผู้ขาย</b> : '.htmlspecialchars($head["user_name"]).' ,
 				<b>🕒 วันที่</b> : '.$head["date_reg"].' น.
 			</div>';
+
+		
 		if($head["member_sku"]!=""){
 			$mbty="?";
 			if(isset($this->mb_type[$head["mb_type"]])){
@@ -86,6 +88,8 @@ echo $mo->format('U')-$reg->format("U");*/
 		}else{
 			echo '<div class="l">🧾 ผู้ซื้อ : บุคลทั่วไปไม่ใช่สมาชิก</div>';
 		}
+		$payu=json_decode($head["payu_json"],true);
+		//print_r($payu);
 		echo '	</div>
 			<table class="billlsselllist">
 				<tr>
@@ -162,7 +166,20 @@ echo $mo->format('U')-$reg->format("U");*/
 		if($nr>0){
 				echo '<div class="r">*หักคืนสินค้า จะได้ 📃 จำนวน : <b>'.(count($list)-$nr_list).'</b> รายการ
 						💰ยอดขาย : <b>'.$sumr.'</b> บาท,กำไร <span class="darkgreen"><b>'.number_format($pfr,2,'.',',').'</b></span> บ.</div>';
-		}				
+		}		
+		//----------------
+		echo '<div class="r"><b>💰 รูปแบบการชำระ</b> : [';
+		$e=0;
+		foreach($payu as $k=>$v){
+			if($v["value"]>0){
+				$e+=1;
+				$cm=($e>1)?" ,":"";
+				echo $cm.'<span>'.htmlspecialchars($v["name"]).' = '.number_format($v["value"],2,".",",").'</span>';
+			}
+		}		
+		echo ']</div>';	
+		echo '<div class="r"><b>ทอนเงินสด : </b>'.number_format($head["mout"],2,".",",").' บ.</div>';
+		//------------------
 		echo '		<br /><img src="?a=bill58&amp;b=viewbill&amp;sku='.$head["sku"].'" class="imgbill" alt="ภาพใบเสร็จเลขที่ '.$head["sku"].'"  /><br />
 			<a onclick="M.printAgain(\'bill58\',\'print\',\''.$head["sku"].'\')">🖨 พิมพ์อีกครั้ง</a><br /><br />
 		</div></div>';		
@@ -274,7 +291,9 @@ echo $mo->format('U')-$reg->format("U");*/
 		$sku=$this->getStringSqlSet($sku);
 		$sql=[];
 		$sql["head"]="SELECT  `bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`, `bill_sell`.`stat`  AS  `stat`, 
-				`bill_sell`.`price` AS `price`,bill_sell.w, `bill_sell`.`modi_date` AS `modi_date`, `bill_sell`.`date_reg` AS `date_reg`,
+				`bill_sell`.`price` AS `price`,bill_sell.w, `bill_sell`.`modi_date` AS `modi_date`, 
+				`bill_sell`.`mout` AS `mout`,GetPayuArrRefData_(`bill_sell`.`payu_json`) AS `payu_json`,
+				`bill_sell`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
 				CONCAT(`user_ref2`.`name`,' ', `user_ref2`.`lastname`) AS `user_name_edit`,
 				TIMESTAMPDIFF(SECOND,bill_sell.date_reg,bill_sell.modi_date) AS dif,

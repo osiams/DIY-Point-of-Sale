@@ -1,3 +1,11 @@
+.account_page_search{padding:2px 30px;line-height:3em;}
+.account_submit_iframe{position: sticky;margin:2px auto;bottom:0px;width:100%;}
+@media screen and (max-width: 635px) {
+.form100 > label > select{width:80px;}
+.form100 >  label >input[type="text"]{width:calc(100% - 160px);}
+.form100  > label > input[type="button"]{width:160px;}
+}
+
 .account_main{max-width:1080px;display:grid;grid-template-columns:50% 50%;align-content: center;justify-content: center;grid-gap:5px;width:calc(100% - 10px);padding:5px;margin:0 auto;}
 .account_main > div{display:grid;grid-template-columns:64px auto;border:1px solid gray;cursor:pointer;padding:5px;grid-gap:5px;width:calc(100% - 15px)}
 .account_main > div >div:nth-child(1){min-height:64px;}
@@ -18,3 +26,14 @@
 @media screen and (max-width: calc(360px + 180px)) {
 	.account_main{display:grid;grid-template-columns:calc(100% - 2px );}
 }
+
+td.action >  a:nth-child(1){display:block;}
+td.action >  a:nth-child(2){display:none;}
+td.action >  a:nth-child(3){display:none;}
+
+
+.account_rca_dashboard{border:1px solid gray;margin:20px auto;padding:5px;background-color:LightGray;width:calc(100% - 10px);}
+.account_rca_dashboard> p{font-size:1.5em;text-align:center;font-weight:bold;margin:1px 0px 5px 0px;}
+.account_rca_dashboard > div{display:grid;grid-template-columns:50% 50%;grid-gap:5px;width:calc(100% - 6px);}
+.account_rca_dashboard > div > div.rca_n_member{/*background-image: linear-gradient(FireBrick, red);*/background-color:FireBrick;padding:5px 3px 0px 3px;color:white}
+.account_rca_dashboard > div >   div > div:nth-child(1){font-family: monospace;font-size:1.5em;font-weight:bold;padding:5px 0px;}

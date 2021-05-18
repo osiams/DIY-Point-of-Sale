@@ -18,6 +18,7 @@ class main{
 			"data"=>[],
 			"message_error"=>""
 		];
+		$this->mb_type = ["s"=>"🏠 ผู้ประกอบการ","p"=>"🧑 ผู้บริโภค"];
 		$this->s_type=[
 			"p"=>["icon"=>"⚃","desc"=>"ขายเป็น อัน","opg"=>"อัน"],
 			"w"=>["icon"=>"⚖️","desc"=>"ชั่งน้ำหนักขาย","opg"=>"น้ำหนัก"],
@@ -264,11 +265,10 @@ class main{
 			],
 			"rca"=>[
 				"name"=>"rca",
-				"column"=>["id"		,"bill_sell_id"			,"user"		,"member_sku_root"	,"min",
-					"money_balance"	,"date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","money_balance"=>0],
+				"column"=>["id"		,"bill_sell_id"			,"user_id"		,"member_id"		,"credit", "date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],
 				"primary"=>"id",
-				"index"=>["bill_sell_id","user","member_sku_root"]
+				"index"=>["bill_sell_id","member_id","credit",]
 			],
 			"user"=>[
 				"name"=>"user",
@@ -411,6 +411,7 @@ class main{
 			"mb_type"=>["name"=>"ประเภทสมาชิก","type"=>"ENUM","length_value"=>["s","p"]],
 			"md5"=>["name"=>"md5","type"=>"CHAR","length_value"=>32],
 			"memberceo"=>["name"=>"ระดับสมาชิก","type"=>"ENUM","length_value"=>["0","1","2","3","4","5","6","7","8","9"]],
+			"member_id"=>["name"=>"เลขที่สมาชิก","type"=>"INT","length_value"=>10],
 			"member_sku_key"=>["name"=>"รหัสอ้างอิงสมาชิก","type"=>"CHAR","length_value"=>25],
 			"member_sku_root"=>["name"=>"รหัสรากสมาชิก","type"=>"CHAR","length_value"=>25],
 			"min"=>["name"=>"เงินเข้า","type"=>"FLOAT","length_value"=>[15,2]],
@@ -498,6 +499,7 @@ class main{
 			"unit_sku_root"=>["name"=>"รหัสรากหน่วย","type"=>"CHAR","length_value"=>25],
 			"user"=>["name"=>"ผู้ใช้","type"=>"CHAR","length_value"=>25],
 			"user_edit"=>["name"=>"ผู้แกไข","type"=>"CHAR","length_value"=>25],
+			"user_id"=>["name"=>"เลขที่ผู้ใช้","type"=>"INT","length_value"=>10],
 			"userceo"=>["name"=>"ระดับผู้ใช้","type"=>"ENUM","length_value"=>["0","1","2","3","4","5","6","7","8","9"]],
 			"w"=>["name"=>"เตือน","type"=>"ENUM","length_value"=>["0","1"]],
 			"w1_n"=>["name"=>"จำนวนสินค้าหลักที่รวม","type"=>"INT","length_value"=>10],

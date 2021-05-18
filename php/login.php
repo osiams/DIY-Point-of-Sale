@@ -17,7 +17,7 @@ class login extends main{
 				$pw=password_hash($_POST["p"], PASSWORD_DEFAULT);
 				$password=$this->getStringSqlSet($pw);
 				$sql=[];
-				$sql["result"]="SELECT `name`,`lastname`,`email`,`sku`,`password`,`sku_root`,`userceo`   
+				$sql["result"]="SELECT `id`,`name`,`lastname`,`email`,`sku`,`password`,`sku_root`,`userceo`   
 					FROM `user`
 					WHERE `email`=".$email." LIMIT 1";
 				$re=$this->metMnSql($sql,["result"]);
@@ -29,6 +29,7 @@ class login extends main{
 							$_SESSION["login"]=true;
 							$_SESSION["cookie"]=false;
 							$_SESSION["sku_root"]=$re["data"]["result"][0]["sku_root"];
+							$_SESSION["id"]=$re["data"]["result"][0]["id"];
 							$_SESSION["user"]=$re["data"]["result"][0]["email"];
 							$_SESSION["name"]=$re["data"]["result"][0]["name"];
 							$_SESSION["lastname"]=$re["data"]["result"][0]["lastname"];
