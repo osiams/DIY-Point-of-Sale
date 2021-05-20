@@ -29,7 +29,7 @@ class payu_details extends payu{
 		echo '<table class="table_details">
 			<tr><th>ค่า</th><th>รายละเอียด</th></tr>';
 		if(!empty($dt["icon"])){$s+=1;
-			echo '<tr class="i'.(($s%2)+1).'"><td class="l">รูป</td><td class="c"><img src="img/gallery/256x256_'.$dt["icon"].'" class="viewimage"  onclick="G.view(this)"  title="เปิดดูภาพ" /></td></tr>';
+			echo '<tr class="i'.(($s%2)+1).'"><td class="l">รูป</td><td class="c"><img src="img/gallery/256x256_'.$dt["icon"].'" class="viewimage"  onclick="G.view(this)"  onerror="this.src=\'img/gallery/256x256_null.png\'" title="เปิดดูภาพ" /></td></tr>';
 		}
 		if(!empty($dt["name"])){$s+=1;
 			echo '<tr class="i'.(($s%2)+1).'"><td class="l">ชื่อ</td><td class="l">'.htmlspecialchars($dt["name"]).'</td></tr>';

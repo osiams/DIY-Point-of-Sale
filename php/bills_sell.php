@@ -160,7 +160,8 @@ echo $mo->format('U')-$reg->format("U");*/
 						</tr>';
 					}
 				}
-		echo '</tr></table>
+		echo '</table>
+				<div>
 					<div class="r">📃 จำนวน : <b>'.count($list).'</b> รายการ
 						💰ยอดขาย : <b>'.$head["price"].'</b> บาท,กำไร <span class="green"><b>'.number_format($pf,2,'.',',').'</b></span> บ.</div>';
 		if($nr>0){
@@ -179,6 +180,7 @@ echo $mo->format('U')-$reg->format("U");*/
 		}		
 		echo ']</div>';	
 		echo '<div class="r"><b>ทอนเงินสด : </b>'.number_format($head["mout"],2,".",",").' บ.</div>';
+		echo '</div>';
 		//------------------
 		echo '		<br /><img src="?a=bill58&amp;b=viewbill&amp;sku='.$head["sku"].'" class="imgbill" alt="ภาพใบเสร็จเลขที่ '.$head["sku"].'"  /><br />
 			<a onclick="M.printAgain(\'bill58\',\'print\',\''.$head["sku"].'\')">🖨 พิมพ์อีกครั้ง</a><br /><br />

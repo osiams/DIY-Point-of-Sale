@@ -414,6 +414,9 @@ class bill58 extends main{
 	protected function setTm0(string $sku):array{
 		$re=[];
 		$se=$this->getBillData($sku);
+		$payu=json_decode($se["head"]["payu_json"],true);
+		$payu=$this->cutValue0($payu);
+		//print_r($se);exit;
 		if(count($se["head"])>0&&count($se["list"])>0){
 			$l=explode("\n",$this->receipt->receipt58->sale->head);
 			for($i=0;$i<count($l);$i++){
@@ -441,9 +444,51 @@ class bill58 extends main{
 				["t"=>"รวม ".$se["head"]["n"]." รายการ","lcr"=>"l"],
 				["t"=>"รวมเงิน ".number_format($se["head"]["price"],2,'.',',')." บาท ","lcr"=>"r"]
 			];
+			//$re["hr1"]=[["t"=>"- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ","lcr"=>"c"]];
+			$cash_only=0;
+			if(count($payu)==1){
+				if(isset($payu["defaultroot"])){
+					$cash_only=1;
+					$re["payu_cash"]=[
+						["t"=>"รับเงินสด ".number_format($se["head"]["min"],2,".",",")." ","lcr"=>"l"],
+						["t"=>"เงินทอน ".number_format($se["head"]["mout"],2,'.',',')." บาท ","lcr"=>"r"]			
+					];		
+				}
+			}else{
+				$re["pay_by"]=[["t"=>"ชำระโดย","lcr"=>"c"]];
+				$q=0;
+				foreach($payu as $k=>$v){
+					$q+=1;
+					$re["payu_".$q]=[
+						["t"=>"".htmlspecialchars($v["name"])." ","lcr"=>"l"],
+						["t"=>"".number_format($v["value"],2,'.',',')." บาท ","lcr"=>"r"]			
+					];	
+				}
+			}
+			//$re["hr2"]=[["t"=>"- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ","lcr"=>"c"]];
+			if($se["head"]["mout"]>0&&$cash_only==0){
+					$re["payu_mout"]=[
+						["t"=>"เงินทอน ".number_format($se["head"]["mout"],2,'.',',')." บาท ","lcr"=>"r"]			
+					];	
+			}
+			if($se["head"]["credit"]>0){
+				$re["recv"][0]["t"].="/ใบแจ้งหนี้ "  ;
+				$re["payu_credit"]=[
+					["t"=>"***ใบเสร็จนี้ มียอดค้างชำระ ".number_format($se["head"]["credit"],2,'.',',')." บาท ","lcr"=>"r"]			
+				];	
+			}
 			$re["tail"]=[["t"=>$this->receipt->receipt58->sale->foot,"lcr"=>"c"]];
 			for($i=0;$i<$this->printer->feed;$i++){
 				$re["line_feed_".$i]=[["t"=>" ","lcr"=>"l"]];
+			}
+		}
+		return $re;
+	}
+	private function cutValue0(array $payu):array{
+		$re=[];
+		foreach($payu as $k=>$v){
+			if((float) $v["value"] > 0){
+				$re[$k]=$v;
 			}
 		}
 		return $re;
@@ -453,6 +498,9 @@ class bill58 extends main{
 		$sku=$this->getStringSqlSet($sku);
 		$sql=[];
 		$sql["head"]="SELECT  `bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`, 
+				IFNULL(`bill_sell`.`min`,0) AS `min`,IFNULL(`bill_sell`.`mout`,0) AS `mout`,
+				IFNULL(`bill_sell`.`credit`,0) AS `credit`,
+				GetPayuArrRefData_(`bill_sell`.`payu_json`) AS `payu_json`,
 				`bill_sell`.`price` AS `price`, `bill_sell`.`date_reg` AS `date_reg`,
 				`user_ref`.`sku` AS `user_sku`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,

@@ -45,7 +45,7 @@ class payu extends main{
 			$sku_root=$this->getStringSqlSet($_POST["sku_root"]);
 			$sql=[];
 			$sql["set"]="SELECT @sku_root:=".$sku_root.";";
-			$sql["del"]="DELETE FROM `payu` WHERE `sku_root`=".$sku_root." AND `sku_root` != 'defaultroot'";
+			$sql["del"]="DELETE FROM `payu` WHERE `sku_root`=".$sku_root." AND `sku_root` != 'defaultroot' AND `sku_root` != 'creditroot' ";
 			//print_r($sql);
 			$re = $this->metMnSql($sql,[]);
 			//print_r($re);
@@ -527,7 +527,7 @@ class payu extends main{
 			$mg=$se[$i]["money_type"];
 			$mn=($mg !="" && isset($this->money_type[$mg]))?$this->money_type[$mg]["name"]:"";
 			echo '<tr'.$cm.'><td class="r">'.($se[$i]["id"]).'</td>
-				<td class="l"><div class="img48"><img src="img/gallery/64x64_'.$se[$i]["icon"].'"  alt="'.$sn.'" class="viewimage"  onclick="G.view(this)"  title="เปิดดูภาพ"/></div></td>
+				<td class="l"><div class="img48"><img src="img/gallery/64x64_'.$se[$i]["icon"].'"  alt="'.$sn.'" class="viewimage"  onclick="G.view(this)"  title="เปิดดูภาพ" onerror="this.src=\'img/pos/64x64_null.png\'" /></div></td>
 				<td class="l">'.$sku.'</td>
 				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a></td>
 				<td class="l">'.$mn.'</td>
@@ -549,7 +549,7 @@ class payu extends main{
 		}
 	}
 	public function getAllPayu():array{
-		$sh=$this->defaultSearch();
+		//$sh=$this->defaultSearch($for);
 		$re=[];
 		$sql=[];
 		$limit_page=(($this->page-1)*$this->per).",".($this->per+1);
@@ -560,11 +560,12 @@ class payu extends main{
 		$sql["get"]="SELECT `id`,`name`,`icon`,`sku`,`sku_root`,IFNULL(`money_type`,'ddd') AS `money_type`
 			FROM `payu` 
 			".$this->sh." 
-			ORDER BY `id` DESC LIMIT ".$limit_page."";
+			ORDER BY `id`  LIMIT ".$limit_page."";
 		$se=$this->metMnSql($sql,["count","get"]);
 		if($se["result"]){
 			$re=$se["data"];//["get"];
 		}
+		//print_r($sql);
 		return $re;
 	}
 }

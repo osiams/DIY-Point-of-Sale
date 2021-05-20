@@ -10,21 +10,149 @@ class account_rca extends account{
 		$this->fl="";
 		$this->lid=0;
 		$this->sh="";
+		$this->title_b="ลูกหนี้ ค้างชำระ";
+		$this->title_c="";
+		$this->form_py=null;
 	}
 	public function run(){
 		$this->page=$this->setPageR();
-		$this->defaultAccountRcaPage();
+		$this->addDir("?a=".$this->a."&amp;b=".$this->b."",$this->title_b);
+		if(isset($_GET["c"])){
+			if($_GET["c"]=="pay"){
+				if(isset($_POST["member_id"])&&preg_match("/^[0-9]{1,10}$/",$_POST["member_id"])){
+					$this->title_c="ชำระ ค้างจ่าย";
+					$file = "php/form_selects.php";
+					require($file);	
+					$this->payPage();					
+				}else{
+					$this->defaultAccountRcaPage();
+				}
+			}else{
+				$this->defaultAccountRcaPage();
+			}
+		}else{
+			$this->defaultAccountRcaPage();
+		}
+	}
+	private function payPage():void{
+		$mid=(int) $_POST["member_id"];
+		//echo $mid;
+		$data=$this->payGetData($mid);
+		//print_r($data);
+		$this->addDir("?a=".$this->a."&amp;b=".$this->b."&amp;c=pay",$this->title_c);
+		$this->pageHead(["title"=>$this->title_c." DIYPOS","css"=>["account","form_selects"],"js"=>["account","Ac","form_selects","Fsl"],"run"=>["Ac","Fsl"]]);
+		echo '<div class="content">';
+	
+		echo '	<div class="form">
+			<h1 class="c">'.$this->title_c.'</h1>';
+		$this->payWriteContent($data);		
+		echo '</div></div>';
+		$this->pageFoot();
+	}
+	private function payWriteContent(array $data):void{
+		if(count($data["member"])>0){
+			if(count($data["rca"])>0){
+				$payu_list_id=$this->key("key",7);
+				echo '<div class="account_rca_pay">';
+				echo '<form class="form100" name="account_pay">
+					<input type="hidden" id="'.$payu_list_id.'" data-disabled=",creditroot," name="payu_list" value=",defaultroot," />
+				';
+				echo '<div class="member_info">
+					<p class="th">รายละเอียดผู้ค้างชำระ</p>
+					<p class="info">
+						ชื่อ <span>'.$data["member"]["name"].'</span>
+						นามสกุล <span>'.$data["member"]["lastname"].'</span>
+						เลขที่สมาชิก <span>'.$data["member"]["sku"].'</span>
+						เบอร์โทรศัพท์ <span>'.$data["member"]["tel"].'</span>
+					</p>
+					<p class="th">จำนวน '.count($data["rca"]).' ใบเสร็จ ที่มียอดค้างชำระ</p>
+					<p class="l">รายละเอียด</p>';
+				$sum_credit=0;
+				$sum_pay=0;
+				$ar=[];
+				for($i=0;$i<count($data["rca"]);$i++){
+					$sum_credit+=$data["rca"][$i]["rca_credit"];
+					$ar[$data["rca"][$i]["bill_sell_id"]]=[
+						"rca_credit"=>(float) $data["rca"][$i]["rca_credit"],
+						"pay"=>0
+					];
+					if($i==0){
+						echo '<hr>';
+					}
+					echo '<div class="list">
+						<div>
+							<input id="account_cb_'.$data["rca"][$i]["bill_sell_id"].'" name="cb_'.$data["rca"][$i]["bill_sell_id"].'" value="'.$data["rca"][$i]["bill_sell_id"].'" type="checkbox"  checked /> 
+							#'.$data["rca"][$i]["sku"].' วันที่ '.$data["rca"][$i]["date_reg"].' ยอดค้างชำระ '.number_format($data["rca"][$i]["rca_credit"],2,".",",").'
+						</div>
+						<div id="account_div_pay_'.$data["rca"][$i]["bill_sell_id"].'" class="r">
+							ยอดเงินที่ต้องการชำระ <span id="account_pay_'.$data["rca"][$i]["bill_sell_id"].'" class="pay_list">'.number_format($data["rca"][$i]["rca_credit"],2,".",",").'</span>
+						</div>
+					</div>
+					<hr>';
+				}
+				echo '<div class="sum">
+					<div>จำนวนยอดค้างชำระทั้งหมด <span class="pay">'.number_format($sum_credit,2,".",",").'</span></div>
+					<div>จำนวนที่ต้องการชำระ <span class="pay"><input type="number" step="0.01" / value="" /></span></div>
+					<div>ยอดค้างชำระคงเหลือ <span class="pay">'.number_format($sum_credit,2,".",",").'</span></div>
+				';
+				echo '</div>';
+						echo '<div id="account_rca_payu" class="payu"><div><span>รูปแบบ การรับชำระ</span></div>';
+						$payu_json='{"defaultroot":0}';
+						$this->form_py=new form_selects("payu","คู่ค้า","account_pay",$this->key("key",7),$payu_list_id);	
+						$this->form_py->writeForm($payu_json);
+						/*for($i=0;$i<count($data["payu"]);$i++){	
+							echo '<div>
+								<img src="img/gallery/32x32_'.$data["payu"][$i]["icon"].'" onerror="this.src=\'img/gallery/32x32_null.png\'" />
+								'.htmlspecialchars($data["payu"][$i]["name"]).'
+								<input type="number" step="0.01"/>
+							</div>';
+						}*/
+						echo '</div>';
+				
+				echo '</div>';
+				
+				echo '<br /><p class="c"><input type="button" value="ชำระเงิน" onclick="location.href=\'?a='.$this->a.'&amp;b=regis\'" /></p>';
+				echo '</form>';	
+				echo '</div>';	
+				$json=json_encode($ar);
+				echo '<script type="text/javascript">let js='.$json.';Ac.paySetListPay(js)</script>';		
+			}
+		}
+	}
+	private function payGetData(int $member_id):array{
+		$re=["member"=>[],"rca"=>[]];
+		$sql=[];
+		$sql["set"]="SELECT @member_id:=".$member_id."";
+		$sql["get_member"]="SELECT `id`,`name`,IFNULL(`lastname`,'') AS `lastname`,IFNULL(`icon`,'null.png') AS `icon`,`sku`,`sku_root` ,
+				`sku`,IFNULL(`tel`,'-') AS `tel`,`mb_type`,`credit`
+			FROM `member` WHERE `id`=@member_id";
+		$sql["get_rca"]="SELECT `rca`.`bill_sell_id`,`rca`.`credit` AS `rca_credit`	,`rca`.`date_reg`,
+				`bill_sell`.`sku`	,`bill_sell`.`credit` AS `bill_sell_credit`
+			FROM `rca`
+			LEFT JOIN `bill_sell`
+			ON(`rca`.`bill_sell_id`=`bill_sell`.`id`)
+			WHERE `rca`.`member_id`= @member_id AND `rca`.`credit` > 0;
+		";	
+		$sql["get_payu_all"]="SELECT `payu`.`name`	,`payu`.`sku_root`,IFNULL(`payu`.`icon`,'') AS `icon`
+			FROM `payu`
+			WHERE `payu`.`money_type` != 'cd' ORDER BY `id`";
+		$se=$this->metMnSql($sql,["get_member","get_rca","get_payu_all"]);
+		//print_r($se);
+		if($se["result"]){
+			$re["member"]=$se["data"]["get_member"][0];
+			$re["rca"]=$se["data"]["get_rca"];
+			$re["payu"]=$se["data"]["get_payu_all"];
+		}
+		return $re;
 	}
 	protected function defaultAccountRcaPage(){
 		$this->defaultPageSearch();
 		$data=$this->getAllMember();
-		$tl="ลูกหนี้ ค้างชำระ";
-		$this->addDir("",$tl);
-		$this->pageHead(["title"=>$tl." DIYPOS","css"=>["account"],"js"=>["account","Ac"],"run"=>["Ac"]]);
+		$this->pageHead(["title"=>$this->title_b." DIYPOS","css"=>["account"],"js"=>["account","Ac"],"run"=>["Ac"]]);
 		echo '<div class="content">';
 	
 		echo '	<div class="form">
-			<h1 class="c">'.$tl.'</h1>';
+			<h1 class="c">'.$this->title_b.'</h1>';
 		$this->writeDashboard($data);	
 		echo '	<div class="pn_search">
 				<form class="form100" name="pd_search" action="" method="get">
@@ -46,12 +174,6 @@ class account_rca extends account{
 		echo '<br /><p class="c"><input type="button" value="เพิ่ม'.$this->title.'" onclick="location.href=\'?a='.$this->a.'&amp;b=regis\'" /></p>';
 		echo '</div></div>';
 		$this->pageFoot();
-		
-		/*echo '<div class="content">
-			<h2>'.$tl.'</h2>';
-		$this->writeRca();
-		echo '</div>';
-		$this->pageFoot();*/
 	}
 	private function writeRca():void{
 		$this->getRca();
@@ -74,7 +196,10 @@ class account_rca extends account{
 	private function writeDashboard(array $dt):void{
 		$count=$dt["count"][0]["count"];
 		$sum=$dt["sum"][0]["sum"];
-		$per=round($sum/$count,2);
+		$per=0;
+		if($count>0){
+			$per=round($sum/$count,2);
+		}
 		echo '<div>
 			<div class="account_rca_dashboard"><div>';
 		echo '<div class="rca_n_member">จำนวน ลูกหนี้<div>'.number_format($count,0,".",",").'</div></div>
@@ -87,8 +212,9 @@ class account_rca extends account{
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
 		$dt=$data;
 		$se=$dt["get"];
+		//print_r($data);
 		echo '<form class="form100" name="'.$this->a.'" method="post">
-			<input type="hidden" name="sku_root" value="" />';
+			<input type="hidden" name="member_id" value="" />';
 		echo '	<table class="table_view_all_member" style="width:100%;">
 				<tr><th>ที่</th>
 				<th>รูป</th>
@@ -127,7 +253,7 @@ class account_rca extends account{
 				<td class="r">'.number_format($se[$i]["credit"],2,'.',',').'</td>
 				<td class="action">
 						<a onclick="G.action(this)" data-width="350" title="เลือกกระทำ">⚙️</a>
-						<a onclick="Pd.productEdit(\''.$se[$i]["sku_root"].'\')" title="ชำระเงิน">💰</a>
+						<a onclick="Ac.toPay(\''.$se[$i]["id"].'\')" title="ชำระเงิน">💰</a>
 						<a onclick="Pd.productEdit(\''.$se[$i]["sku_root"].'\')" title="ประวัติ ยอดค้างชำระ/ชำระ">🕐</a>
 					</td>
 				</tr>';
@@ -151,14 +277,14 @@ class account_rca extends account{
 				$limit_page=$this->per+1;
 		}
 		$sql["count"]="SELECT COUNT(*) AS `count`  FROM `member` WHERE `credit` > 0 ";
-		$sql["sum"]="SELECT SUM(`credit`) AS `sum`  FROM `member` WHERE `credit` > 0 ";
+		$sql["sum"]="SELECT IFNULL(SUM(`credit`),0) AS `sum`  FROM `member` WHERE `credit` > 0 ";
 		$sql["get"]="SELECT `id`,`name`,IFNULL(`lastname`,'') AS `lastname`,IFNULL(`icon`,'null.png') AS `icon`,`sku`,`sku_root` ,
 				`mb_type`,`credit`
 			FROM `member` 
 			".($where)." 
 			ORDER BY `credit` DESC LIMIT ".$limit_page."";
 		$se=$this->metMnSql($sql,["count","sum","get"]);
-		//print_r($sql);
+		//print_r($se);
 		if($se["result"]){
 			$re=$se["data"];//["get"];
 		}

@@ -92,10 +92,12 @@ class factory extends main{
 				INSERT INTO `group` (`id`,`sku`,`sku_key`,`sku_root`,`d1`,`name`) VALUES (1,'default','defaultroot','defaultroot','defaultroot','_ไม่ระบุ') 
 				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`d1`='defaultroot',`name`='_ไม่ระบุ';
 			";
-			$sql["default_payu"]="
-				INSERT INTO `payu` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`money_type`,`icon`) VALUES (1,'default','defaultroot','defaultroot','เงินสด','ca','defaultpayudefaultroot.png') 
+			$sql["default_payu"]="BEGIN NOT ATOMIC
+				INSERT INTO `payu` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`money_type`,`icon`) VALUES (1,'cash','defaultroot','defaultroot','เงินสด','ca','defaultpayudefaultroot.png') 
 				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`name`='เงินสด',`money_type`='ca',`icon`='defaultpayudefaultroot.png';
-			";
+				INSERT INTO `payu` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`money_type`,`icon`) VALUES (2,'credit','creditroot','creditroot','เงินเชื่อ','cd','defaultpayucreditroot.png') 
+				ON DUPLICATE KEY UPDATE `sku`='credit',`sku_key`='creditroot',`sku_root`='creditroot',`name`='เงินเชื่อ',`money_type`='cd',`icon`='defaultpayucreditroot.png';
+			END;";
 			$sql["default_gallery"]="
 				INSERT INTO `gallery` (`id`,`sku_key`,`name`,`a_type`,`mime_type`,`md5`,`user`,`size`,`width`,`height`) 
 					VALUES (1,'defaultpayudefaultroot','เงินสด','payu','image/png','ba5a9696072f8b83516e2dac2f75ef5c','".$user."',34102,480,480) 
@@ -148,6 +150,7 @@ class factory extends main{
 			$sql["ref_user1"]=$this->ref("user","sku_key","administratorroot");
 			$sql["ref_user2"]=$this->ref("user","sku_key","systemroot");
 			$sql["ref_payu1"]=$this->ref("payu","sku_key","defaultroot");
+			$sql["ref_payu2"]=$this->ref("payu","sku_key","creditroot");
 			$sql["ref_it1"]=$this->ref("it","sku_key","defaultroot");
 			$sql["ref_it2"]=$this->ref("it","sku_key","proot");
 			$sql["ref_it3"]=$this->ref("it","sku_key","xroot");

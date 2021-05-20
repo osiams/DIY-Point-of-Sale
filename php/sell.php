@@ -226,8 +226,11 @@ class sell extends main{
 				IF @payu_sum < @sums AND ABS(@payu_sum - @sums) >= 1 THEN
 					SET @message_error=CONCAT(@message_error,'ยอดชำระรวม น้อยกว่า ค่าสินค้า ');
 				END IF;
-				IF @credit > 0 AND @payu_sum > @sums AND ABS(@payu_sum - @credit) >= 1 THEN
-					SET @message_error=CONCAT(@message_error,'ยอดค้างชำระ เกิน ยอดค้างชำระจริง');
+				#IF @credit > 0 AND @payu_sum > @sums AND ABS(@payu_sum - @credit) >= 1 THEN
+				#	SET @message_error=CONCAT(@message_error,'ยอดค้างชำระ เกิน ยอดค้างชำระจริง');
+				#END IF;
+				IF @drawers_id IS NULL THEN
+					SET @message_error=CONCAT(@message_error,'ไม่สามารถทำรายการได้ เนื่องจาก เครื่องคุณไม่ได้ระบุลิ้นชักเก็บเงิน');
 				END IF;
 			END ;
 		";

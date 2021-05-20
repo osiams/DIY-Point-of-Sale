@@ -14,6 +14,7 @@ class form_selects{
 	ctAddPartner(	a						,callback=null		,form_name		,dialog_id=null		,display_id,
 							partner_list_id	,get_type="new"	,page=1			,oshid=null			,ipshid=null,
 							lid=0					,fl="name"				,tx=""				,ofc=1){
+		let did=event.target					
 		if(this.partner[display_id]==undefined){
 			this.partner[display_id]={}
 			this.search[display_id]={}
@@ -29,7 +30,7 @@ class form_selects{
 		
 		let dt={"data":{"a":"form_selects","b":a,"callback":callback,"dialog_id":dialog_id,"display_id":display_id,
 				"from_name":form_name,"partner_list":partner_list,"partner_list_id":partner_list_id,"get_type":get_type,"page":page,
-				"oshid":oshid,"ipshid":ipshid,"lid":lid,"fl":fl,"tx":tx,"ofc":ofc},"result":Fsl.getListPartnerResult,"error":Fsl.getListPartnerError}		
+				"oshid":oshid,"ipshid":ipshid,"lid":lid,"fl":fl,"tx":tx,"ofc":ofc,"for":""},"result":Fsl.getListPartnerResult,"error":Fsl.getListPartnerError}
 		if(a=="product"){
 			if((eval(callback)).partner!=null){
 				dt.data.partner=eval(callback).partner
@@ -77,6 +78,11 @@ class form_selects{
 		let partner_list = form.get("partner_list")
 		let ofc = form.get("ofc")
 		let tsh=tsh_prop[a]
+		let disabled={};
+		if(this.main.id(partner_list_id).getAttribute("data-disabled")!=null){
+			let dab=this.main.id(partner_list_id).getAttribute("data-disabled")
+			disabled=F.arrayToObjectKey(F.valueListToArray(dab))
+		}
 		let cpn=this.main.ce("div",{"id":"cpn0_partner_"+display_id,"class":"selected_list_partner_search"})
 			let oshid="option_search_partner_id_"+display_id
 			let pn_sh=this.main.ce("select",{"id":oshid})
@@ -104,9 +110,18 @@ class form_selects{
 										
 				for(let i=0;i<arr.length;i++){
 					let ckrid = "checkboxid_"+arr[i]["sku_root"]
+					let diab=0
+					M.l(disabled)
+					if(disabled.hasOwnProperty(arr[i]["sku_root"])){
+						 diab=1
+					}
+					
 					let div1=this.main.ce("div",{"class":"i"+((i%2)+1)})
 						let ck = this.main.ce("input",{"type":"checkbox","id":ckrid,"name":"checkbox_"+rid,"data-icon":arr[i]["icon"],"data-name":arr[i]["name"],"value":arr[i]["sku_root"],"onchange":"Fsl.selectCkPartner(this,'"+display_id+"')"})
 				
+						if(diab==1){
+							ck.disabled = true
+						}
 						if(partner_has.includes(arr[i]["sku_root"]) || this.partner[display_id].hasOwnProperty(arr[i]["sku_root"]) ){
 							ck.checked = true
 						}	
@@ -124,8 +139,14 @@ class form_selects{
 							//let br=this.main.ce("span",{})
 							this.main.end(boc,[tn2])
 						}
-						let s=this.main.ce("div",{"data-rid_close":rid,"onclick":"Fsl.select1Partner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"',"+ofc+")"})
-						this.main.end(s,[this.main.cn("⬆")])
+						let s=null
+						if(diab==0){
+							s=this.main.ce("div",{"data-rid_close":rid,"onclick":"Fsl.select1Partner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"',"+ofc+")"})
+							this.main.end(s,[this.main.cn("⬆")])
+						}else{
+							s=this.main.ce("div",{})
+							this.main.end(s,[this.main.cn("-")])
+						}
 					this.main.end(div1,[ck,div_img,boc,s])
 					this.main.end(d1,[div1])
 					lid=arr[i]["id"]
@@ -599,7 +620,7 @@ class form_selects{
 		}
 	}
 	getListPartnerLoadError(re,form,bt){
-
+		alert(55555);
 	}
 	loadSetPartner(re,form,bt){
 		let a=form.get("b")

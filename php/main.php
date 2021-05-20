@@ -756,6 +756,7 @@ class main{
 		array_push($this->dir,$t);
 	}
 	protected function pageFoot(){
+		//print_r($_SESSION);
 		echo '</body></html>';
 	}
 	protected function checkSet(string $table,array $dt,string $type="post"):array{

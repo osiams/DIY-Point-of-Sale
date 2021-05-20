@@ -928,6 +928,13 @@ class F{
 		}
 		return re
 	}
+	static arrayToObjectKey(arr){
+		let o={}
+		for(let i=0;i<arr.length;i++){
+			o[arr[i]]=null
+		}
+		return o
+	}
 	static isEnter(event){
 		let key=event.code
 		if(key=="NumpadEnter"||key=="Enter"){	

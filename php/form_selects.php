@@ -111,6 +111,7 @@ class form_selects extends main{
 			</table>';
 			echo '<script type="text/javascript">let value='.$json_value.';Fsl.setLoadPartner(\'partner\',\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\',value)</script>';
 		}else if($this->a=="payu"){
+
 			echo '<table id="'.$this->id.'" class="table_select_payu r">
 				<tr><td colspan="4" class="r">
 					<input type="button" value="เพิ่ม/แก้ไข"  onclick="Fsl.ctAddPartner(\'payu\',null,\''.$this->form_name.'\',null,\''.$this->id.'\',\''.$this->partner_list.'\')">
@@ -191,7 +192,7 @@ class form_selects extends main{
 				}
 			}
 		}
-		//print_r($re);
+		//print_r($se);
 		return $re;
 	}
 	private function fetchPayuSelectPage():void{

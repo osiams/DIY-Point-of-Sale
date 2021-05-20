@@ -37,3 +37,20 @@ td.action >  a:nth-child(3){display:none;}
 .account_rca_dashboard > div{display:grid;grid-template-columns:50% 50%;grid-gap:5px;width:calc(100% - 6px);}
 .account_rca_dashboard > div > div.rca_n_member{/*background-image: linear-gradient(FireBrick, red);*/background-color:FireBrick;padding:5px 3px 0px 3px;color:white}
 .account_rca_dashboard > div >   div > div:nth-child(1){font-family: monospace;font-size:1.5em;font-weight:bold;padding:5px 0px;}
+
+.account_rca_pay{max-width:640px;width:calc(100% - 24px);border:1px solid gray;padding:10px 10px 20px 10px;}
+.account_rca_pay > form > div.member_info{}
+.account_rca_pay  > form> div.member_info> p.th{text-align:center;font-weight:bold;text-decoration: underline;margin:5px 2px;}
+.account_rca_pay  > form> div.member_info> p.info{text-align:left;text-indent: 50px;}
+.account_rca_pay > form > div.member_info  span{display:inline-block;position:relative;left:-5px;text-indent: 0px;padding: 0px 10px 0px 10px;border-bottom:2px dotted black;color:blue}
+.account_rca_pay > form > div.member_info  span.pay_list{text-indent: 0px;padding: 0px 10px 0px 10px;border-bottom:2px dotted black;color:blue;text-align:right;width:100px;}
+.account_rca_pay > form > div.member_info  span.pay{text-indent: 0px;padding: 0px 10px 0px 10px;border-bottom:2px dotted black;color:black;text-align:right;width:120px;font-weight:bold;}
+.account_rca_pay  > form> div.member_info> div.list{text-align:left}
+.account_rca_pay  > form> div.member_info> div.list > div:nth-child(2){display:none}
+.account_rca_pay  > form> div.member_info> div.list  input[type="checkbox"]{ pointer-events: none;}
+.account_rca_pay  > form> div.member_info> div.sum{text-align:right;padding-right:20px;}
+.account_rca_pay  > form> div.member_info> div.sum input{width:calc(100% - 4px); direction: rtl;font-weight:bold;color:blue;padding-right:12px;}
+.account_rca_pay  > form> div.member_info> div.sum >div{padding:5px 0px;}
+.account_rca_pay  > form> div.member_info> div.payu{border:1px solid gray;margin-top:20px;display:none;}
+.account_rca_pay  > form> div.member_info> div.payu >div:nth-child(1){position:relative;top:-12px;text-align:right;padding-right:20px;}
+.account_rca_pay  > form> div.member_info> div.payu >div:nth-child(1) > span{background-color:white;padding:1px 5px;border-bottom:0px}

@@ -12,8 +12,8 @@ td{vertical-align: middle;}
 .billssellsell  tr > td:nth-child(2) > div:nth-child(3){display:none;}
 .billssellsell  tr > td:nth-child(2) > div:nth-child(4){display:none;}
 
-.content > div{display:inline-block;margin:0px auto;padding:0px;}
-.billlsselllist {}
+.content > div{display:inline-block;margin:0px auto;padding:0px;width:calc(100% - 6px);max-width:640px;}
+.billlsselllist {width:calc(100% - 6px);max-width:640px;}
 .billlsselllist  tr > td:nth-child(3) > div:nth-child(1){text-align:left;}
 .billlsselllist  tr > td:nth-child(3) > div:nth-child(2){display:none;}
 .billlsselllist  tr > td:nth-child(4) > div:nth-child(2){display:none;}
