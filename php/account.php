@@ -7,7 +7,6 @@ class account extends main{
 		$this->addDir("?a=".$this->a,$this->title);
 	}
 	public function run(){
-		
 		$b=["account_rca"];
 		if(isset($_GET["b"])&&in_array($_GET["b"],$b)){
 			$t=$_GET["b"];
@@ -21,12 +20,12 @@ class account extends main{
 		}
 	}
 	public function fetch(){
-		$p=[];
+		$p=["account_rca"];
 		if(isset($_POST["b"])&&in_array($_POST["b"],$p)){
 			$t=$_POST["b"];
-			if($t=="tool_pdtxt"){
+			if($t=="account_rca"){
 				require("php/".$t.".php");
-				eval("(new ".$t."())->run();");
+				eval("(new ".$t."())->fetch();");
 			}
 		}else{
 			header('Content-type: application/json');

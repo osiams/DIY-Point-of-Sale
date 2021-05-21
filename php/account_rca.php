@@ -14,6 +14,22 @@ class account_rca extends account{
 		$this->title_c="";
 		$this->form_py=null;
 	}
+	public function fetch(){print_r($_POST);
+		$re=["result"=>false,"message_error"=>"","data"=>[]];
+		/*if(isset($_POST["b"])&&$_POST["b"]=="getmember1"){
+			if(isset($_POST["sku_root"])&&$this->isSKU($_POST["sku_root"])){
+				$se=$this->fetchGetMember1($_POST["sku_root"]);
+				if(count($se["data"])>0){
+					$re["result"]=true;
+					$re["data"]=$se["data"];
+				}else{
+					$re["message_error"]=$se["message_error"];
+				}
+			}		
+		}*/
+		header('Content-type: application/json');
+		echo json_encode($re);
+	}
 	public function run(){
 		$this->page=$this->setPageR();
 		$this->addDir("?a=".$this->a."&amp;b=".$this->b."",$this->title_b);
@@ -81,7 +97,7 @@ class account_rca extends account{
 					}
 					echo '<div class="list">
 						<div>
-							<input id="account_cb_'.$data["rca"][$i]["bill_sell_id"].'" name="cb_'.$data["rca"][$i]["bill_sell_id"].'" value="'.$data["rca"][$i]["bill_sell_id"].'" type="checkbox"  checked /> 
+							<input data-rca_credit="'.$data["rca"][$i]["rca_credit"].'" id="account_cb_'.$data["rca"][$i]["bill_sell_id"].'" name="cb_'.$data["rca"][$i]["bill_sell_id"].'" value="'.$data["rca"][$i]["bill_sell_id"].'" type="checkbox"  /> 
 							#'.$data["rca"][$i]["sku"].' วันที่ '.$data["rca"][$i]["date_reg"].' ยอดค้างชำระ '.number_format($data["rca"][$i]["rca_credit"],2,".",",").'
 						</div>
 						<div id="account_div_pay_'.$data["rca"][$i]["bill_sell_id"].'" class="r">
@@ -92,8 +108,8 @@ class account_rca extends account{
 				}
 				echo '<div class="sum">
 					<div>จำนวนยอดค้างชำระทั้งหมด <span class="pay">'.number_format($sum_credit,2,".",",").'</span></div>
-					<div>จำนวนที่ต้องการชำระ <span class="pay"><input type="number" step="0.01" / value="" /></span></div>
-					<div>ยอดค้างชำระคงเหลือ <span class="pay">'.number_format($sum_credit,2,".",",").'</span></div>
+					<div>จำนวนที่ต้องการชำระ <span class="pay"><input type="number" name="pay" step="0.01" / value="" data-pay_old="'.number_format($sum_credit,2,".",",").'" /></span></div>
+					<div>ยอดค้างชำระคงเหลือ <span class="pay" id="account_rca_balance">'.number_format($sum_credit,2,".",",").'</span></div>
 				';
 				echo '</div>';
 						echo '<div id="account_rca_payu" class="payu"><div><span>รูปแบบ การรับชำระ</span></div>';
@@ -111,11 +127,11 @@ class account_rca extends account{
 				
 				echo '</div>';
 				
-				echo '<br /><p class="c"><input type="button" value="ชำระเงิน" onclick="location.href=\'?a='.$this->a.'&amp;b=regis\'" /></p>';
+				echo '<br /><p class="c"><input type="button" value="ชำระเงิน" onclick="Ac.pay()" /></p>';
 				echo '</form>';	
 				echo '</div>';	
 				$json=json_encode($ar);
-				echo '<script type="text/javascript">let js='.$json.';Ac.paySetListPay(js)</script>';		
+				echo '<script type="text/javascript">Ac.accountRcaRun();let js='.$json.';Ac.paySetListPay(js)</script>';		
 			}
 		}
 	}

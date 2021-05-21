@@ -33,11 +33,11 @@ class main{
 	end(ob,childs){for(let i=0;i<childs.length;i++){ob.appendChild(childs[i])}}
 	rid(n=15){let t='';for(let i=0;i<n;i++){t+=String.fromCharCode(Math.floor((Math.random()*26 ) + 65))}return 'ID_'+t}
 	getXY(did){return {"left":did.getBoundingClientRect().left+window.scrollX,"top":did.getBoundingClientRect().top+window.scrollY}}
-	nb(int,n_float=2){
+	nb(int,n_float=2,com=","){
 		if(n_float!=0){
-			return (parseFloat(int)).toFixed(n_float).replace(/\d(?=(\d{3})+\.)/g, '$&,')
+			return (parseFloat(int)).toFixed(n_float).replace(/\d(?=(\d{3})+\.)/g, '$&'+com)
 		}else{
-			return String(int).replace(/(.)(?=(\d{3})+$)/g,'$1,')
+			return String(int).replace(/(.)(?=(\d{3})+$)/g,'$1'+com)
 		}
 	}
 	jsonToObject(json,object_default={}){
