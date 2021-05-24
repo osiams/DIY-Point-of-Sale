@@ -7,3 +7,4 @@
 
 .table_view_all_member  th:nth-child(2){width:48px;}
 .table_view_all_member  td:nth-child(2){width:48px;}
+.table_view_all_member p.s_credit{text-align:right;color:red}

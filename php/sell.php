@@ -430,7 +430,7 @@ class sell extends main{
 									`money_balance`	,
 									`date_reg`
 								)VALUES(
-									@min			,(@payu_sum-@sums)	,'sell'						,@sku	,@ip,
+									@min			,(@payu_sum-@sums)	,'sell'					,@sku	,@ip,
 									@drawers_id	,@user, 
 									(@money_balance+@min - (@payu_sum-@sums)),
 									date_reg
@@ -611,11 +611,5 @@ class sell extends main{
 	}
 	
 		return $re;
-	}
-	private function jsonDocToArrayKeyDoc(string $json_doc):string{
-		$a=json_decode($json_doc,true);
-		$b=array_keys($a);
-		$c=json_encode($b);
-		return $c;
 	}
 }

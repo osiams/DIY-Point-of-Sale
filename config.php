@@ -22,7 +22,7 @@ define("CF", [
 	"timezone"=>"Asia/Bangkok",
 #ตำแหน่งผู้ใช้ ลำดับตามบรรทัดมี 10 ระดับเท่านั้น
 	"userceo"=>[
-		["name"=>"[[SYSTEM]]","a"=>["cd","me"]],
+		["name"=>"[[SYSTEM]]","a"=>["cd","me","fetch"]],
 		["name"=>"พักหรือออก","a"=>[]],
 		["name"=>"พนักงานขาย","a"=>["sell","me","fetch","product","bills","setting","bill58","barcode","qrc","group","partner","prop","payu","fileupload","gallery","member","device","time","tran","account","account_rca"]],
 		["name"=>"-","a"=>["me"]],

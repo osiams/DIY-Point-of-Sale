@@ -723,11 +723,15 @@ class member extends main{
 				}
 				
 			}
+			$s_credit="";
+			if($se[$i]["credit"]>0){
+				$s_credit='<p class="s_credit">ค้างชำระ '.number_format($se[$i]["credit"],2,".",",").' บ.</p>';
+			}
 			$sn=strlen(trim($se[$i]["sku"]))>0?substr(trim($se[$i]["sku"]),0,15):(mb_substr(trim($se[$i]["name"]),0,15));
 			echo '<tr'.$cm.'><td class="r">'.($se[$i]["id"]).'</td>
 				<td class="l"><div class="img48"><img  class="viewimage" src="img/gallery/64x64_'.$se[$i]["icon"].'"   onerror="this.src=\'img/pos/64x64_null.png\'" alt="'.$sn.'" onclick="G.view(this)"  title="เปิดดูภาพ" /></div></td>
 				<td class="l">'.$sku.'</td>
-				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.' '.$lastname.'</a></td>
+				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.' '.$lastname.'</a>'.$s_credit.'</td>
 				<td class="l">'.$this->mb_type[$se[$i]["mb_type"]].'</td>
 				<td class="action">
 					<a onclick="Mb.edit(\''.$se[$i]["sku_root"].'\')" title="แก้ไข">📝</a>
@@ -756,7 +760,7 @@ class member extends main{
 		}
 		$sql["count"]="SELECT COUNT(*) AS `count`  FROM `member`";
 		$sql["get"]="SELECT `id`,`name`,IFNULL(`lastname`,'') AS `lastname`,IFNULL(`icon`,'null.png') AS `icon`,`sku`,`sku_root` ,
-				`mb_type`
+				`mb_type`,IFNULL(`credit`,0) AS `credit`
 			FROM `member` 
 			".$this->sh." 
 			ORDER BY `id` DESC LIMIT ".$limit_page."";

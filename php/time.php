@@ -52,6 +52,7 @@ class time extends main{
 		$sql=[];
 		$sql["set"]="SELECT 
 			@result:=0,
+			@time_id:='".$_SESSION["time_id"]."',
 			@time_closeto:=".$time_closeto.",
 			@message_error:='',
 			@TEST:='',
@@ -76,16 +77,17 @@ class time extends main{
 				FROM `device_pos` WHERE `ip`= @ip AND `user`=@user AND `onoff`='1' LIMIT 1;
 			IF r.onoff='1' && r.user=@user && r.ip=@ip THEN
 				INSERT INTO `time`(
-					`ip`				,`drawers_id`	,`user`		,`money_start`		,`money_balance`	,
+					`id`	,`ip`				,`drawers_id`	,`user`		,`money_start`		,`money_balance`	,
 					`date_reg`	,`date_exp`
 				)VALUES(
-					@ip				,r.drawers_id		,@user		,r.money_start		,r.money_balance	,
+					@time_id	,@ip				,r.drawers_id		,@user		,r.money_start		,r.money_balance	,
 					r.date_reg		,NOW()
-				);
-				 SET lastid=(SELECT LAST_INSERT_ID());
-				 IF lastid > 0 THEN
+				) ON DUPLICATE KEY UPDATE `ip`=@ip,`drawers_id`=r.drawers_id,`user`=@user,`money_start`=r.money_start,
+					`date_reg`=r.date_reg,`date_exp`=NOW();
+				# SET lastid=(SELECT LAST_INSERT_ID());
+				 IF @time_id > 0 THEN
 					UPDATE `device_pos` 
-						SET `time_id`=lastid ,`onoff`='0' ,`money_start`=`money_balance`,`user`=NULL ,`date_reg`=NULL
+						SET `time_id`=@time_id,`onoff`='0' ,`money_start`=`money_balance`,`user`=NULL ,`date_reg`=NULL
 						WHERE `ip`=@ip;
 					SET @result=1;
 				END IF;
@@ -369,15 +371,29 @@ class time extends main{
 	}
 	private function timeRegis():void{
 		$sql=[];
+		$sql["set"]="SELECT @time_id:=(SELECT IFNULL((SELECT `time_id` FROM `device_pos` WHERE `ip`='".$_SESSION["ip"]."' AND `onoff`='1' AND `user` = '".$_SESSION["sku_root"]."' ),0));
+		";
 		$sql["run"]="BEGIN NOT ATOMIC 
+			IF @time_id=0 THEN
+				INSERT INTO `time` (`ip`)VALUES(NULL);
+				SET @time_id=(SELECT LAST_INSERT_ID());
+				DELETE FROM `time` WHERE `id`=@time_id;
+			END IF;
 			UPDATE `device_pos` SET 
 				`user`='".$_SESSION["sku_root"]."',
 				`date_reg`=NOW(),
+				`time_id`=@time_id,
 				`onoff`='1'
 			WHERE `ip`='".$_SESSION["ip"]."' AND (`onoff`='0' OR `onoff` IS NULL) AND (`user` != '".$_SESSION["sku_root"]."' OR `user` IS NULL) ;
 		END";
-		$se=$this->metMnSql($sql,[]);
-		//print_r($sql);exit;
+		$sql["result"]="SELECT @time_id AS `time_id`";
+		$se=$this->metMnSql($sql,["result"]);
+		if($se["result"]){
+			if(isset($se["data"]["result"][0])){
+				$_SESSION["time_id"]=$se["data"]["result"][0]["time_id"];
+			}
+		}
+		//print_r($se);exit;
 	}
 	protected function checkTime():array{
 		$re=["count_user"=>0,"is_regis"=>0,"get_pos"=>[],"get_last_time"=>[]];

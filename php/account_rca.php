@@ -14,22 +14,170 @@ class account_rca extends account{
 		$this->title_c="";
 		$this->form_py=null;
 	}
-	public function fetch(){print_r($_POST);
+	public function fetch(){//print_r($_POST);
 		$re=["result"=>false,"message_error"=>"","data"=>[]];
-		/*if(isset($_POST["b"])&&$_POST["b"]=="getmember1"){
-			if(isset($_POST["sku_root"])&&$this->isSKU($_POST["sku_root"])){
-				$se=$this->fetchGetMember1($_POST["sku_root"]);
-				if(count($se["data"])>0){
-					$re["result"]=true;
-					$re["data"]=$se["data"];
-				}else{
+		if(isset($_POST["c"])){
+			if($_POST["c"]=="pay_rca"){
+				$se=$this->checkSet("rca",["post"=>["sku_root"]],"post",["sku_root","payu_json","note"],["pay"=>"min","payu"=>"payu_json"]);
+				if(!$se["result"]){
 					$re["message_error"]=$se["message_error"];
+				}else{
+					$this->fetchRcaSave($_POST);
 				}
-			}		
-		}*/
+			}
+		}
 		header('Content-type: application/json');
 		echo json_encode($re);
 	}
+	
+	private function fetchRcaSave(array $post):array{
+		$pn=(float) $_POST["pay"];
+		$payu_json0=$this->cutPerfix($_POST["payu"]);
+		$note=(isset($_POST["note"]))?$_POST["note"]:"";
+		$note=$this->getStringSqlSet($note);
+		echo $note."****";
+		$payu_json=$this->getStringSqlSet($payu_json0);
+		$s_payu_key=$this->jsonDocToArrayKeyDoc($payu_json0);//'["a","b",[...]]';
+		$member_sku_root=$this->getStringSqlSet($post["sku_root"]);
+		$py=json_decode($payu_json0,true);
+		$py_sum=0;
+		foreach($py as $k=>$v){
+			if($v>0){
+				$py_sum+=$v;
+			}
+		}
+		$min=0;
+		$mout=0;
+		if(isset($py["defaultroot"])){
+			$min=(float) $py["defaultroot"];
+		}		
+		$sql=[];
+		$sql["set"]="SELECT @result:=0,
+			@message_error:='',
+			@ip:='".$_SESSION["ip"]."',
+			@pay:=".$post["pay"].",
+			@payu_json0:='".$payu_json0."',
+			@payu_json:=".$payu_json.",
+			@s_payu_key:='".$s_payu_key."',
+			@py_sum:=".$py_sum.",
+			@min:=".$min.",
+			@member_sku_root:=".$member_sku_root.",
+			@user:='".$_SESSION["sku_root"]."',
+			@user_id:='".$_SESSION["id"]."',
+			@note=".$note.",
+			@member_id:=(SELECT `id` FROM `member` WHERE `sku_root` =".$member_sku_root." ),
+			@rca_sum:=(SELECT SUM(`credit`) FROM `rca` WHERE `member_id`=@member_id);
+		";
+		
+		$sql["check"]="
+			IF @member_id IS NULL THEN 
+				SET @message_error='เกิดขอผิดพลาด ไม่พบสมาชิก ที่ส่งมา';
+			ELSEIF @rca_sum = 0 THEN
+				SET @message_error='เกิดขอผิดพลาด ไม่รายการค้างจ่ายใด ๆ';
+			ELSEIF @py_sum < @pay THEN
+				SET @message_error='จำนวนเงิน ใน รูปแบบการชำระ น้อยกว่ายอดที่ต้องการชำระ';
+			END IF;			
+		";
+		$sql["run"]="BEGIN NOT ATOMIC 
+			DECLARE done INT DEFAULT FALSE;
+			DECLARE r__ INT DEFAULT 0;
+			DECLARE __r INT DEFAULT 0;
+			DECLARE lastid INT DEFAULT NULL;	
+			DECLARE i_fag INT DEFAULT 0;	
+			DECLARE py_sum FLOAT DEFAULT @py_sum;
+			DECLARE pay FLOAT DEFAULT @pay;
+			DECLARE f_mout FLOAT DEFAULT 0;
+			DECLARE r0 ROW (
+				`id`INT ,
+				`ip`CHAR(25),
+				`onoff` CHAR(1),
+				`drawers_id`INT ,
+				`money_start` FLOAT,
+				`money_balance` FLOAT,
+				`user` CHAR(25),
+				`date_reg` TIMESTAMP
+			);
+			DECLARE r ROW (id INT ,
+										bill_sell_id VARCHAR(25),
+										member_id VARCHAR(25),
+										credit FLOAT);
+			DECLARE cur1 CURSOR FOR
+				SELECT `id`,`bill_sell_id`,`member_id`,`credit`
+					FROM `rca`
+					WHERE `credit`> 0 AND `member_id` = @member_id;
+			DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;	
+			IF LENGTH(@message_error) = 0 THEN
+				SET @payu_key_json=GetPayuArrRef_(@payu_json0);
+				SELECT `id`		,`ip`		,`onoff`		,`drawers_id`	,`money_start`	,`money_balance`,
+							`user`	,`date_reg` 
+					INTO r0.id		,r0.ip		,r0.onoff		,r0.drawers_id		,r0.money_start	,r0.money_balance	,
+							r0.user	,r0.date_reg
+					FROM `device_pos` WHERE `ip`= @ip AND `user`=@user AND `onoff`='1' LIMIT 1;
+				INSERT INTO `bill_rca`(
+					`member_id`		,`user_id`				,`pos_id`			,`drawers_id`,
+					`pay`					,`min`				,`credit`			,`payu_json`,
+					`payu_key_json`
+				)VALUES(
+					@member_id		,@user_id				,r0.id					,r0.drawers_id,
+					@pay				,@py_sum				,(@rca_sum-@pay)		,@payu_json,
+					@s_payu_key
+				);
+				SET lastid=(SELECT LAST_INSERT_ID());
+				IF lastid > 0 THEN
+					SET i_fag=lastid;
+					UPDATE `bill_rca` SET `sku`=LPAD(CAST(i_fag AS CHAR(25)),9,'0') WHERE `id`= lastid;
+					UPDATE `member` SET `credit` = (@rca_sum-@pay) WHERE `id` = @member_id;
+					INSERT INTO `tran_rca` (
+						`tran_rca_type`		,`min`	,`mout`					,`ip`		,`drawers_id`,
+						`note`
+					)VALUES(
+						'pay'						,@min	,(@py_sum-@pay)		,@ip		,@drawers_id
+					);
+					OPEN cur1;
+						read_loop: LOOP
+							FETCH cur1 INTO r;
+							IF done THEN
+								LEAVE read_loop;
+							END IF;
+							IF  pay > 0 THEN
+								IF r.credit <= pay THEN 
+									UPDATE `rca` SET `credit`= 0 WHERE `id` = r.id;
+									SET pay = pay - r.credit;
+									#INSERT INTO `bill_rca_list`(
+										
+									#)VALUES(
+									
+									#);
+								ELSEIF r.credit > pay THEN 
+									UPDATE `rca` SET `credit`= (`credit` - pay) WHERE `id` = r.id;
+									SET pay = 0;
+								END IF;
+							END IF;
+						END LOOP;
+					CLOSE cur1;
+				END IF;
+			END IF;
+		END;";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@rca_sum";
+		$se=$this->metMnSql($sql,["result"]);
+		print_r($se);
+		return $se;
+	}
+	/*private function rcaCheck(array $post):array{
+		$re=["result"=>false,"message_error"=>""];
+		if(!isset($post["pay"])){
+			$re["message_error"]="ยังไม่ได้ระบุจำนวนเงินที่ต้องการชำระ";
+		}else if(!$this->isMoney($post["pay"])){
+			$re["message_error"]="ไม่อยู่ในรูปแบบเงิน";
+		}else if(!$this->isJSON($post["payu"])){
+			$re["message_error"]="ไม่อยู่ในรูปแบบ การรับชำระ";
+		}else if(!$this->isSKU($post["sku_root"])){
+			$re["message_error"]="ไม่อยู่ในรูปแบบ การรับชำระ";
+		}else{
+			$re["result"]=true;
+		}
+		return $re;
+	}*/
 	public function run(){
 		$this->page=$this->setPageR();
 		$this->addDir("?a=".$this->a."&amp;b=".$this->b."",$this->title_b);
@@ -71,6 +219,7 @@ class account_rca extends account{
 				$payu_list_id=$this->key("key",7);
 				echo '<div class="account_rca_pay">';
 				echo '<form class="form100" name="account_pay">
+					<input type="hidden" name="sku_root" value="'.$data["member"]["sku_root"].'" />
 					<input type="hidden" id="'.$payu_list_id.'" data-disabled=",creditroot," name="payu_list" value=",defaultroot," />
 				';
 				echo '<div class="member_info">
@@ -374,6 +523,19 @@ class account_rca extends account{
 			$this->sh=" WHERE `member`.`id`".$idsearch." AND `member`.`credit`> 0 AND `member`.`".$fl."` LIKE  \"%".$tx."%\""  ;
 		}
 	}
-	
+	private function cutPerfix(string $json):string{
+		$re=[];
+		$a=json_decode($json,true);
+		
+		foreach($a as $k=>$v){
+			$re[substr($k,5)]=$v;
+		}
+		if(count($re)==0){
+			$re='{}';
+		}else{
+			$re=json_encode($re);
+		}
+		return $re;
+	}
 }
 ?>

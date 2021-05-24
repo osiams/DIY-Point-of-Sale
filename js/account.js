@@ -10,6 +10,7 @@ class account extends main{
 		this.o_form_rca_pay=document.forms["account_pay"]
 		this.o_pay_block=this.id("account_rca_payu")
 		this.o_pay=this.o_form_rca_pay.pay
+		this.s_sku_root=this.o_form_rca_pay.sku_root.value
 		this.f_rca_old=this.o_pay.getAttribute("data-pay_old")*1
 		this.o_rca_balance=this.id("account_rca_balance");
 		this.a_checkbox=this.o_form_rca_pay.querySelectorAll("[type=checkbox]");
@@ -50,7 +51,7 @@ class account extends main{
 			}else{
 				let payu=this.getPayuOb()
 				let payu_sum=this.payuSum(payu)
-				let dt={"data":{"a":"account","b":"account_rca","c":"pay_rca","pay":this.o_pay.value*1,"payu":JSON.stringify(payu)},
+				let dt={"data":{"a":"account","b":"account_rca","c":"pay_rca","pay":this.o_pay.value*1,"payu":JSON.stringify(payu),"sku_root":this.s_sku_root},
 					"result":Ac.payResult,"error":Ac.payError}
 				this.setFec(dt)
 			}
@@ -63,8 +64,8 @@ class account extends main{
 			Ac.payError(re,form,bt)
 		}
 	}
-	payError(ed=""){
-		
+	payError(re,form,bt){
+		alert(re["message_error"])
 	}
 	payuSum(payu){
 		let s=0
@@ -79,7 +80,8 @@ class account extends main{
 			for(let i=0;i<this.a_checkbox.length;i++){
 				let cd=this.a_checkbox[i].getAttribute("data-rca_credit")*1
 				let y=this.id("account_div_pay_"+this.a_checkbox[i].value)
-				let z=this.id("account_pay_"+this.a_checkbox[i].value)				
+				let z=this.id("account_pay_"+this.a_checkbox[i].value)		
+				M.l(y)		
 				if(bl>0){
 					y.style.display="block"
 					if(bl>=cd){

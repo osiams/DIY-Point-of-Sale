@@ -294,7 +294,8 @@ echo $mo->format('U')-$reg->format("U");*/
 		$sql=[];
 		$sql["head"]="SELECT  `bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`, `bill_sell`.`stat`  AS  `stat`, 
 				`bill_sell`.`price` AS `price`,bill_sell.w, `bill_sell`.`modi_date` AS `modi_date`, 
-				`bill_sell`.`mout` AS `mout`,GetPayuArrRefData_(`bill_sell`.`payu_json`) AS `payu_json`,
+				`bill_sell`.`mout` AS `mout`,
+				GetPayuArrRefData_(`bill_sell`.`payu_json`) AS `payu_json`,
 				`bill_sell`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
 				CONCAT(`user_ref2`.`name`,' ', `user_ref2`.`lastname`) AS `user_name_edit`,
@@ -356,7 +357,7 @@ echo $mo->format('U')-$reg->format("U");*/
 			<table class="billssell"><tr><th>ที่</th>
 			<th>วันบันทึก</th>			
 			<th  class="showhide">เลขที่</th>		
-			<th>รายการ</th>
+			<th>รก.</th>
 			<th>จำนวนเงิน</th>
 			<th>กำไร</th>
 			<th>ผู้บันทึก</th>
@@ -384,14 +385,18 @@ echo $mo->format('U')-$reg->format("U");*/
 				$pf=$se[$i]["price"]-$se[$i]["pricer"]-($se[$i]["cost"]-$se[$i]["costr"]);
 			}
 			$mb=htmlspecialchars($this->setMemberTxt($se[$i]["member_name"],$se[$i]["mb_type"],""));
+			$s_credit="";
+			if($se[$i]["credit"]>0){
+				$s_credit=' <span class="s_credit">👎 '.number_format($se[$i]["credit"],2,".",",").'</span>';
+			}
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
 				<td>
-					<div><a href="?a=bills&amp;c=sell&amp;b=view&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$wn.''.$stat.'</a></div>
+					<div><a href="?a=bills&amp;c=sell&amp;b=view&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$wn.''.$stat.'</a>'.$s_credit.'</div>
 					<div>'.$se[$i]["date_reg"].'</div>
 					<div>'.$se[$i]["user_name"].'</div>
 					<div>'.$mb.'</div>
 				</td>
-				<td  class="showhide l"><a href="?a=bills&amp;c=sell&amp;b=view&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$wn.''.$stat.'</a><div>'.$mb.'</div></td>
+				<td  class="showhide l"><a href="?a=bills&amp;c=sell&amp;b=view&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$wn.''.$stat.'</a>'.$s_credit.'<div>'.$mb.'</div></td>
 				<td class="r">'.$se[$i]["n"].'</td>
 				<td class="r">'.number_format($se[$i]["price"],2,'.',',').'</td>
 				<td class="r darkgreen">'.number_format($pf,2,'.',',').'</td>
@@ -412,7 +417,9 @@ echo $mo->format('U')-$reg->format("U");*/
 		$sql=[];
 		$sql["count"]="SELECT @count:=bs_c FROM `s` WHERE `tr`=1";
 		$sql["get"]="SELECT  `bill_sell`.`id`  AS  `id`,`bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`,`bill_sell`.`stat`  AS  `stat`,
-				`bill_sell`.`cost`,`bill_sell`.`costr`,`bill_sell`.`price` AS `price`,`bill_sell`.`pricer` AS `pricer`,IFNULL(bill_sell.w,0) AS `w`, `bill_sell`.`date_reg` AS `date_reg`,
+				`bill_sell`.`cost`,`bill_sell`.`costr`,`bill_sell`.`price` AS `price`,`bill_sell`.`pricer` AS `pricer`,IFNULL(bill_sell.w,0) AS `w`, 
+				IFNULL(`bill_sell`.`credit`,0) AS `credit`,
+				`bill_sell`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
 				IFNULL(NVL2(`member_ref`.`id`,CONCAT(`member_ref`.`name`,' ', `member_ref`.`lastname`),''),'') AS `member_name`,
 				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`
@@ -460,14 +467,18 @@ echo $mo->format('U')-$reg->format("U");*/
 			}
 			$mb=htmlspecialchars($this->setMemberTxt($se[$i]["member_name"],$se[$i]["mb_type"],""));
 			$cm=($i%2!=0)?" class=\"i2\"":"";
+			$s_credit="";
+			if($se[$i]["credit"]>0){
+				$s_credit=' <span class="s_credit">👎 '.number_format($se[$i]["credit"],2,".",",").'</span>';
+			}
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
 				<td>
-					<div><a href="?a=bills&amp;c=sell&amp;b=selectview&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$stat.'</a></div>
+					<div><a href="?a=bills&amp;c=sell&amp;b=selectview&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$stat.'</a>'.$s_credit.'</div>
 					<div>'.$se[$i]["date_reg"].'</div>
 					<div>'.$se[$i]["user_name"].'</div>
 					<div>'.$mb.'</div>
 				</td>
-				<td  class="showhide l"><a href="?a=bills&amp;c=sell&amp;b=selectview&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$stat.'</a><div>'.$mb.'</div></td>
+				<td  class="showhide l"><a href="?a=bills&amp;c=sell&amp;b=selectview&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$stat.'</a>'.$s_credit.'<div>'.$mb.'</div></td>
 				<td class="r">'.$se[$i]["n"].'</td>
 				<td class="r">'.number_format($se[$i]["price"],2,'.',',').'</td>
 				<td class="l">'.$se[$i]["user_name"].'</td>

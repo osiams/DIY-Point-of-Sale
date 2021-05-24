@@ -37,8 +37,8 @@ class me extends main{
 				IFNULL(`device_pos`.`money_balance`,0) AS `money_balance`,
 				@time_start:=`device_pos`.`date_reg` AS `date_reg`,
 				IFNULL(`device_drawers`.`sku`,'') AS `drawers_sku`,
-				IFNULL(`device_drawers`.`name`,'') AS `drawers_name`,
-				IFNULL(`time`.`money_balance`,0) AS `money_start`
+				IFNULL(`device_drawers`.`name`,'') AS `drawers_name`
+				#IFNULL(`time`.`money_balance`,0) AS `time_money_start`
 			FROM `device_pos` 
 			LEFT JOIN `device_drawers`
 			ON(`device_pos`.`drawers_id`=`device_drawers`.`id`)
@@ -47,12 +47,13 @@ class me extends main{
 			WHERE `device_pos`.`ip`='".$_SESSION["ip"]."'
 		";
 		$sql["get_tran"]="SELECT 
-				`tran`.`id`			,`tran`.`tran_type`			,`tran`.`min`		,`tran`.`mout`,
+				`tran`.`id`			,`tran`.`tran_type`	,`tran`.`ref`		,`tran`.`min`		,`tran`.`mout`,
 				`tran`.`money_balance`,`tran`.`note`		,`tran`.`date_reg`
 			FROM `tran` 
 			WHERE `tran`.`ip`='".$_SESSION["ip"]."' AND `date_reg` >= @time_start
 		";
 		$re=$this->metMnSql($sql,["get_pos","get_tran"]);
+		//print_r($re);
 		if(isset($re["data"]["get_tran"])){
 			$this->my_tran=$re["data"]["get_tran"];
 		}
@@ -71,63 +72,72 @@ class me extends main{
 		$this->pageFoot();
 	}
 	private function writeTranLog():void{//print_r($this->my_time);
-		$type=[
-			"min"=>["icon"=>"📥","name"=>"นำเงินเข้าลิ้นชัก"],
-			"mout"=>["icon"=>"📤","name"=>"นำเงินออกลิ้นชัก"],
-			"sell"=>["icon"=>"🛒","name"=>"ขายสินค้า"],
-			"ret"=>["icon"=>"↪️","name"=>"คืนสินค้า"],
-		];
-		$today=date('Y-m-d') ;//== date('Y-m-d', strtotime($timestamp));
-		$yesterday= Date('Y-m-d', strtotime('-1 day'));
-		$date="";
-		//print_r($this->my_time);
-		echo '<div class="me_time_log_disc_head">
-			<div class="r">เริ่มเปิดกะ : </div><div class="l bold">'.$this->my_time["date_reg"].'</div>
-			<div class="r">ชื่อลิ้นชัก : </div><div class="l bold">'.$this->my_time["name"].'</div>
-			<div class="r">รหัสลิ้นชัก : </div><div class="l bold">'.$this->my_time["sku"].'</div>
-			<div class="r">เงินสดเริ่มต้น : </div><div class="l bold">'.number_format($this->my_time["money_start"],2,".",",").'</div>
-		</div>';
-		echo '<table>
-			<tr><th>ที่</th><th>เวลา</th><th>ประเภท</th><th>💬</th><th>เข้า</th><th>ออก</th><th>คงเหลือ</th></tr>';		
-		$q=0;
-		for($i=0;$i<count($this->my_tran);$i++){
-			$d=explode(" ",$this->my_tran[$i]["date_reg"]);
-			
-			if($d[0]!=$date){
-				$q=1;
-				if($d[0]==$today){
-					echo '<tr><td colspan="7" class="me_time_log_date_th">↓ วันนี้</td></tr>';
-				}else if($d[0]==$yesterday){
-					echo '<tr><td colspan="7" class="me_time_log_date_th">↓ เมื่อวานนี้</td></tr>';
-				}else{
-					echo '<tr><td colspan="7" class="me_time_log_date_th">↓ '.$d[0].'</td></tr>';
+		if(count($this->my_time)>0){
+			$type=[
+				"min"=>["icon"=>"📥","name"=>"นำเงินเข้าลิ้นชัก"],
+				"mout"=>["icon"=>"📤","name"=>"นำเงินออกลิ้นชัก"],
+				"sell"=>["icon"=>"🛒","name"=>"ขายสินค้า"],
+				"ret"=>["icon"=>"↪️","name"=>"คืนสินค้า"],
+			];
+			$today=date('Y-m-d') ;//== date('Y-m-d', strtotime($timestamp));
+			$yesterday= Date('Y-m-d', strtotime('-1 day'));
+			$date="";
+			//print_r($this->my_time);
+			echo '<div class="me_time_log_disc_head">
+				<div class="r">เริ่มเปิดกะ : </div><div class="l bold">'.$this->my_time["date_reg"].'</div>
+				<div class="r">ชื่อลิ้นชัก : </div><div class="l bold">'.$this->my_time["name"].'</div>
+				<div class="r">รหัสลิ้นชัก : </div><div class="l bold">'.$this->my_time["sku"].'</div>
+				<div class="r">เงินสดเริ่มต้น : </div><div class="l bold">'.number_format($this->my_time["money_start"],2,".",",").'</div>
+			</div>';
+			echo '<table>
+				<tr><th>ที่</th><th>เวลา</th><th>ประเภท</th><th>💬</th><th>เข้า</th><th>ออก</th><th>คงเหลือ</th></tr>';		
+			$q=0;
+			for($i=0;$i<count($this->my_tran);$i++){
+				$d=explode(" ",$this->my_tran[$i]["date_reg"]);
+				
+				if($d[0]!=$date){
+					$q=1;
+					if($d[0]==$today){
+						echo '<tr><td colspan="7" class="me_time_log_date_th">↓ วันนี้</td></tr>';
+					}else if($d[0]==$yesterday){
+						echo '<tr><td colspan="7" class="me_time_log_date_th">↓ เมื่อวานนี้</td></tr>';
+					}else{
+						echo '<tr><td colspan="7" class="me_time_log_date_th">↓ '.$d[0].'</td></tr>';
+					}
+					$date=$d[0];
 				}
-				$date=$d[0];
+				$min_txt=($this->my_tran[$i]["min"]>0)?"+".number_format($this->my_tran[$i]["min"],2,".",","):"";
+				$mout_txt=($this->my_tran[$i]["mout"]>0)?"-".number_format($this->my_tran[$i]["mout"],2,".",","):"";
+				$balance_txt=($this->my_tran[$i]["money_balance"]>0)?number_format($this->my_tran[$i]["money_balance"],2,".",","):"";
+				
+				$type_icon=$type[$this->my_tran[$i]["tran_type"]]["icon"];
+				$q+=1;
+				$tr=($q%2)+1;
+				$cm=($this->my_tran[$i]["note"]!="")?"<span class=\"me_time_log_note\" onclick=\"M.tooltups(this,'".htmlspecialchars($this->my_tran[$i]["note"])."',200)\">💬</span>":"";
+				$tt=$this->my_tran[$i]["tran_type"];
+				$type_tx=$type_icon;
+				if($tt=="sell"){
+					$type_tx='<span class="me_time_log_span" onclick="Me.showBill(this,\''.$tt.'\',\''.$this->my_tran[$i]["ref"].'\','.($i+1).'.)" title="ใบเสร็จเลขที่ '.$this->my_tran[$i]["ref"].'">'.$type_icon.'</span>';
+				}
+				echo '<tr class="i'.$tr.'">
+					<td>'.($i+1).'.</td>
+					<td>'.substr($d[1],0,5).'</td>
+					<td>'.$type_tx.'</td>
+					<td class="c">'.$cm.'</td>
+					<td class="r">'.$min_txt.'</td>
+					<td class="r">'.$mout_txt.'</td>
+					<td class="r">'.$balance_txt.'</td>
+				</tr>';
 			}
-			$min_txt=($this->my_tran[$i]["min"]>0)?"+".number_format($this->my_tran[$i]["min"],2,".",","):"";
-			$mout_txt=($this->my_tran[$i]["mout"]>0)?"-".number_format($this->my_tran[$i]["mout"],2,".",","):"";
-			$balance_txt=($this->my_tran[$i]["money_balance"]>0)?number_format($this->my_tran[$i]["money_balance"],2,".",","):"";
-			
-			$type_tx=$type[$this->my_tran[$i]["tran_type"]]["icon"];
-			$q+=1;
-			$tr=($q%2)+1;
-			$cm=($this->my_tran[$i]["note"]!="")?"<span class=\"me_time_log_note\" onclick=\"M.tooltups(this,'".htmlspecialchars($this->my_tran[$i]["note"])."',200)\">💬</span>":"";
-			echo '<tr class="i'.$tr.'">
-				<td>'.($i+1).'.</td>
-				<td>'.substr($d[1],0,5).'</td>
-				<td>'.$type_tx.'</td>
-				<td class="c">'.$cm.'</td>
-				<td class="r">'.$min_txt.'</td>
-				<td class="r">'.$mout_txt.'</td>
-				<td class="r">'.$balance_txt.'</td>
-			</tr>';
+			echo '</table>';	
+			echo '<p class="c">';
+			foreach($type as $k=>$v){
+				echo '<span class="me_time_log_note_disc">'.$v["icon"].' = '.$v["name"].'</span>';
+			}
+			echo '</p>';
+		}else{
+			$this->regisDevice();
 		}
-		echo '</table>';	
-		echo '<p class="c">';
-		foreach($type as $k=>$v){
-			echo '<span class="me_time_log_note_disc">'.$v["icon"].' = '.$v["name"].'</span>';
-		}
-		echo '</p>';
 	}
 	private function setRMore():void{
 		$url="?a=me";
@@ -135,7 +145,10 @@ class me extends main{
 			"menu"=>[
 				["b"=>"time","name"=>"กะทำงานฉัน","link"=>$url."&amp;b=time"],
 				["b"=>"edit","name"=>"แก้ไขฉัน","link"=>$url."&amp;b=edit"],
-				["b"=>"tran_log","name"=>"ประวัติ เงินเข้า-ออก ลิ้นชัก","link"=>$url."&amp;b=tran_log"]
+				["b"=>"tran_log","name"=>"ประวัติ เงินเข้า-ออก ลิ้นชัก","link"=>$url."&amp;b=tran_log"],
+				["b"=>"log_out","name"=>"ออกจากระบบ","link"=>"",
+					"html"=>"<input class=\"me_bt_rmore_logout\" type=\"button\" name=\"logoubt\" onclick=\"G.logout2()\" value=\"ออกจากระบบ\" />"],
+				
 			],
 			"active"=>""
 		];
@@ -313,43 +326,57 @@ class me extends main{
 		$this->pageFoot();
 	}
 	private function writeMyTime():void{//print_r($this->my_time);
-		if($this->my_time["user"]==$_SESSION["sku_root"]){
-			$ms=number_format($this->my_time["money_start"],2,'.',',');
-			$mb=number_format($this->my_time["money_balance"],2,'.',',');
-			$d=explode(" ",$this->my_time["date_reg"]);
-			//$mb="523,254.75";
-			echo '<div class="me_time">
-				<p>กะทำงานของฉัน';
-			if($this->my_time["drawers_sku"]==""){		
-				echo '<span class="warning me_drawers_wn">อุปกรณ์นี้ไม่ได้ระบุ ลิ้นชัก/ที่เก็บเงิน จะไม่สามารถทำกิจกรรมที่เกียวข้องกับ การรับ จ่าย ทอน เงิดสดได้</span>';
+		if(count($this->my_time)>0){
+			if($this->my_time["user"]==$_SESSION["sku_root"]){
+				$ms=number_format($this->my_time["money_start"],2,'.',',');
+				$mb=number_format($this->my_time["money_balance"],2,'.',',');
+				$d=explode(" ",$this->my_time["date_reg"]);
+				//$mb="523,254.75";
+				echo '<div class="me_time">
+					<p>กะทำงานของฉัน';
+				if($this->my_time["drawers_sku"]==""){		
+					echo '<span class="warning me_drawers_wn">อุปกรณ์นี้ไม่ได้ระบุ ลิ้นชัก/ที่เก็บเงิน จะไม่สามารถทำกิจกรรมที่เกียวข้องกับ การรับ จ่าย ทอน เงิดสดได้</span>';
+				}
+				echo '</p>';
+				echo '<div>
+						<div class="me_pos">เครื่องนี้ IP<div>'.$this->userIPv4().'</div></div>
+						<div class="me_pos">เครื่องนี้ ชื่อ<div>'.htmlspecialchars($this->my_time["name"]).'</div></div>';
+				$drawers_sku="";
+				$drawers_name="";
+				if($this->my_time["drawers_sku"]!=""){		
+					$drawers_sku=$this->my_time["drawers_sku"];
+					$drawers_name=htmlspecialchars($this->my_time["drawers_name"]);
+					echo '	<div class="me_drawers">ลิ้นชัก/ที่เก็บเงินสด รหัส<div>'.$drawers_sku.'</div></div>
+						<div class="me_drawers">ลิ้นชัก/ที่เก็บเงินสด ชื่อ<div>'.$drawers_name.'</div></div>';
+				}
+				echo '<div class="start_time">ปิดกะ วันที่<div>'.$d[0].'</div></div>
+						<div class="start_time">เปิดกะ เวลา<div>'.$d[1].' น.</div></div>
+						<div class="start_time">เปิดกะมานาน<div id="time_ago">00:00:00</div></div>
+						<div></div>';
+				if($this->my_time["drawers_sku"]!=""){		
+					echo '	<div class="money_start">เงินสดเริ่มต้น<div>'.$ms.'</div></div>
+						<div class="money_balance">เงินสดขฌะนี้<div id="me_money_balance">'.$mb.'</div></div>
+						<div><input type="button" value="นำเงินเข้า" onclick="Me.min(\''.$drawers_sku.'\',\''.$drawers_name.'\')" /></div>
+						<div><input type="button" value="นำเงินออก" onclick="Me.mout(\''.$drawers_sku.'\',\''.$drawers_name.'\')" /></div>
+					
+					';
+				}
+				echo '</div><div><input type="button" value="ปิดกะ และออกจากระบบ" onclick="Me.closeTime()" /></div>
+					<script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.$this->my_time["date_reg"].'\')</script>
+				</div>';
 			}
-			echo '</p>';
-			echo '<div>
-					<div class="me_pos">เครื่องนี้ IP<div>'.$this->userIPv4().'</div></div>
-					<div class="me_pos">เครื่องนี้ ชื่อ<div>'.htmlspecialchars($this->my_time["name"]).'</div></div>';
-			$drawers_sku="";
-			$drawers_name="";
-			if($this->my_time["drawers_sku"]!=""){		
-				$drawers_sku=$this->my_time["drawers_sku"];
-				$drawers_name=htmlspecialchars($this->my_time["drawers_name"]);
-				echo '	<div class="me_drawers">ลิ้นชัก/ที่เก็บเงินสด รหัส<div>'.$drawers_sku.'</div></div>
-					<div class="me_drawers">ลิ้นชัก/ที่เก็บเงินสด ชื่อ<div>'.$drawers_name.'</div></div>';
-			}
-			echo '<div class="start_time">ปิดกะ วันที่<div>'.$d[0].'</div></div>
-					<div class="start_time">เปิดกะ เวลา<div>'.$d[1].' น.</div></div>
-					<div class="start_time">เปิดกะมานาน<div id="time_ago">00:00:00</div></div>
-					<div></div>';
-			if($this->my_time["drawers_sku"]!=""){		
-				echo '	<div class="money_start">เงินสดเริ่มต้น<div>'.$ms.'</div></div>
-					<div class="money_balance">เงินสดขฌะนี้<div id="me_money_balance">'.$mb.'</div></div>
-					<div><input type="button" value="นำเงินเข้า" onclick="Me.min(\''.$drawers_sku.'\',\''.$drawers_name.'\')" /></div>
-					<div><input type="button" value="นำเงินออก" onclick="Me.mout(\''.$drawers_sku.'\',\''.$drawers_name.'\')" /></div>
-				
-				';
-			}
-			echo '</div><div><input type="button" value="ปิดกะ และออกจากระบบ" onclick="Me.closeTime()" /></div>
-				<script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.$this->my_time["date_reg"].'\')</script>
-			</div>';
+		}else{
+			$this->regisDevice();
 		}
+	}
+	private function regisDevice():void{
+		echo '<div class="content">
+			<div class="form">
+				<br />
+				<div class="error">อุปกรณ์ หมายเลข IP '.$_SESSION["ip"].' นี้ ยังไม่มีในระบบ</div>
+				<br />
+				<input type="button" value="ลงทะเบียนอุปกรณ์" onclick="location.href=\'?a=device\'" />
+			</div>
+		</div>';		
 	}
 }

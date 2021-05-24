@@ -695,6 +695,13 @@ class gpu extends main {
 		f.action="?a=login"
 		f.submit()
 	}
+	logout2(){
+		let f=this.ce("form",{"method":"post","action":"?a=login"})
+			let l=this.ce("input",{"name":"logout","type":"hidden","value":"logout"})
+		this.end(f,[l])
+		this.end(this.b,[f])
+		f.submit()
+	}
 	meSubmit(){
 		let f=document.forms.me
 		 let me=prompt("โปรดใส่ระหรัสผ่านปัจจุบันของคุณ\nเพื่อเป็นการยืนยันว่าคือคุณ")

@@ -38,6 +38,7 @@ class login extends main{
 							$_SESSION["oa"]=CF["userceo"][$_SESSION["userceo"]]["a"];
 							$_SESSION["ip"]=$this->userIPv4();
 							$_SESSION["onoff"]=0;
+							$_SESSION["time_id"]=0;
 							header('Location:index.php?a=time');
 							exit;
 						}else{

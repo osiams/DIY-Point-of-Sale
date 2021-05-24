@@ -446,7 +446,7 @@ class bill58 extends main{
 			];
 			//$re["hr1"]=[["t"=>"- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - ","lcr"=>"c"]];
 			$cash_only=0;
-			if(count($payu)==1){
+			if(count($payu)==1&&isset($payu["defaultroot"])){
 				if(isset($payu["defaultroot"])){
 					$cash_only=1;
 					$re["payu_cash"]=[

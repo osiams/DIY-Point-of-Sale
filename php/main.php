@@ -54,7 +54,7 @@ class main{
 			"bill_sell"=>[
 				"name"=>"bill_sell",
 				"column"=>["id","sku","n","cost","costr","price","pricer","user","user_edit","member_sku_key","member_sku_root","stat","stath","note","w","r_","_r",
-					"min","mout","credit","payu_json","payu_key_json","modi_date","date_reg"],
+					"min","mout","credit","payu_json","payu_key_json","rca_key_json","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pricer"=>0,"costr"=>0,"member_sku_key"=>"NULL","member_sku_root"=>"NULL"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
 				"primary"=>"sku",
@@ -68,6 +68,22 @@ class main{
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
 				"primary"=>"id",
 				"index"=>["sku","bill_in_list_id","lot","product_sku_key","product_sku_root","n_wlv"]
+			],
+			"bill_rca"=>[
+				"name"=>"bill_rca",
+				"column"=>["id","sku","user_id","member_id","note","r_","_r","pos_id","drawers_id",
+					"pay","min","credit","payu_json","payu_key_json","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","min"=>0,"mout"=>0,"credit"=>0],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
+				"primary"=>"id",
+				"index"=>["sku","member_id","date_reg"]
+			],
+			"bill_rca_list"=>[
+				"name"=>"bill_rca_list",
+				"column"=>["id","bill_rca_id","bill_sell_id","credit","money_balance","min","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],
+				"primary"=>"id",
+				"index"=>["bill_rca_id","bill_sell_id"]
 			],
 			"device_pos"=>[
 				"name"=>"device_pos",
@@ -326,8 +342,17 @@ class main{
 									"date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","min"=>0,"mout"=>0,"money_balance"=>0],					
 				"primary"=>"id",
+				"index"=>["drawers_id","ip","user","tran_type","ref"]
+			],
+			"tran_rca"=>[
+				"name"=>"tran_rca",
+				"column"=>[	"id"			,"tran_rca_type"		,"ref"						,"ip"					,"drawers_id",
+									"min"		,"mout"				,"money_balance"		,"member_id"		,"user_id",
+									"note",		"date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","min"=>0,"mout"=>0,"money_balance"=>0],					
+				"primary"=>"id",
 				"unique"=>["ref"],
-				"index"=>["drawers_id","ip","user","tran_type"]
+				"index"=>["drawers_id","ip","user_id","tran_rca_type","member_id"]
 			],
 			"unit"=>[
 				"name"=>"unit",
@@ -361,6 +386,7 @@ class main{
 			"bill_po_sku"=>["name"=>"เลขที่ใบสั่งซื้อ","type"=>"CHAR","length_value"=>25],
 			"bill_in_sku"=>["name"=>"รหัสภายในใบนำเข้าสินค้า","type"=>"CHAR","length_value"=>25],
 			"bill_sell_id"=>["name"=>"ที่ใบขาย","type"=>"INT","length_value"=>10],
+			"bill_rca_id"=>["name"=>"ที่ใบชำระค้างจ่าย","type"=>"INT","length_value"=>10],
 			"bill_type"=>["name"=>"ประเภทใบเสร็จ","type"=>"ENUM","length_value"=>["c","v0","v1"]],
 			"birthday"=>["name"=>"วันเกิด","type"=>"TIMESTAMP",],
 			"brand_name"=>["name"=>"ชื่อการค้า","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
@@ -433,6 +459,7 @@ class main{
 			//"partner1"=>["name"=>"คู่ค้า1","type"=>"CHAR","length_value"=>255],
 			//"partner2"=>["name"=>"คู่ค้า2","type"=>"CHAR","length_value"=>255],
 			//"partner3"=>["name"=>"คู่ค้า3","type"=>"CHAR","length_value"=>255],
+			"pay"=>["name"=>"ชำระ","type"=>"FLOAT","length_value"=>[15,2]],
 			"payu_json"=>["name"=>"รูปแบบการชำระ","type"=>"VARCHAR","length_value"=>1024],
 			"payu_key_json"=>["name"=>"รูปแบบการชำระอ้างอิง","type"=>"VARCHAR","length_value"=>1024],
 			"partner"=>["name"=>"คู่ค้า","type"=>"TEXT","length_value"=>65535],
@@ -443,6 +470,7 @@ class main{
 			"pn_key"=>["name"=>"คู่ค้า1อ้างอิง","type"=>"CHAR","length_value"=>25],
 			"pn_type"=>["name"=>"ประเภทคู่ค้า","type"=>"ENUM","length_value"=>["s","n"]],
 			"post_no"=>["name"=>"รหัสไปรษณี","type"=>"CHAR","length_value"=>25],
+			"pos_id"=>["name"=>"เครื่องที่","type"=>"INT","length_value"=>10],
 			"price"=>["name"=>"ราคา","type"=>"FLOAT","length_value"=>[15,2]],
 			"pricer"=>["name"=>"ราคาคืน","type"=>"FLOAT","length_value"=>[15,2]],
 			"product_sku_key"=>["name"=>"รหัสอ้างอิงสินค้า","type"=>"CHAR","length_value"=>25],
@@ -453,6 +481,7 @@ class main{
 			"r"=>["name"=>"คืน","type"=>"INT","length_value"=>10],
 			"r_"=>["name"=>"เริ่ม","type"=>"INT","length_value"=>10],
 			"_r"=>["name"=>"สิ้นสุด","type"=>"INT","length_value"=>10],
+			"rca_key_json"=>["name"=>"การชำระอ้างอิง","type"=>"VARCHAR","length_value"=>1024],
 			"ref"=>["name"=>"อ้างอิง","type"=>"CHAR","length_value"=>25],
 			"ref_ip_"=>["name"=>"อ้างไอพี_","type"=>"CHAR","length_value"=>25],
 			"ref__ip"=>["name"=>"อ้าง_ไอพี","type"=>"CHAR","length_value"=>25],
@@ -494,6 +523,7 @@ class main{
 			"tp_type"=>["name"=>"การส่งสินค้า","type"=>"ENUM","length_value"=>["0","1"]],
 			"tran_ref"=>["name"=>"เลขอ้างอิง","type"=>"CHAR","length_value"=>25],
 			"tran_type"=>["name"=>"รูปแบบเข้าออกเงิน","type"=>"ENUM","length_value"=>["sell","min","mout","ret"]],
+			"tran_rca_type"=>["name"=>"รูปแบหนี้สินเพิ่มลด","type"=>"ENUM","length_value"=>["sell","pay"]],
 			"unit"=>["name"=>"หน่วย","type"=>"CHAR","length_value"=>25],
 			"unit_sku_key"=>["name"=>"รหัสอิงอิงหน่วย","type"=>"CHAR","length_value"=>25],
 			"unit_sku_root"=>["name"=>"รหัสรากหน่วย","type"=>"CHAR","length_value"=>25],
@@ -735,7 +765,13 @@ class main{
 		for($i=0;$i<count($data["menu"]);$i++){
 			$a=($data["menu"][$i]["b"]==$data["active"])?" class=\"menu_more_active\"":"";
 			$b=($a!="")?"👀 ":"";
-			echo '<div'.$a.'><a href="'.$data["menu"][$i]["link"].'">'.$b.''.$data["menu"][$i]["name"].'</a></div>';
+			echo '<div'.$a.'>';
+				if($data["menu"][$i]["link"]!=""){
+					echo '<a href="'.$data["menu"][$i]["link"].'">'.$b.''.$data["menu"][$i]["name"].'</a>';
+				}else if(isset($data["menu"][$i]["html"])){
+					echo $data["menu"][$i]["html"];
+				}
+			echo '</div>';
 		}
 		echo '	</div>
 			</div>
@@ -759,9 +795,20 @@ class main{
 		//print_r($_SESSION);
 		echo '</body></html>';
 	}
-	protected function checkSet(string $table,array $dt,string $type="post"):array{
+	protected function checkSet(string $table,array $dt,string $type="post",array $not_null=[],array $alias=[]):array{
 		$re=["result"=>true,"message_error"=>""];
 		//$dt=["get"=>[],"post"=>[]];
+		if(count($alias)>0){
+			foreach($alias as $k=>$v){
+				if(isset($_POST[$k])){
+					$_POST[$v]=$_POST[$k];
+					array_push($dt[$type] ,$v);
+				}else{
+					$_POST[$v]=null;
+				}
+			}
+		}
+		//print_r($_POST);
 		foreach($dt[$type] as $v){
 			$ry="";
 			if($type=="post"){
@@ -787,7 +834,7 @@ class main{
 						break;
 					}else if(strlen(trim($ry))>0){
 						$name=["name","brand_name","no","alley","road","distric","country","province","note","lastname"];
-						$sku=["sku","unit","ref"];
+						$sku=["sku","unit","ref","sku_root"];
 						$tax=["tax","tel","fax","post_no"];
 						$url=["web"];
 						$idc=["idc"];
@@ -798,6 +845,7 @@ class main{
 						$float=["vat_p"];
 						$enum = ["data_type","s_type","pn_type","od_type","tp_type","bill_type","sex","mb_type"];
 						$json_arr = ["prop","partner"];
+						$json= ["payu_json"];
 						$province=["bill_no"];
 						$date=["birthday"];
 						$disc=["disc"];
@@ -874,6 +922,12 @@ class main{
 									}									
 								}
 							}
+						}else if(in_array($v,$json)){
+							if(!$this->isJSON($ry)){
+								$re["result"]=false;
+								$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ";
+								break;
+							}
 						}else if($v=="email"&&!filter_var($ry, FILTER_VALIDATE_EMAIL)){
 							$re["result"]=false;
 							$re["message_error"]=$this->fills[$v]["name"]." ไม่อยู่ในรูปแบบ";
@@ -941,11 +995,33 @@ class main{
 								break;
 							}
 						}
+					}else if(in_array($v,$not_null)){
+						$nm=$this->fills[$v]["name"];
+						$re["result"]=false;
+						$re["message_error"]="ข้อมูล \"".$nm."\"  ต้องไม่ว่าง" ;
+						break;
 					}
 				}
 			}
 		}
 		$this->nullSet($dt,$type);
+		return $re;
+	}
+	protected function isMoney(string $money):bool{
+		$re=false;
+		$pt="/^([0-9]+.)?[0-9]{1,2}$/";
+		if(preg_match($pt,$money)) {
+			$re=true;
+		}
+		return $re;
+	}
+	protected function isJSON(string $json):bool{
+		$re=false;
+		$pt="/^{.{5,}}$/";
+		$a=json_decode($json);
+		if (json_last_error() === JSON_ERROR_NONE && preg_match($pt,trim($json))) {
+			$re=true;
+		}
 		return $re;
 	}
 	private function nullSet(array $dt,string $type="post"){
@@ -1048,7 +1124,7 @@ class main{
 	}
 	protected function findIPv4():string{
 		$sock = socket_create(AF_INET, SOCK_DGRAM, SOL_UDP);
-		socket_connect($sock, "8.8.8.8", 80);
+		@socket_connect($sock, "8.8.8.8", 80);
 		socket_getsockname($sock, $name);
 		return $name;
 	}
@@ -1117,6 +1193,12 @@ class main{
 				}
 			}
 		}
+	}
+	protected function jsonDocToArrayKeyDoc(string $json_doc):string{
+		$a=json_decode($json_doc,true);
+		$b=array_keys($a);
+		$c=json_encode($b);
+		return $c;
 	}
 }
 ?>

@@ -2,7 +2,6 @@
 class me extends main {
 	constructor(){
 		super()
-
 	}
 	run(){
 
@@ -162,5 +161,17 @@ class me extends main {
 		]
 		this.dialog({"rid":rid,"display":1,"pn":pn,"bts":bts,"ct":ct0,"title":"นำเงินออกลิ้นชัก","width":"250","ofc":1})
 		this.id(mout).focus()
+	}
+	showBill(did,type,ref,at){
+		let rid = this.rid()
+		let ct=this.ce("div",{"class":"c"})
+			let ct1=this.ce("div",{"class":"me_time_log_img_bill"})
+		if(type=="sell"){
+			let img=this.ce("img",{"src":"?a=bill58&b=viewbill&sku="+ref})
+			this.end(ct1,[img])
+		}
+		this.end(ct,[ct1])
+		let bts = []
+		this.dialog({"rid":rid,"display":1,"bts":bts,"bts0":null,"ct":ct,"title":at+". ใบเสร็จรับเงิน เลขที่ "+ref,"width":"424","height":window.innerHeight})
 	}
 }

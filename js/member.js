@@ -53,4 +53,11 @@ class member extends main{
 			this.form_old[this.form_key[i]]=f[this.form_key[i]].value
 		}
 	}
+	toPay(member_id){
+		let f=this.ce("form",{"method":"post","action":"?a=account&b=account_rca&c=pay&url_refer="+encodeURIComponent(window.location.href)})
+			let l=this.ce("input",{"name":"member_id","type":"hidden","value":member_id})
+		this.end(f,[l])
+		this.end(this.b,[f])
+		f.submit()
+	}
 }

@@ -102,7 +102,11 @@ class member_details extends member{
 			echo '<tr class="i'.(($s%2)+1).'"><td class="l">รายละเอียด</td><td class="l">'.htmlspecialchars($dt["disc"]).'</td></tr>';
 		}
 		if((float) $dt["credit"] >0){$s+=1;
-			echo '<tr class="i'.(($s%2)+1).'"><td class="l">ยอดค้างชำระ</td><td class="l">'.number_format($dt["credit"],2,".",",").'</td></tr>';
+			$linktp="";
+			if($dt["credit"]>0){
+				$linktp=' <a onclick="Mb.toPay(\''.$dt["id"].'\')">ชำระค้างจ่าย</a>';
+			}
+			echo '<tr class="i'.(($s%2)+1).'"><td class="l">ยอดค้างชำระ</td><td class="l">'.number_format($dt["credit"],2,".",",").''.$linktp.'</td></tr>';
 		}
 		if(!empty($dt["date_reg"])){$s+=1;
 			echo '<tr class="i'.(($s%2)+1).'"><td class="l">วันที่ลงทะเบียน</td><td class="l">'.htmlspecialchars($dt["date_reg"]).'</td></tr>';
