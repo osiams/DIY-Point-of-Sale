@@ -34,14 +34,14 @@ class main{
 		$this->tb=[
 			"bill_in"=>[
 				"name"=>"bill_in",
-				"column"=>["id","in_type","sku","lot_from","lot_root","bill","n",
-				"bill_po_sku","pn_key","pn_root","bill_no","bill_date","bill_type","payu_json","payu_key_json","icon_arr","icon_gl","vat_n",
+				"column"=>["id","time_id","in_type","sku","lot_from","lot_root","bill","n",
+				"bill_po_sku","pn_key","pn_root","bill_no","bill_date","bill_type","icon_arr","icon_gl","vat_n",
 				"sum","changto","user","user_edit","note","stkey_","stroot_",
 				"r_","_r","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],				
 				"primary"=>"sku",
-				"index"=>["in_type","changto","user","note","stkey_","stroot_","r_","_r"]
+				"index"=>["time_id","in_type","changto","user","note","stkey_","stroot_","r_","_r"]
 			],
 			"bill_in_list"=>[
 				"name"=>"bill_in_list",
@@ -53,12 +53,12 @@ class main{
 			],
 			"bill_sell"=>[
 				"name"=>"bill_sell",
-				"column"=>["id","sku","n","cost","costr","price","pricer","user","user_edit","member_sku_key","member_sku_root","stat","stath","note","w","r_","_r",
+				"column"=>["id","time_id","sku","n","cost","costr","price","pricer","user","user_edit","member_sku_key","member_sku_root","stat","stath","note","w","r_","_r",
 					"min","mout","credit","payu_json","payu_key_json","rca_key_json","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pricer"=>0,"costr"=>0,"member_sku_key"=>"NULL","member_sku_root"=>"NULL"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
 				"primary"=>"sku",
-				"index"=>["member_sku_key","member_sku_root","user","stat","stath","w","date_reg"]
+				"index"=>["time_id","member_sku_key","member_sku_root","user","stat","stath","w","date_reg"]
 			],
 			"bill_sell_list"=>[
 				"name"=>"bill_sell_list",
@@ -71,12 +71,21 @@ class main{
 			],
 			"bill_rca"=>[
 				"name"=>"bill_rca",
-				"column"=>["id","sku","user_id","member_id","note","r_","_r","pos_id","drawers_id",
+				"column"=>["id","time_id","sku","user_id","member_id","note","r_","_r","pos_id","drawers_id",
 					"pay","min","credit","payu_json","payu_key_json","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","min"=>0,"mout"=>0,"credit"=>0],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
 				"primary"=>"id",
-				"index"=>["sku","member_id","date_reg"]
+				"index"=>["time_id","sku","member_id","date_reg"]
+			],
+			"bill_rca_partner"=>[
+				"name"=>"bill_rca_partner",
+				"column"=>["id","time_id","sku","user_id","member_id","note","r_","_r","pos_id","drawers_id",
+					"pay","min","credit","payu_json","payu_key_json","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","min"=>0,"mout"=>0,"credit"=>0],
+				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
+				"primary"=>"id",
+				"index"=>["time_id","sku","member_id","date_reg"]
 			],
 			"bill_rca_list"=>[
 				"name"=>"bill_rca_list",
@@ -281,10 +290,17 @@ class main{
 			],
 			"rca"=>[
 				"name"=>"rca",
-				"column"=>["id"		,"bill_sell_id"			,"user_id"		,"member_id"		,"credit", "date_reg"],
+				"column"=>["id"		,"time_id"	,"bill_sell_id"			,"user_id"		,"member_id"		,"credit", "date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],
 				"primary"=>"id",
-				"index"=>["bill_sell_id","member_id","credit",]
+				"index"=>["time_id","bill_sell_id","member_id","credit"]
+			],
+			"rca_partner"=>[
+				"name"=>"rca_partner",
+				"column"=>["id"		,"time_id"	,"bill_sell_id"			,"user_id"		,"member_id"		,"credit", "date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],
+				"primary"=>"id",
+				"index"=>["time_id","bill_sell_id","member_id","credit"]
 			],
 			"user"=>[
 				"name"=>"user",
@@ -314,9 +330,9 @@ class main{
 			"s"=>[
 				"name"=>"s",
 				"column"=>["id","tr",
-					"bi_c","bil_c","bs_c","bsl_c",
-					"bir_","bi_r","bsr_","bs_r",
-					"bilr_","bil_r","bslr_","bsl_r","modi_date","date_reg"],
+					"bi_c","bil_c","bs_c","bsl_c","bp_c","bpl_c",
+					"bir_","bi_r","bsr_","bs_r","bpr_","bp_r",
+					"bilr_","bil_r","bslr_","bsl_r","bplr_","bpl_r","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
 				"primary"=>"tr"
@@ -337,22 +353,31 @@ class main{
 			],
 			"tran"=>[
 				"name"=>"tran",
-				"column"=>[	"id"			,"tran_type"		,"ref"						,"ip"			,"drawers_id",
+				"column"=>[	"id"			,"time_id"			,"tran_type"		,"ref"						,"ip"			,"drawers_id",
 									"min"		,"mout"				,"money_balance"	,"user"		,"note",
 									"date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","min"=>0,"mout"=>0,"money_balance"=>0],					
 				"primary"=>"id",
-				"index"=>["drawers_id","ip","user","tran_type","ref"]
+				"index"=>["time_id","drawers_id","ip","user","tran_type","ref"]
 			],
 			"tran_rca"=>[
 				"name"=>"tran_rca",
-				"column"=>[	"id"			,"tran_rca_type"		,"ref"						,"ip"					,"drawers_id",
+				"column"=>[	"id"			,"time_id"			,"tran_rca_type"			,"bill_rca_id"		,"ip"					,"drawers_id",
+									"min"		,"mout"				,"money_balance"		,"member_id"		,"user_id",
+									"date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","min"=>0,"mout"=>0,"money_balance"=>0],					
+				"primary"=>"id",
+				"index"=>["time_id","drawers_id","ip","user_id","bill_rca_id","tran_rca_type","member_id"]
+			],
+			"tran_rca_partner"=>[
+				"name"=>"tran_rca_partner",
+				"column"=>[	"id"			,"time_id"			,"tran_rca_type"		,"ref"						,"ip"					,"drawers_id",
 									"min"		,"mout"				,"money_balance"		,"member_id"		,"user_id",
 									"note",		"date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","min"=>0,"mout"=>0,"money_balance"=>0],					
 				"primary"=>"id",
 				"unique"=>["ref"],
-				"index"=>["drawers_id","ip","user_id","tran_rca_type","member_id"]
+				"index"=>["time_id","drawers_id","ip","user_id","tran_rca_type","member_id"]
 			],
 			"unit"=>[
 				"name"=>"unit",
@@ -372,7 +397,7 @@ class main{
 			]
 		];
 		$this->fills=[
-			"a_type"=>["name"=>"สำหรับแอป","type"=>"ENUM","length_value"=>["partner","billin","payu","member","device_pos","device_drawers"]],
+			"a_type"=>["name"=>"สำหรับแอป","type"=>"ENUM","length_value"=>["partner","bill_in","payu","member","device_pos","device_drawers"]],
 			"amount"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
 			"alley"=>["name"=>"ซอย","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"barcode"=>["name"=>"รหัสแท่ง","type"=>"CHAR","length_value"=>80],
@@ -522,7 +547,7 @@ class main{
 			"tms"=>["name"=>"เวลา","type"=>"FLOAT","length_value"=>[12,6]],
 			"tp_type"=>["name"=>"การส่งสินค้า","type"=>"ENUM","length_value"=>["0","1"]],
 			"tran_ref"=>["name"=>"เลขอ้างอิง","type"=>"CHAR","length_value"=>25],
-			"tran_type"=>["name"=>"รูปแบบเข้าออกเงิน","type"=>"ENUM","length_value"=>["sell","min","mout","ret"]],
+			"tran_type"=>["name"=>"รูปแบบเข้าออกเงิน","type"=>"ENUM","length_value"=>["sell","min","mout","ret","pay"]],
 			"tran_rca_type"=>["name"=>"รูปแบหนี้สินเพิ่มลด","type"=>"ENUM","length_value"=>["sell","pay"]],
 			"unit"=>["name"=>"หน่วย","type"=>"CHAR","length_value"=>25],
 			"unit_sku_key"=>["name"=>"รหัสอิงอิงหน่วย","type"=>"CHAR","length_value"=>25],
@@ -547,10 +572,17 @@ class main{
 			"bil_c"=>["name"=>"จำนวนแถว bill_in_list","type"=>"INT","length_value"=>10],
 			"bs_c"=>["name"=>"จำนวนแถว bill_sell","type"=>"INT","length_value"=>10],
 			"bsl_c"=>["name"=>"จำนวนแถว bill_sell_list","type"=>"INT","length_value"=>10],
+			"bp_c"=>["name"=>"จำนวนแถว bill_sell","type"=>"INT","length_value"=>10],
+			"bpl_c"=>["name"=>"จำนวนแถว bill_sell_list","type"=>"INT","length_value"=>10],
 			"bir_"=>["name"=>"เริ่ม bill_in","type"=>"INT","length_value"=>10],
 			"bi_r"=>["name"=>"สิ้นสุด bill_in","type"=>"INT","length_value"=>10],
 			"bilr_"=>["name"=>"เริ่ม bill_in_list","type"=>"INT","length_value"=>10],
 			"bil_r"=>["name"=>"สิ้นสุด bill_in_list","type"=>"INT","length_value"=>10],
+			"bpr_"=>["name"=>"เริ่ม bill_rca","type"=>"INT","length_value"=>10],
+			"bp_r"=>["name"=>"สิ้นสุด bill_rca","type"=>"INT","length_value"=>10],
+			"bplr_"=>["name"=>"เริ่ม bill_rca_list","type"=>"INT","length_value"=>10],
+			"bpl_r"=>["name"=>"สิ้นสุด bill_rca_list","type"=>"INT","length_value"=>10],
+			
 			"bsr_"=>["name"=>"เริ่ม bill_sell","type"=>"INT","length_value"=>10],
 			"bs_r"=>["name"=>"สิ้นสุด bill_sell","type"=>"INT","length_value"=>10],
 			"bslr_"=>["name"=>"เริ่ม bill_sell_list","type"=>"INT","length_value"=>10],
@@ -624,14 +656,23 @@ class main{
 
 				}
 			}catch(PDOException $e){
+				$mr="";
+				if(strlen(trim($e))!=0){
+					$mr.=$e->getMessage().";";
+				}	
 				try{
 					$conn->rollBack();
 				}catch(PDOException $e){
-	
+					//print_r($e);
+					$mr.=$e->getMessage().";";
 				}
+
+				$re["message_error"]=$mr;
+
+				
 				//print_r($e->getMessage());
 				//print_r($sql);
-				$re["message_error"]=$e->getMessage();
+				
 				//$conn->beginTransaction();
 				
 			}
@@ -790,6 +831,13 @@ class main{
 			$t=$text;
 		}
 		array_push($this->dir,$t);
+	}
+	protected function btMore(array $data):void{
+		echo '<div class="bt_more">';
+		foreach($data as $k=>$v){
+			echo '<span><a href="'.$v["link"].'">'.$v["name"].'</a></span>';
+		}
+		echo '</div>';
 	}
 	protected function pageFoot(){
 		//print_r($_SESSION);

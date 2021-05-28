@@ -142,7 +142,9 @@ class product_details extends product{
 		echo '	<tr class="i2"><td>วันที่ลงทะเบียน</td><td>'.$dt["date_reg"].'</td></tr>
 			<tr class="i1"><td>กลุ่ม</td><td>'.$this->writeDirGroup($dt["group_root"],[$dt["d1"],$dt["d2"],$dt["d3"],$dt["d4"]]).'</td></tr>
 			<tr class="i2"><td>คู่ค้า</td><td class="l">';
-			$this->writePartnerList($pn_arr);
+			if(is_array($pn_arr)){
+				$this->writePartnerList($pn_arr);
+			}
 		echo '</td></tr>
 			<tr><td>ภาษีมูลค่าเพิ่ม %</td><td>'.number_format($dt["vat_p"],2,'.',',').'</td></tr>
 		

@@ -269,3 +269,7 @@ div.page{margin:2px auto;}
 .menu_more > div:nth-child(2) > div > div.menu_more_active{padding:0px 0px;margin:0px 0px;background-color:LightGreen;border-left:5px solid green;font-weight: bold;}
 .menu_more > div:nth-child(2) > div > div:hover{background-color:white;border-left:5px solid orange}
 .menu_more > div:nth-child(2) > div > div > a{width:100%;display:block;padding:10px 5px;font-weight:inherit}
+
+/*link เกี่ยวข้องใต้หน้า*/
+.bt_more{}
+.bt_more > span{display:inline-block;padding:5px;background-color:white;border:1px solid gray;margin:3px;}

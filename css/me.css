@@ -7,6 +7,7 @@
 .me_time > div >div.me_pos{background-color:DarkBlue;color:white}
 .me_time > div >div.me_drawers{background-color:Black;color:white}
 .me_time > div >div.start_time{background-color:SaddleBrown;color:white}
+.me_time > div >div.time_id{background-color:green;color:white}
 .me_time > div >div.money_start{background-color:DimGray;color:white}
 .me_time > div >div.money_balance{background-color:Moccasin}
 .me_time > div > div >div{font-size:1.2em;font-weight:bold;}

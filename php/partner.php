@@ -16,10 +16,12 @@ class partner extends main{
 		$this->lid=0;
 		$this->sh="";
 		$this->max_squar=256;
+		$this->url_ref="";
 	}
 	public function run(){
 		$file = "php/class/image.php";
-		require($file);		
+		require($file);
+		$this->url_refer=(isset($_GET["url_refer"]))?$_GET["url_refer"]:"";		
 		$this->img=new image($this->gallery_dir);		
 		$this->page=$this->setPageR();
 		$q=["regis","edit","delete","details"];
@@ -53,7 +55,10 @@ class partner extends main{
 			//print_r($sql);
 			$re = $this->metMnSql($sql,[]);
 			//print_r($re);
-			header('Location:?a='.$this->a.'&ed='.$_POST["sku_root"]);
+			$pt="/&ed=[0-9a-zA-Z-+\.&\/]{1,25}/";
+			$pr='';
+			$url=preg_replace($pt, $pr,$this->url_refer)."&ed=".$_POST["sku_root"];
+			header('Location:'.$url);
 		}
 	}
 	private function editPartnerPage(string $error):void{
@@ -198,7 +203,10 @@ class partner extends main{
 					 if($img["result"]){
 						$this->img->imgSave($img,$key,$this->max_squar);
 					}
-					header('Location:?a='.$this->a.'&ed='.$_POST["sku_root"]);
+					$pt="/&ed=[0-9a-zA-Z-+\.&\/]{1,25}/";
+					$pr='';
+					$url=preg_replace($pt, $pr,$this->url_refer)."&ed=".$_POST["sku_root"];
+					header('Location:'.$url);
 				}
 			}
 			if($error!=""){

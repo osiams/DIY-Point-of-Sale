@@ -320,7 +320,8 @@ class barcode extends main{
 				d.s_type="p_wlv"
 				d.name=d.name+" "+(v*1)+" "+d.unit
 				d.barcode=this.doBarcode(d.barcode,v)
-				d.price=v*d.price
+				//d.price=(v*1)*d.price*1
+				d.price=this.nb((((v*10)*(d.price*10))/100),2)
 				this.productSelect(d,null,"")
 			}
 		}else{

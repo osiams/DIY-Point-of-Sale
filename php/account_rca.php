@@ -35,7 +35,7 @@ class account_rca extends account{
 		$payu_json0=$this->cutPerfix($_POST["payu"]);
 		$note=(isset($_POST["note"]))?$_POST["note"]:"";
 		$note=$this->getStringSqlSet($note);
-		echo $note."****";
+		//echo $note."****";
 		$payu_json=$this->getStringSqlSet($payu_json0);
 		$s_payu_key=$this->jsonDocToArrayKeyDoc($payu_json0);//'["a","b",[...]]';
 		$member_sku_root=$this->getStringSqlSet($post["sku_root"]);
@@ -65,6 +65,7 @@ class account_rca extends account{
 			@user:='".$_SESSION["sku_root"]."',
 			@user_id:='".$_SESSION["id"]."',
 			@note=".$note.",
+			@time_id:='".$_SESSION["time_id"]."',
 			@member_id:=(SELECT `id` FROM `member` WHERE `sku_root` =".$member_sku_root." ),
 			@rca_sum:=(SELECT SUM(`credit`) FROM `rca` WHERE `member_id`=@member_id);
 		";
@@ -87,6 +88,8 @@ class account_rca extends account{
 			DECLARE py_sum FLOAT DEFAULT @py_sum;
 			DECLARE pay FLOAT DEFAULT @pay;
 			DECLARE f_mout FLOAT DEFAULT 0;
+			DECLARE date_reg_ TIMESTAMP DEFAULT NOW();
+			DECLARE bill_rca_sku CHAR(25) DEFAULT NULL;
 			DECLARE r0 ROW (
 				`id`INT ,
 				`ip`CHAR(25),
@@ -114,25 +117,37 @@ class account_rca extends account{
 							r0.user	,r0.date_reg
 					FROM `device_pos` WHERE `ip`= @ip AND `user`=@user AND `onoff`='1' LIMIT 1;
 				INSERT INTO `bill_rca`(
-					`member_id`		,`user_id`				,`pos_id`			,`drawers_id`,
-					`pay`					,`min`				,`credit`			,`payu_json`,
-					`payu_key_json`
+					`time_id`				,`member_id`		,`user_id`				,`pos_id`			,`drawers_id`,
+					`pay`					,`min`				,`credit`					,`payu_json`,
+					`payu_key_json`	,`date_reg`
 				)VALUES(
-					@member_id		,@user_id				,r0.id					,r0.drawers_id,
-					@pay				,@py_sum				,(@rca_sum-@pay)		,@payu_json,
-					@s_payu_key
+					@time_id			,@member_id		,@user_id					,r0.id					,r0.drawers_id,
+					@pay				,@py_sum				,(@rca_sum-@pay)	,@payu_json,
+					@s_payu_key	,date_reg_
 				);
 				SET lastid=(SELECT LAST_INSERT_ID());
 				IF lastid > 0 THEN
 					SET i_fag=lastid;
-					UPDATE `bill_rca` SET `sku`=LPAD(CAST(i_fag AS CHAR(25)),9,'0') WHERE `id`= lastid;
+					SET bill_rca_sku=LPAD(CAST(i_fag AS CHAR(25)),9,'0');
+					UPDATE `bill_rca` SET `sku`=bill_rca_sku WHERE `id`= lastid;
 					UPDATE `member` SET `credit` = (@rca_sum-@pay) WHERE `id` = @member_id;
 					INSERT INTO `tran_rca` (
-						`tran_rca_type`		,`min`	,`mout`					,`ip`		,`drawers_id`,
-						`note`
+						`time_id`				,`tran_rca_type`		,`ref`					,`min`		,`mout`					,`ip`		,`drawers_id`,
+						`member_id`			,`user_id`					,`money_balance`	,`note`		,`date_reg`
 					)VALUES(
-						'pay'						,@min	,(@py_sum-@pay)		,@ip		,@drawers_id
+						@time_id				,'pay'							,bill_rca_sku					,@min		,(@py_sum-@pay)		,@ip		,r0.drawers_id,
+						@member_id			,@user_id					,(@rca_sum-@pay)	,@note	,date_reg_
+					);		
+					INSERT INTO `tran` (
+						`time_id`				,`tran_type`				,`ref`					,`min`		,`mout`					,`ip`		,`drawers_id`,
+						`user`					,`money_balance`		,`date_reg`
+					)VALUES(
+						@time_id				,'pay'							,bill_rca_sku					,@min		,(@py_sum-@pay)		,@ip		,r0.drawers_id,
+						@user					,(r0.money_balance+@min - (@py_sum-@pay))	,date_reg_
 					);
+					UPDATE `device_pos` 
+						SET `money_balance` = (r0.money_balance+@min - (@py_sum-@pay))
+						WHERE `ip`= @ip;
 					OPEN cur1;
 						read_loop: LOOP
 							FETCH cur1 INTO r;

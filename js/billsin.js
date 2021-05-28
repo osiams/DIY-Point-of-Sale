@@ -321,7 +321,7 @@ class billsin extends main{
 		let cell5 = row.insertCell(5)
 		cell0.innerHTML=ls+"."
 		cell0.setAttribute("id",a.sku_root);
-		cell3.innerHTML=a.unit+"xxxx"
+		cell3.innerHTML=a.unit+""
 		//let p1=M.ce("p",{"class":"l","contenteditable":"true"})
 		let ipn=M.ce("input",{"class":"wwp","data-old":a.name,"type":"text","onchange":"Bi.setAct(this)","onfocus":"this.classList.replace('wwp', 'wpp')","onblur":"this.classList.replace('wpp', 'wwp')","value":a.name})
 		//p1.appendChild(ipn)
@@ -496,7 +496,7 @@ class billsin extends main{
 			formData.append("submith","clicksubmit")		
 			formData.append("c","bills_in")				
 			formData.append("product",JSON.stringify(dt))	*/
-			let payu=this.getPayuOb()
+			//let payu=this.getPayuOb()
 			let edible=editable?"edit":"fill"
 			let gl_list_value=""
 			if(f.gallery_list!=undefined){
@@ -504,13 +504,13 @@ class billsin extends main{
 			}
 			let dt2={"data":{"a":"bills","submith":"clicksubmit","c":"bills_in","product":JSON.stringify(dt),
 				"bill_no":f.bill_no.value,"pn":f.pn.value,
-				"bill_date":f.bill_date.value,"bill_type":f.bill_type.value,"note":f.note.value,"payu":JSON.stringify(payu),
+				"bill_date":f.bill_date.value,"bill_type":f.bill_type.value,"note":f.note.value,
 				"b":edible,"sku":f.sku.value,gallery_list:gl_list_value},
 				"result":Bi.billsinSaveResult,"error":Bi.billsinSaveError}	
 			let patt = /^([1-9])[0-9]{3}-(0|1)[0-9]-(0|1|2|3)[0-9]$/g;
 			let date_result = patt.test(f.bill_date.value);
-			let sumPay1=this.getPay1()
-			let sumPay2=this.getPay2()
+			//let sumPay1=this.getPay1()
+			//let sumPay2=this.getPay2()
 			//alert(sumPay1+""+sumPay2)
 			if(f.bill_no.value.trim().length==0){
 				alert("เลขที่ใบเสร็จ คุณว่าง")
@@ -518,9 +518,9 @@ class billsin extends main{
 				alert("วันที่ในใบเสร็จ ไม่ถูกต้อง หรือ ว่าง")
 			}else if(f.bill_type.value!="c"&&f.bill_type.value!="v1"&&f.bill_type.value!="v0"){
 				alert("ค่ารูปแบบใบเสร็จไม่ถูกต้อง")
-			}else if(sumPay1+0.99<sumPay2){
+			}/*else if(sumPay1+0.99<sumPay2){
 				alert("ยอดเงินรวม ในรูปแบบการชำระ น้อยกว่า ยอดราคารวมสินค้า")
-			}else{
+			}*/else{
 				this.setFec(dt2)
 			}
 			/*if(f.note!=undefined){

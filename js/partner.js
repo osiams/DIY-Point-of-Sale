@@ -8,7 +8,7 @@ class partner extends main{
 	}
 	edit(sku_root,s_type){
 		let f=document.forms.partner
-		f.action="?a=partner&b=edit"
+		f.action="?a=partner&b=edit&url_refer="+encodeURIComponent(window.location.href)
 		f.sku_root.value=sku_root
 		f.submit()
 	}
@@ -16,7 +16,7 @@ class partner extends main{
 		let y=confirm("คุณต้องการลบ "+name)
 		if(y){
 			let f=document.forms.partner
-			f.action="?a=partner&b=delete"
+			f.action="?a=partner&b=delete&url_refer="+encodeURIComponent(window.location.href)
 			f.sku_root.value=sku_root
 			f.submit()
 		}

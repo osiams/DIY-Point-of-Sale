@@ -110,6 +110,7 @@ class sell extends main{
 			@ip:='".$_SESSION["ip"]."',
 			@member:=".$member.",
 			@member_key:=".$member.",
+			@time_id:='".$_SESSION["time_id"]."',
 			@member_id:=(SELECT `id` FROM `member` WHERE `sku_root`=".$member."),
 			@user_id:=".$_SESSION["id"].",
 			@id:=(SELECT IFNULL((SELECT MAX(id) FROM `bill_sell`),0)+1),
@@ -270,11 +271,11 @@ class sell extends main{
 					SET pdl=@pd_length;
 					IF @bill_sell_save=1 THEN
 						INSERT INTO `bill_sell`  (
-							sku		,n			,price			,user			,member_sku_key			,member_sku_root,
+							time_id	,sku		,n			,price			,user			,member_sku_key			,member_sku_root,
 							min		,mout						,credit		,payu_json			,payu_key_json		,`date_reg`
 							
 						)VALUES (
-							@sku,	@n		,@sums			,@user		,@member_key				,@member,
+							@time_id	,@sku,	@n		,@sums			,@user		,@member_key				,@member,
 							@min	,(@payu_sum-@sums)	,@credit	,@payu_doc		,@payu_key_doc	,date_reg
 						);		
 						SET lastid_bill_sell=(SELECT LAST_INSERT_ID());	
@@ -425,12 +426,12 @@ class sell extends main{
 							END IF;
 							IF @min > 0 OR (@payu_sum-@sums) > 0 THEN
 								INSERT INTO `tran`(
-									`min`			,`mout`					,`tran_type`			,`ref`	,`ip`,
+									`time_id`		,`min`			,`mout`					,`tran_type`			,`ref`	,`ip`,
 									`drawers_id`	,`user`,
 									`money_balance`	,
 									`date_reg`
 								)VALUES(
-									@min			,(@payu_sum-@sums)	,'sell'					,@sku	,@ip,
+									@time_id		,@min			,(@payu_sum-@sums)	,'sell'					,@sku	,@ip,
 									@drawers_id	,@user, 
 									(@money_balance+@min - (@payu_sum-@sums)),
 									date_reg

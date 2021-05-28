@@ -22,7 +22,7 @@ class form_selects{
 			if(this.partner_old[display_id]==undefined){
 				this.partner_old[display_id]={}
 			}else{
-				this.partner[display_id]=Object.assign({}, this.partner_old[display_id]);
+				//this.partner[display_id]=Object.assign({}, this.partner_old[display_id]);
 			}
 		}
 		dialog_id=(dialog_id==null)?this.main.rid():dialog_id
@@ -620,7 +620,7 @@ class form_selects{
 		}
 	}
 	getListPartnerLoadError(re,form,bt){
-		alert(55555);
+		//alert(55555);
 	}
 	loadSetPartner(re,form,bt){
 		let a=form.get("b")

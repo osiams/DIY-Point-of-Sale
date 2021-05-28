@@ -17,8 +17,12 @@ class factory extends main{
 		$sql["truncate"]="
 			TRUNCATE `bill_in`;
 			TRUNCATE `bill_in_list`;
+			TRUNCATE `bill_rca`;
+			TRUNCATE `bill_rca_list`;
 			TRUNCATE `bill_sell`;
 			TRUNCATE `bill_sell_list`;
+			TRUNCATE `device_drawers`;
+			TRUNCATE `device_pos`;
 			TRUNCATE `gallery`;
 			TRUNCATE `group`;
 			TRUNCATE `group_ref`;
@@ -33,7 +37,10 @@ class factory extends main{
 			TRUNCATE `product_ref`;
 			TRUNCATE `prop`;
 			TRUNCATE `prop_ref`;
+			TRUNCATE `rca`;
 			TRUNCATE `s`;
+			TRUNCATE `tran`;
+			TRUNCATE `tran_rca`;
 			TRUNCATE `test`;
 			TRUNCATE `unit`;
 			TRUNCATE `unit_ref`;

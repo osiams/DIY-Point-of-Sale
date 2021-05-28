@@ -78,12 +78,15 @@ class me extends main{
 				"mout"=>["icon"=>"📤","name"=>"นำเงินออกลิ้นชัก"],
 				"sell"=>["icon"=>"🛒","name"=>"ขายสินค้า"],
 				"ret"=>["icon"=>"↪️","name"=>"คืนสินค้า"],
+				"pay"=>["icon"=>"💸️","name"=>"ชำระค้างจ่าย"]
+				
 			];
 			$today=date('Y-m-d') ;//== date('Y-m-d', strtotime($timestamp));
 			$yesterday= Date('Y-m-d', strtotime('-1 day'));
 			$date="";
 			//print_r($this->my_time);
 			echo '<div class="me_time_log_disc_head">
+				<div class="r">กะ : </div><div class="l bold">'.$_SESSION["time_id"].'</div>
 				<div class="r">เริ่มเปิดกะ : </div><div class="l bold">'.$this->my_time["date_reg"].'</div>
 				<div class="r">ชื่อลิ้นชัก : </div><div class="l bold">'.$this->my_time["name"].'</div>
 				<div class="r">รหัสลิ้นชัก : </div><div class="l bold">'.$this->my_time["sku"].'</div>
@@ -323,6 +326,10 @@ class me extends main{
 		echo '<div class="content">';
 		$this->writeMyTime();
 		echo '</div>';
+		/*$this->btMore([
+			["link"=>"?a=device&b=pos","name"=>"เครื่องขาย"],
+			["link"=>"?a=me&b=tran_log","name"=>"บันทึกเงินสดเข้า-ออกลิ้นชัก"]
+		]);*/
 		$this->pageFoot();
 	}
 	private function writeMyTime():void{//print_r($this->my_time);
@@ -352,7 +359,7 @@ class me extends main{
 				echo '<div class="start_time">ปิดกะ วันที่<div>'.$d[0].'</div></div>
 						<div class="start_time">เปิดกะ เวลา<div>'.$d[1].' น.</div></div>
 						<div class="start_time">เปิดกะมานาน<div id="time_ago">00:00:00</div></div>
-						<div></div>';
+						<div class="time_id">กะ<div>'.$_SESSION["time_id"].'</div></div>';
 				if($this->my_time["drawers_sku"]!=""){		
 					echo '	<div class="money_start">เงินสดเริ่มต้น<div>'.$ms.'</div></div>
 						<div class="money_balance">เงินสดขฌะนี้<div id="me_money_balance">'.$mb.'</div></div>

@@ -9,7 +9,7 @@ class install extends main{
 	public  function pageInstall(){
 		$ck=$this->isInstalled();
 		$this->home=1;
-		if($ck){																													//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+		if($ck){																									//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 			if($_SESSION["step"]==2){
 				//print_r($_POST);
 				if(isset($_POST["ok"])&&($_POST["ok"]=="1"||$_POST["ok"]=="0")){
@@ -153,6 +153,7 @@ class install extends main{
 			exit;
 		}
 		$re= $this->runCreateTable();
+		//print_r($re);
 		$ok=true;
 		$has=1;
 		echo '<div class="block c"><table><tr><th colspan="2">ผลการสร้าางตาราง</th></tr>
@@ -171,7 +172,6 @@ class install extends main{
 			echo '</tr>';
 		}
 		echo '</table></div><br />';
-		
 		if($ok||$has==1){
 			$_SESSION["step"]=2;
 			echo '<p class="c"><a href="install.php">ขั้นตอนถัดไป</a> </p>';
@@ -543,6 +543,28 @@ class install extends main{
 					INSERT INTO `s` (`tr`,`bs_c`,`bsr_`,`bs_r`) VALUES (yyyymmdd,1,maxid,maxid) 
 					ON DUPLICATE KEY UPDATE  `bs_c`=(IFNULL(`bs_c`,0)+1),`bsr_`=IFNULL(`bsr_`,maxid),`bs_r`=maxid;		
 					UPDATE `s` SET bs_c=(bs_c+1) WHERE tr=1;	
+				ELSEIF `table_`='bill_rca' THEN
+					SET maxid=(SELECT MAX(id) FROM bill_pay);
+					INSERT INTO `s` (`tr`,`bp_c`,`bpr_`,`bp_r`) VALUES (yyyy,1,maxid,maxid) 
+					ON DUPLICATE KEY UPDATE  `bp_c`=(IFNULL(`bp_c`,0)+1),`bpr_`=IFNULL(`bpr_`,maxid),`bp_r`=maxid;
+					INSERT INTO `s` (`tr`,`bp_c`,`bpr_`,`bp_r`) VALUES (yyyymm,1,maxid,maxid) 
+					ON DUPLICATE KEY UPDATE  `bp_c`=(IFNULL(`bp_c`,0)+1),`bpr_`=IFNULL(`bpr_`,maxid),`bp_r`=maxid;
+					INSERT INTO `s` (`tr`,`bp_c`,`bpr_`,`bp_r`) VALUES (yyyyweek,1,maxid,maxid) 
+					ON DUPLICATE KEY UPDATE  `bp_c`=(IFNULL(`bp_c`,0)+1),`bpr_`=IFNULL(`bpr_`,maxid),`bp_r`=maxid;				
+					INSERT INTO `s` (`tr`,`bp_c`,`bpr_`,`bp_r`) VALUES (yyyymmdd,1,maxid,maxid) 
+					ON DUPLICATE KEY UPDATE  `bp_c`=(IFNULL(`bp_c`,0)+1),`bpr_`=IFNULL(`bpr_`,maxid),`bp_r`=maxid;		
+					UPDATE `s` SET bp_c=(bs_c+1) WHERE tr=1;
+				ELSEIF `table_`='bill_rca_list' THEN
+					SET maxid=(SELECT MAX(id) FROM bill_rca_list);
+					INSERT INTO `s` (`tr`,`bpl_c`,`bplr_`,`bpl_r`) VALUES (yyyy,1,maxid,maxid) 
+					ON DUPLICATE KEY UPDATE  `bpl_c`=(IFNULL(`bpl_c`,0)+1),`bplr_`=IFNULL(`bplr_`,maxid),`bpl_r`=maxid;
+					INSERT INTO `s` (`tr`,`bpl_c`,`bplr_`,`bpl_r`) VALUES (yyyymm,1,maxid,maxid) 
+					ON DUPLICATE KEY UPDATE  `bpl_c`=(IFNULL(`bpl_c`,0)+1),`bplr_`=IFNULL(`bplr_`,maxid),`bpl_r`=maxid;
+					INSERT INTO `s` (`tr`,`bpl_c`,`bplr_`,`bpl_r`) VALUES (yyyyweek,1,maxid,maxid) 
+					ON DUPLICATE KEY UPDATE  `bpl_c`=(IFNULL(`bpl_c`,0)+1),`bplr_`=IFNULL(`bplr_`,maxid),`bpl_r`=maxid;
+					INSERT INTO `s` (`tr`,`bpl_c`,`bplr_`,`bpl_r`) VALUES (yyyymmdd,1,maxid,maxid) 
+					ON DUPLICATE KEY UPDATE  `bpl_c`=(IFNULL(`bpl_c`,0)+1),`bplr_`=IFNULL(`bplr_`,maxid),`bpl_r`=maxid;
+					UPDATE `s` SET bsl_c=(bsl_c+1) WHERE tr=1;
 				ELSEIF `table_`='bill_in' THEN
 					SET maxid=(SELECT MAX(id) FROM bill_in);
 					INSERT INTO `s` (`tr`,`bi_c`,`bir_`,`bi_r`) VALUES (yyyy,1,maxid,maxid) 
@@ -586,10 +608,13 @@ class install extends main{
 					UPDATE `s` SET bs_c=(bs_c-1) WHERE tr IN(1,yyyy,yyyymm,yyyyweek,yyyymmdd);				
 				ELSEIF `table_`='bill_sell_list' THEN
 					UPDATE `s` SET bsl_c=(bsl_c-1) WHERE tr IN(1);
+				ELSEIF `table_`='bill_rca' THEN
+					UPDATE `s` SET bp_c=(bp_c-1) WHERE tr IN(1,yyyy,yyyymm,yyyyweek,yyyymmdd);	
+				ELSEIF `table_`='bill_rca_list' THEN
+					UPDATE `s` SET bpl_c=(bpl_c-1) WHERE tr IN(1);
 				ELSEIF `table_`='bill_in' THEN
 					UPDATE `s` SET bi_c=(bi_c-1) WHERE tr IN(1,yyyy,yyyymm,yyyyweek,yyyymmdd);
-				ELSEIF `table_`='bill_in_list' THEN
-				
+				ELSEIF `table_`='bill_in_list' THEN	
 					UPDATE `s` SET bil_c=(bil_c-1) WHERE tr IN(1,yyyy,yyyymm,yyyyweek,yyyymmdd);
 				END IF;
 			END;
@@ -602,6 +627,10 @@ class install extends main{
 			AFTER INSERT ON `bill_in_list`  FOR EACH ROW CALL TR_('bill_in_list');";
 		$sql["create4"]="CREATE OR REPLACE DEFINER=`root`@`localhost` TRIGGER `TR.BI_`
 			AFTER INSERT ON `bill_in`  FOR EACH ROW CALL TR_('bill_in');";
+		$sql["create5"]="CREATE OR REPLACE DEFINER=`root`@`localhost` TRIGGER `TR.BPL_`
+			AFTER INSERT ON `bill_rca_list`  FOR EACH ROW CALL TR_('bill_rca_list');";
+		$sql["create6"]="CREATE OR REPLACE DEFINER=`root`@`localhost` TRIGGER `TR.BP_`
+			AFTER INSERT ON `bill_rca`  FOR EACH ROW CALL TR_('bill_rca');";
 			
 		$sql["create1c"]="CREATE OR REPLACE DEFINER=`root`@`localhost` TRIGGER `TR.BSC_`
 			AFTER DELETE ON `bill_sell`  FOR EACH ROW CALL TRC_('bill_sell',OLD.date_reg);";
@@ -614,6 +643,14 @@ class install extends main{
 				BEGIN 
 					SET @datereg=(SELECT date_reg FROM bill_in WHERE bill_in.sku=OLD.bill_in_sku);
 					CALL TRC_('bill_in_list',@datereg);
+					END;";
+		$sql["create5c"]="CREATE OR REPLACE DEFINER=`root`@`localhost` TRIGGER `TR.BPC_`
+			AFTER DELETE ON `bill_rca`  FOR EACH ROW CALL TRC_('bill_rca',OLD.date_reg);";
+		$sql["create6c"]="CREATE OR REPLACE DEFINER=`root`@`localhost` TRIGGER `TR.BPLC_`
+			AFTER DELETE ON `bill_rca_list`  FOR EACH ROW 
+				BEGIN 
+					SET @datereg=(SELECT date_reg FROM bill_rca WHERE bill_rca.id=OLD.bill_rca_id);
+					CALL TRC_('bill_rca_list',@datereg);
 					END;";
 		$sql["finelotroot"]="CREATE OR REPLACE FUNCTION `FINDLOTROOT_`(
 			billinsku_ CHAR(25) CHARACTER SET 'ascii',
@@ -850,5 +887,6 @@ if(!isset($_SESSION["step"])){
 }else if($_SESSION["step"]!=1&&$_SESSION["step"]!=2&&$_SESSION["step"]!=3){
 	$_SESSION["step"]=1;
 }
+
 (new install())->pageInstall();
 ?>

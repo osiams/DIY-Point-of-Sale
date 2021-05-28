@@ -256,7 +256,7 @@ class product extends main{
 		$error="";
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
 			$_POST["partner"]=isset($_POST["partner_list"])?$_POST["partner_list"]:"";
-			$se=$this->checkSet("product",["post"=>["name","sku","barcode","price","cost","unit","group_root","vat_p"]],"post");
+			$se=$this->checkSet("product",["post"=>["name","sku","barcode","price","cost","unit","group_root","vat_p","sku_root"]],"post");
 			$ckp = $this->checkValidateProp();
 			if(!$se["result"]){
 				$error=$se["message_error"];
@@ -281,9 +281,18 @@ class product extends main{
 			}
 		}else{
 			$sku_root=(isset($_POST["sku_root"]))?$_POST["sku_root"]:"";
-			$this->editProductSetCurent($sku_root);
-			$this->editProductPage($error);
+			if(count($_POST)>0){
+				$this->editProductSetCurent($sku_root);
+				$this->editProductPage($error);
+			}else{
+				$this->noDirect();
+			}
 		}
+	}
+	private function noDirect():void{
+		$this->pageHead([]);
+		echo '<p class="c">ไมาสามารถเข้าทางนี้โดยผ่านทาง Url โดยตรง<br /><a onclick="history.back()">กลับหน้าที่แล้ว</a></p>';
+		$this->pageFoot();
 	}
 	private function editProductUpdate():array{
 		$name=$this->getStringSqlSet($_POST["name"]);
@@ -750,7 +759,9 @@ class product extends main{
 					<div>'.$sku.','.$barcode.'</div>
 					<div>';
 			$pn_arr=json_decode($se[$i]["partner"],true);	
-			$this->writePartnerList($pn_arr);		
+			if(is_array($pn_arr)){
+				$this->writePartnerList($pn_arr);		
+			}
 			echo $this->writeDirGroup($se[$i]["group_root"],[$se[$i]["d1"],$se[$i]["d2"],$se[$i]["d3"],$se[$i]["d4"]]).'</div>
 				</td>
 				<td class="r">

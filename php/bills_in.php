@@ -88,8 +88,6 @@ class bills_in extends bills{
 		$bill_no=$this->getStringSqlSet($_POST["bill_no"]);
 		$bill_type=$this->getStringSqlSet($_POST["bill_type"]);
 		$bill_date=$this->getStringSqlSet($_POST["bill_date"]." 00:00:00");
-		$payu_json0=$this->cutPerfix($_POST["payu"]);
-		$payu_json=$this->getStringSqlSet($payu_json0);
 		$_POST["gallery_list"]=isset($_POST["gallery_list"])?$_POST["gallery_list"]:"";
 		$icon_arr=$this->setPropR($this->getStringSqlSet($_POST["gallery_list"]));
 		$pd=json_decode($_POST["product"],true);
@@ -109,16 +107,7 @@ class bills_in extends bills{
 				$sum+=$v["sum"];
 			}
 		}
-		$py=json_decode($_POST["payu"],true);
-		$py_n=0;
-		$py_sum=0;
-		
-		foreach($py as $k=>$v){
-			if($v>0){
-				$py_n+=1;
-				$py_sum+=$v;
-			}
-		}
+
 		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$jspd=$this->getStringSqlSet($_POST["product"]);
 		//print_r($_POST["sku"]);exit;
@@ -129,8 +118,6 @@ class bills_in extends bills{
 			@bill_no:=".$bill_no.",
 			@bill_type:=".$bill_type.",
 			@bill_date:=".$bill_date.",
-			@payu_json0:='".$payu_json0."',
-			@payu_json:=".$payu_json.",
 			@icon_arr:=".$this->getStringSqlSet(json_encode($icon_arr)).",
 			@lot='',
 			@jspd:=".$jspd.",
@@ -138,8 +125,6 @@ class bills_in extends bills{
 			@note:=".$note.",
 			@n:=".$n.",
 			@sum:=".$sum.",
-			@py_n:=".$py_n.",
-			@py_sum:=".$py_sum.",
 			@sum:=".$sum.",
 			@TEST:='',
 			@ischange:=0,
@@ -151,10 +136,6 @@ class bills_in extends bills{
 		$sql["check"]="
 			IF @n = 0 THEN 
 				SET @message_error='เกิดขอผิดพลาด จำนวนรายการสินค้า ที่ส่งมา 0 รายการ';
-			ELSEIF (@py_sum - @sum) >= @py_n*0.99 THEN
-				SET @message_error=CONCAT('เกิดขอผิดพลาด จำนวนที่ชำระ(',@py_sum,') มากกว่า ราคารวมสินค้า (',@sum,')');
-			ELSEIF (@sum - @py_sum) >= @py_n*0.99 THEN
-				SET @message_error=CONCAT('เกิดขอผิดพลาด จำนวนที่ชำระ(',@py_sum,') น้อยกว่า ราคารวมสินค้า (',@sum,')');
 			END IF;		
 		";
 		$sql["run"]="
@@ -167,7 +148,7 @@ class bills_in extends bills{
 				IF LENGTH(@message_error)=0 THEN
 					UPDATE bill_in 
 						SET 	n=@n						,sum=@sum				,user_edit=@user				,bill_no=@bill_no,
-								bill_type=@bill_type	,bill_date=@bill_date	,payu_json	=@payu_json	,payu_key_json=@payu_key_json,
+								bill_type=@bill_type	,bill_date=@bill_date,
 								icon_arr=JSON_UNQUOTE(@icon_arr)	,note=@note 
 						WHERE sku=".$sku.";
 					SET @pd_length=JSON_LENGTH(@jspd);
@@ -280,8 +261,8 @@ class bills_in extends bills{
 		$bill_date=$this->getStringSqlSet($_POST["bill_date"]." 00:00:00");
 		$user=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$bill_type=$this->getStringSqlSet($_POST["bill_type"]);
-		$payu_json0=$this->cutPerfix($_POST["payu"]);
-		$payu_json=$this->getStringSqlSet($payu_json0);
+		$min=0;
+		$mout=0;
 		$pd=json_decode($_POST["product"],true);
 		$n=0;
 		$sum=0;
@@ -299,22 +280,13 @@ class bills_in extends bills{
 				$sum+=$v["sum"];
 			}
 		}
-		$py=json_decode($_POST["payu"],true);
-		$py_n=0;
-		$py_sum=0;
-		
-		foreach($py as $k=>$v){
-			if($v>0){
-				$py_n+=1;
-				$py_sum+=$v;
-			}
-		}
-		//echo $bill_type."*".$n."*".$sum."*".$vat;
+
 		$sku=$this->getStringSqlSet($this->key("key",7));
 		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$jspd=$this->getStringSqlSet($_POST["product"]);
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
+			@TEST:='',
 			@message_error:='',
 			@sku:=".$sku.",
 			@jspd:=".$jspd.",
@@ -322,38 +294,31 @@ class bills_in extends bills{
 			@bill_no:=".$bill_no.",
 			@bill_type:=".$bill_type.",
 			@bill_date:=".$bill_date.",
-			@payu_json0:='".$payu_json0."',
-			@payu_json:=".$payu_json.",
 			@vat_n:=".$vat.",
 			@note:=".$note.",
 			@pn_root:=".$pn.",
 			@pn_key:='',
 			@n:=".$n.",
-			@py_n:=".$py_n.",
-			@py_sum:=".$py_sum.",
 			@sum:=".$sum.",
 			@stkey:='proot',
+			@time_id:='".$_SESSION["time_id"]."',
+			@partner_id:=(SELECT `id` FROM `partner` WHERE `sku_root`=@pn_root),
+			@user_id:=".$_SESSION["id"].",
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
 		";
 		//print_r($sql);exit;
 		$sql["check"]="
 			IF @n = 0 THEN 
 				SET @message_error='เกิดขอผิดพลาด จำนวนรายการสินค้า ที่ส่งมา 0 รายการ';
-			ELSEIF (@py_sum - @sum) >= @py_n*0.99 THEN
-				SET @message_error=CONCAT('เกิดขอผิดพลาด จำนวนที่ชำระ(',@py_sum,') มากกว่า ราคารวมสินค้า (',@sum,')');
-			ELSEIF (@sum - @py_sum) >= @py_n*0.99 THEN
-				SET @message_error=CONCAT('เกิดขอผิดพลาด จำนวนที่ชำระ(',@py_sum,') น้อยกว่า ราคารวมสินค้า (',@sum,')');
 			END IF;			
 		";
 		$sql["run"]="BEGIN NOT ATOMIC 
 			DECLARE r__ INT DEFAULT 0;
 			DECLARE __r INT DEFAULT 0;
 			DECLARE lastid INT DEFAULT NULL;	
+			DECLARE lastid_bill_in INT DEFAULT 0;
+			DECLARE now TIMESTAMP DEFAULT NOW();
 			IF LENGTH(@message_error) = 0 THEN
-				SET @dateandtime=NOW();
-				#SET @yyyymm=CONCAT(YEAR(@dateandtime),LPAD(MONTH(@dateandtime),2,'0'));
-				#CALL BILED_ (@dateandtime,@BILED_error);
-				SET @payu_key_json=GetPayuArrRef_(@payu_json0);
 				SET @stkey=(SELECT sku_key FROM  it WHERE sku_root='proot');
 				SET @pn_key=(SELECT sku_key FROM  partner WHERE sku_root=@pn_root);
 				SET @pd_length=JSON_LENGTH(@jspd);
@@ -371,7 +336,7 @@ class bills_in extends bills{
 						IF(`product`.`s_type`!='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
 						JSON_VALUE(@jspd,CONCAT('$[',i,'].sum')),
 						`unit`.`sku_key`,
-						`product`.`unit` 
+						`product`.`unit`
 					 FROM `product` 
 					 LEFT JOIN `unit`
 					 ON (`product`.`unit`=`unit`.`sku_root`)
@@ -390,15 +355,16 @@ class bills_in extends bills{
 				END IF;
 				IF r__>0 THEN
 					INSERT INTO `bill_in`  (
-						in_type		,sku			,lot_from		,lot_root		,n							,sum,
-						pn_root		,pn_key		,bill_no		,bill_type		,payu_json					,payu_key_json		,user				,note	,
-						vat_n		,bill_date,
+						time_id		,in_type		,sku			,lot_from		,lot_root		,n							,sum,
+						pn_root		,pn_key		,bill_no			,bill_type	,user				,note	,
+						vat_n			,bill_date,
 						r_				,_r			,date_reg) 
 					VALUES (
-						'b'				,@sku		,NULL			,@sku			,@n						,@sum,
-						@pn_root	,@pn_key	,@bill_no	,@bill_type		,@payu_json			,@payu_key_json	,@user		,@note,
+						@time_id	,'b'				,@sku		,NULL			,@sku			,@n						,@sum,
+						@pn_root	,@pn_key	,@bill_no		,@bill_type	,@user		,@note,
 						@vat_n		,@bill_date,
-						r__			,__r			,@dateandtime);
+						r__			,__r			,now);
+					SET lastid_bill_in=(SELECT LAST_INSERT_ID());
 				END IF;
 				SET @result=1;
 			END IF;
@@ -562,11 +528,9 @@ class bills_in extends bills{
 	}
 	private function writeContentInBillsinEdit(string $sku,array $dt,bool $editable=true):void{
 		//print_r($dt);
-		$payu=$this->payu_jsonToFromValue($dt[0]["payu_json"]);
 		$gallery=$this->propToFromValue($dt[0]["icon_arr"]);
 		$gallery_gl=$this->propToFromValue($dt[0]["icon_gl"]);
 		$product_arr=[];
-		$payu_json=$dt[0]["payu_json"];
 		for($i=0;$i<count($dt);$i++){
 			array_push($product_arr,$dt[$i]["product_sku_key"]);
 		}
@@ -574,14 +538,12 @@ class bills_in extends bills{
 		$product_str=str_replace(",,","\",\"",$product_str);
 		$product=$this->propToFromValue($product_str);
 		
-		$payu_list_id=$this->key("key",7);
 		$product_list_id=$this->key("key",7);
 		$gallery_list_id=$this->key("key",7);
 		$gallery_gl_list_id=$this->key("key",7);
-		echo $sku."**";
+		//echo $sku."**";
 		echo '<form class="form100"  name="billsin" method="post">
 			<input type="hidden" name="sku" value="'.htmlspecialchars($sku).'" />
-			<input type="hidden" id="'.$payu_list_id.'" name="payu_list" value="'.$payu.'" />
 			<input type="hidden" id="'.$product_list_id.'" name="product_list" value="'.$product.'" />
 			<input type="hidden" id="'.$gallery_list_id.'" name="gallery_list" value="'.$gallery.'" />
 			<input type="hidden" id="'.$gallery_gl_list_id.'" name="gallery_gl_list" value="'.$gallery_gl.'" />
@@ -607,14 +569,14 @@ class bills_in extends bills{
 						<option value="v0"'.($dt[0]["bill_type"]=="v0"?" selected":"").'>ใบกำกับภาษี ยังไม่รวมภาษีในราคาสินค้า</option>
 					</select>
 				</div>
-				<div>
+				<!--<div>
 					<p><span>รูปแบบการชำระ</span></p>
 				<div>';
-			$display_id=$this->key("key",7);
-			$this->form_py=new form_selects("payu","คู่ค้า","billsin",$display_id,$payu_list_id);	
-			$this->form_py->writeForm($payu_json);
+			//$display_id=$this->key("key",7);
+			//$this->form_py=new form_selects("payu","คู่ค้า","billsin",$display_id,$payu_list_id);	
+			//$this->form_py->writeForm($payu_json);
 		echo '</div>
-				</div>
+				</div>-->
 				<div>
 					<p><span>หมายเหตุ</span></p>
 					<input type="text" name="note" value="'.htmlspecialchars($dt[0]["note"]).'" />
@@ -696,7 +658,7 @@ class bills_in extends bills{
 			$re["message_error"]="ใบนำเข้าหรือ คู่ค้าไม่ถูกต้อง";
 		}else if(isset($_POST["bill_date"])&&!preg_match("/^([1-9])[0-9]{3}-(0|1)[0-9]-(0|1|2|3)[0-9]$/",$_POST["bill_date"])){
 			$re["message_error"]="วันที่ ไม่อยู่ในรูปแบบ  yyy-mm-dd";
-		}else if(
+		}/*else if(
 			!isset($_POST["payu"])
 			||
 			(
@@ -706,7 +668,7 @@ class bills_in extends bills{
 			)
 		){
 			$re["message_error"]="รูปแบบการชำระที่ส่งมาไม่ถูกต้อง";
-		}else if(!$se["result"]){
+		}*/else if(!$se["result"]){
 			$re["message_error"]=$se["message_error"];
 		}else if(!isset($_POST["sku"])&&$type=="edit"){
 			$re["message_error"]="ไม่พบใบนำเข้าที่ส่งมา";
@@ -775,14 +737,14 @@ class bills_in extends bills{
 						<option value="v0">ใบกำกับภาษี ยังไม่รวมภาษีในราคาสินค้า</option>
 					</select>
 				</div>
-				<div>
+				<!--<div>
 					<p><span>รูปแบบการชำระ</span></p>
 				<div>';
 			$payu_json='{"defaultroot":0}';
 			$this->form_py=new form_selects("payu","คู่ค้า","billsin",$this->key("key",7),$payu_list_id);	
 			$this->form_py->writeForm($payu_json);
 		echo '</div>
-				</div>
+				</div>-->
 				<div>
 					<p><span>หมายเหตุ</span></p>
 					<input type="text" name="note" />
@@ -967,8 +929,7 @@ class bills_in extends bills{
 			$this->billsinPage();
 		}
 	}
-	private function viewPageDefault(string $error,string $sku=null):void{
-		
+	private function viewPageDefault(string $error,string $sku=null):void{	
 		$dt=$this->getDataView1($sku);
 		if(count($dt)>0){
 			$tx="";
@@ -1098,7 +1059,7 @@ class bills_in extends bills{
 			SELECT r_,_r INTO r.r__,r.__r FROM bill_in WHERE sku=@sku LIMIT 1;
 			SELECT  `bill_in`.`id`  AS  `id`,`bill_in`.`bill_no`  AS  `bill_no`,`bill_in`.`in_type`  AS  `in_type`,`bill_in`.`sku`  AS  `sku`,IFNULL(`bill_in`.`note`,'')  AS  `note`, 
 				`bill_in`.`bill`  AS  `bill`,`bill_in`.`n` AS `n_list`, `bill_in`.`sum` AS `sum`,`bill_in`.`bill_type`  AS  `bill_type`,
-				`bill_in`.`pn_root`  AS  `partner_sku_root`,`bill_in`.`payu_json`  AS  `payu_json`,IFNULL(`bill_in`.`note`,'')  AS  `note`,
+				`bill_in`.`pn_root`  AS  `partner_sku_root`,IFNULL(`bill_in`.`note`,'')  AS  `note`,
 				IFNULL(`bill_in`.`icon_arr`,'[]') AS `icon_arr`,IFNULL(`bill_in`.`icon_gl`,'[]') AS `icon_gl`,  
 				`bill_in`.`bill_date` AS `bill_date`, `bill_in`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,

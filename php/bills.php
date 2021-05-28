@@ -5,7 +5,7 @@ class bills extends main{
 		$this->setDir();
 	}
 	public function run(){
-		$q=["in","sell","ret","move","mmm"];
+		$q=["in","sell","ret","move","mmm","pay"];
 		if(isset($_GET["c"])&&in_array($_GET["c"],$q)){
 			require_once("php/bills_".$_GET["c"].".php");
 			
@@ -29,14 +29,18 @@ class bills extends main{
 				</tr>
 				<tr>
 					<td class="l">3.</td>
-					<td class="l"><a href="?a=bills&amp;c=mmm">ใบแตกสินค้า</a></td>
+					<td class="l"><a href="?a=bills&amp;c=pay">ใบรับชำระค้างจ่าย</a></td>
 				</tr>
 				<tr>
 					<td class="l">4.</td>
-					<td class="l"><a href="?a=bills&amp;c=ret">ใบคืนสินค้า</a></td>
+					<td class="l"><a href="?a=bills&amp;c=mmm">ใบแตกสินค้า</a></td>
 				</tr>
 				<tr>
 					<td class="l">5.</td>
+					<td class="l"><a href="?a=bills&amp;c=ret">ใบคืนสินค้า</a></td>
+				</tr>
+				<tr>
+					<td class="l">6.</td>
 					<td class="l"><a href="?a=bills&amp;c=move">ใบย้ายสินค้า</a></td>
 				</tr>
 			</table>';
