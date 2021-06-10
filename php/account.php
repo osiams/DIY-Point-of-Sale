@@ -7,11 +7,14 @@ class account extends main{
 		$this->addDir("?a=".$this->a,$this->title);
 	}
 	public function run(){
-		$b=["account_rca"];
+		$b=["account_rca","account_history"];
 		if(isset($_GET["b"])&&in_array($_GET["b"],$b)){
 			$t=$_GET["b"];
 			if($t=="account_rca"){
 				//echo "(new ".$t."())->run();";
+				require_once("php/".$t.".php");
+				eval("(new ".$t."())->run();");
+			}else if($t=="account_history"){
 				require_once("php/".$t.".php");
 				eval("(new ".$t."())->run();");
 			}

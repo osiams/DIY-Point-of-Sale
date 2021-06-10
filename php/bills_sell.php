@@ -184,9 +184,46 @@ echo $mo->format('U')-$reg->format("U");*/
 		//------------------
 		echo '		<br /><img src="?a=bill58&amp;b=viewbill&amp;sku='.$head["sku"].'" class="imgbill" alt="ภาพใบเสร็จเลขที่ '.$head["sku"].'"  /><br />
 			<a onclick="M.printAgain(\'bill58\',\'print\',\''.$head["sku"].'\')">🖨 พิมพ์อีกครั้ง</a><br /><br />
-		</div></div>';		
-		//echo $TEST;
+		</div></div>';	
+		//print_r($head);	
+
 		$this->stockCut($head["sku"]);
+		if($head["credit"]>0){
+			$this->writeHistoryPay($head["bill_sell_id"]);
+		}		
+	}
+	private function writeHistoryPay(int $bill_sell_id){
+		$dt=$this->getDataPay($bill_sell_id);
+		//print_r($dt);
+		echo '<br /><h3 class="c">ประวัติการชำระค้างจ่าย</h3>';
+		echo '<table><tr><th>ที่</th><th>วันที่</th><th>เลขที่ใบเสร็จ</th><th>ชำระ</th><th>คงเหลือ</th></tr>';
+		for($i=0;$i<count($dt);$i++){
+			echo '<tr>
+				<td>'.($i+1).'</td>
+				<td>'.substr($dt[$i]["date_reg"],0,16).'</td>
+				<td><a href="?a=bills&c=pay&b=view&sku='.$dt[$i]["sku"].'">'.$dt[$i]["sku"].'</a></td>
+				<td>'.number_format($dt[$i]["min"],2,".",",").'</td>
+				<td>'.number_format($dt[$i]["money_balance"],2,".",",").'</td>
+			</tr>';
+		}
+		echo '</table>';
+	}
+	private function getDataPay(int $bill_sell_id):array{
+		$re=[];
+		$sql=[];
+		$sql["list"]="SELECT `bill_rca_list`.`bill_rca_id` ,`bill_rca_list`.`min`,
+				`bill_rca_list`.`credit`,`bill_rca_list`.`money_balance`,
+				`bill_rca`.`sku`,`bill_rca`.`sku`,`bill_rca`.`date_reg`
+			FROM `bill_rca_list` 
+			LEFT JOIN `bill_rca`
+			ON(`bill_rca_list`.`bill_rca_id`=`bill_rca`.`id`)
+			WHERE `bill_rca_list`.`bill_sell_id`=".$bill_sell_id;
+		$se=$this->metMnSql($sql,["list"]);
+		//print_r($se);
+		if($se["result"]&&isset($se["data"]["list"])){
+			$re=$se["data"]["list"];
+		}
+		return $re;
 	}
 	private function stockCut(string $sku):void{
 		echo '<table><caption>การตัดสินค้า</caption>
@@ -292,8 +329,8 @@ echo $mo->format('U')-$reg->format("U");*/
 		$re=["head"=>[],"list"=>[]];
 		$sku=$this->getStringSqlSet($sku);
 		$sql=[];
-		$sql["head"]="SELECT  `bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`, `bill_sell`.`stat`  AS  `stat`, 
-				`bill_sell`.`price` AS `price`,bill_sell.w, `bill_sell`.`modi_date` AS `modi_date`, 
+		$sql["head"]="SELECT  `bill_sell`.`id` AS `bill_sell_id` ,`bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`, `bill_sell`.`stat`  AS  `stat`, 
+				`bill_sell`.`price` AS `price`,`bill_sell`.`credit` AS `credit`,bill_sell.w, `bill_sell`.`modi_date` AS `modi_date`, 
 				`bill_sell`.`mout` AS `mout`,
 				GetPayuArrRefData_(`bill_sell`.`payu_json`) AS `payu_json`,
 				`bill_sell`.`date_reg` AS `date_reg`,
@@ -302,7 +339,8 @@ echo $mo->format('U')-$reg->format("U");*/
 				TIMESTAMPDIFF(SECOND,bill_sell.date_reg,bill_sell.modi_date) AS dif,
 				IFNULL(NVL2(`member_ref`.`id`,CONCAT(`member_ref`.`name`,' ', `member_ref`.`lastname`),''),'') AS `member_name`,
 				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`,IFNULL(`member_ref`.`sku`,'') AS `member_sku`,
-				`member_ref`.`sku_root` AS `member_sku_root`
+				`member_ref`.`sku_root` AS `member_sku_root`,
+				`rca`.`credit` AS `rca_credit`
 			FROM `bill_sell` 
 			LEFT JOIN `user_ref`
 			ON( `bill_sell`.`user`=`user_ref`.`sku_key`)
@@ -310,6 +348,8 @@ echo $mo->format('U')-$reg->format("U");*/
 			ON( `bill_sell`.`user_edit`=`user_ref`.`sku_key`)
 			LEFT JOIN `member_ref`
 			ON( `bill_sell`.`member_sku_key`=`member_ref`.`sku_key`)
+			LEFT JOIN `rca`
+			ON( `bill_sell`.`id`=`rca`.`bill_sell_id`)
 			WHERE bill_sell.sku=".$sku." LIMIT 1
 		";
 		$sql["list"]="SELECT  
@@ -386,8 +426,8 @@ echo $mo->format('U')-$reg->format("U");*/
 			}
 			$mb=htmlspecialchars($this->setMemberTxt($se[$i]["member_name"],$se[$i]["mb_type"],""));
 			$s_credit="";
-			if($se[$i]["credit"]>0){
-				$s_credit=' <span class="s_credit">👎 '.number_format($se[$i]["credit"],2,".",",").'</span>';
+			if($se[$i]["rca_credit"]>0){
+				$s_credit=' <br /><div class="r"><span class="s_credit">👎 '.number_format($se[$i]["rca_credit"],2,".",",").' / '.number_format($se[$i]["credit"],2,".",",").'</span></div>';
 			}
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
 				<td>
@@ -422,12 +462,15 @@ echo $mo->format('U')-$reg->format("U");*/
 				`bill_sell`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
 				IFNULL(NVL2(`member_ref`.`id`,CONCAT(`member_ref`.`name`,' ', `member_ref`.`lastname`),''),'') AS `member_name`,
-				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`
+				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`,
+				`rca`.`credit` AS `rca_credit`
 			FROM `bill_sell` 
 			LEFT JOIN `user_ref`
 			ON( `bill_sell`.`user`=`user_ref`.`sku_key`)
 			LEFT JOIN `member_ref`
 			ON( `bill_sell`.`member_sku_key`=`member_ref`.`sku_key`)
+			LEFT JOIN `rca`
+			ON (`bill_sell`.`id`=`rca`.`bill_sell_id`)
 			ORDER BY `bill_sell`.`id` DESC LIMIT ".(($this->page-1)*$this->per).",".$this->per."";
 		$sql["result"]="SELECT @count AS count";
 		$se=$this->metMnSql($sql,["get","result"]);

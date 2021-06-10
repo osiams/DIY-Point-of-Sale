@@ -38,7 +38,13 @@ class bill_sell_delete extends bills{
 			@note:=".$note.",
 			@user:=".$user.",
 			@TEST:='',
+			@ip:='".$_SESSION["ip"]."',
 			@ded:=0,
+			@time_id:='".$_SESSION["time_id"]."',
+			@max_id:=(SELECT MAX(`id`)+1 FROM `bill_in`),
+			@money_balance:=(SELECT IFNULL(`money_balance`,0) FROM `device_pos` WHERE `ip`='".$_SESSION["ip"]."' AND `user` = '".$_SESSION["sku_root"]."' AND `onoff` = '1'),
+			@drawers_id:=(SELECT `drawers_id` FROM `device_pos` WHERE `ip`='".$_SESSION["ip"]."' AND `user` = '".$_SESSION["sku_root"]."' AND `onoff` = '1'),
+			@user_key:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$user." LIMIT 1),
 			@has:=(SELECT  COUNT(*)  FROM bill_sell WHERE  sku=@sku);
 		";
 		$sql["check"]="
@@ -55,7 +61,10 @@ class bill_sell_delete extends bills{
 			DECLARE done INT DEFAULT FALSE;
 			DECLARE k CHAR(25) DEFAULT '';
 			DECLARE n_list INT DEFAULT 0;
+			DECLARE date_reg CHAR(19) DEFAULT NOW();
 			DECLARE sums FLOAT DEFAULT 0;
+			DECLARE bill_canc_id INT DEFAULT 0;
+			DECLARE rbill ROW (price FLOAT,credit FLOAT,member_id INT);
 			DECLARE r ROW (bill_in_list_id INT ,
 													lot VARCHAR(25),
 													product_sku_key VARCHAR(25),
@@ -98,7 +107,7 @@ class bill_sell_delete extends bills{
 			DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;			
 			IF @message_error='' THEN
 				SET @stkey=(SELECT sku_key FROM  it WHERE sku_root='proot');	
-				SET k=KEY_();		
+				SET k=CONCAT(@sku,'.',@max_id);		
 				OPEN cur1;
 					read_loop: LOOP
 						FETCH cur1 INTO r;
@@ -132,8 +141,35 @@ class bill_sell_delete extends bills{
 					SET __r=r__;
 				END IF;
 				IF n_list>0 THEN
-					INSERT INTO  bill_in  (in_type,sku,lot_from,lot_root,bill,n,sum,user,note,r_,_r) 
-					VALUES ('c',k,NULL,NULL,@sku,n_list,sums,@user,@note,r__,__r);			
+					INSERT INTO  bill_in  (time_id,in_type,sku,lot_from,lot_root,bill,n,sum,user,note,r_,_r,`date_reg`) 
+					VALUES (@time_id,'c',k,NULL,NULL,@sku,n_list,sums,@user,@note,r__,__r,date_reg);		
+					SET bill_canc_id=(SELECT `id` FROM `bill_in` WHERE `sku`= k LIMIT 1);	
+					IF  bill_canc_id> 0 THEN
+						SELECT `bill_sell`.`price`,`bill_sell`.`credit`,`member_ref`.`id` AS `member_id`
+							INTO rbill.price,rbill.credit,rbill.member_id 
+							FROM `bill_sell` 
+							LEFT JOIN `member_ref`
+							ON(`bill_sell`.`member_sku_key`=`member_ref`.`sku_key`) 
+							WHERE `bill_sell`.`sku`=@sku LIMIT 1;
+						SET @member_id=rbill.member_id;
+						IF rbill.price > 0 THEN
+							INSERT INTO `tran`(
+									`time_id`		,`mout`			,`tran_type`			,`ref`	,`ip`,
+									`drawers_id`	,`user`,
+									`money_balance`	,
+									`date_reg`
+								)VALUES(
+									@time_id		,rbill.price			,'canc'					,k			,@ip,
+									@drawers_id	,@user_key, 
+									(@money_balance-rbill.price),
+									date_reg
+								)
+							;
+							UPDATE `device_pos` 
+								SET `money_balance` = (@money_balance-rbill.price)
+								WHERE `ip`= @ip;	
+						END IF;
+					END IF;
 				END IF;
 			END IF;
 		END;	";

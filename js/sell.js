@@ -1314,8 +1314,13 @@ class sell extends main{
 		
 					let d6=this.ce("div",{})
 					this.end(d6,[this.cn("ประเภท:"+this.mb_type[this.member.mb_type])])
+					
 				this.end(d1,[d2,d4,d6])	
-				
+					if(this.member.credit>0){
+						let d7=this.ce("div",{"class":"bold darkred"})
+						this.end(d7,[this.cn("มียอดค้างชำระ:"+this.nb(this.member.credit,2))])
+						this.end(d1,[d7])	
+					}
 			}
 			this.end(d0,[img])
 			this.end(p,[d0,d1])

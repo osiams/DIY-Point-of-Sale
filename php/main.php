@@ -71,12 +71,13 @@ class main{
 			],
 			"bill_rca"=>[
 				"name"=>"bill_rca",
-				"column"=>["id","time_id","sku","user_id","member_id","note","r_","_r","pos_id","drawers_id",
-					"pay","min","credit","payu_json","payu_key_json","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","min"=>0,"mout"=>0,"credit"=>0],
+				"column"=>["id","time_id","sku","user_id","member_id","member_sku_key","user","user_edit",
+				"note","r_","_r","pos_id","drawers_id","onoff",
+					"pay","min","credit","payu_json","payu_key_json","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","min"=>0,"mout"=>0,"credit"=>0,"onoff"=>"1"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
 				"primary"=>"id",
-				"index"=>["time_id","sku","member_id","date_reg"]
+				"index"=>["time_id","sku","member_id","date_reg","member_sku_key","user","onoff",]
 			],
 			"bill_rca_partner"=>[
 				"name"=>"bill_rca_partner",
@@ -347,7 +348,7 @@ class main{
 				"name"=>"time",
 				"column"=>[	"id"			,"ip"			,"drawers_id"		,"money_start"			,"min"				,"mout",		"money_balance",
 									"r_"			,"_r"			,"user"		,"note"		,"date_reg"	,"date_exp"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],					
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","date_exp"=>"NULL"],					
 				"primary"=>"id",
 				"index"=>["drawers_id","ip","user"]
 			],
@@ -363,7 +364,7 @@ class main{
 			"tran_rca"=>[
 				"name"=>"tran_rca",
 				"column"=>[	"id"			,"time_id"			,"tran_rca_type"			,"bill_rca_id"		,"ip"					,"drawers_id",
-									"min"		,"mout"				,"money_balance"		,"member_id"		,"user_id",
+									"min"		,"mout"				,"money_balance"		,"member_id"		,"user_id",			
 									"date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","min"=>0,"mout"=>0,"money_balance"=>0],					
 				"primary"=>"id",
@@ -480,7 +481,7 @@ class main{
 			"name"=>["name"=>"ชื่อ","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			"note"=>["name"=>"บันทึกย่อ","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			"od_type"=>["name"=>"รูปแบบการสั่งซื้อ","type"=>"ENUM","length_value"=>["s","a","o","t"]],
-			"onoff"=>["name"=>"เปิดปิดกะ","type"=>"ENUM","length_value"=>["0","1"]],
+			"onoff"=>["name"=>"เปิดปิด","type"=>"ENUM","length_value"=>["0","1"]],
 			//"partner1"=>["name"=>"คู่ค้า1","type"=>"CHAR","length_value"=>255],
 			//"partner2"=>["name"=>"คู่ค้า2","type"=>"CHAR","length_value"=>255],
 			//"partner3"=>["name"=>"คู่ค้า3","type"=>"CHAR","length_value"=>255],
@@ -547,8 +548,8 @@ class main{
 			"tms"=>["name"=>"เวลา","type"=>"FLOAT","length_value"=>[12,6]],
 			"tp_type"=>["name"=>"การส่งสินค้า","type"=>"ENUM","length_value"=>["0","1"]],
 			"tran_ref"=>["name"=>"เลขอ้างอิง","type"=>"CHAR","length_value"=>25],
-			"tran_type"=>["name"=>"รูปแบบเข้าออกเงิน","type"=>"ENUM","length_value"=>["sell","min","mout","ret","pay"]],
-			"tran_rca_type"=>["name"=>"รูปแบหนี้สินเพิ่มลด","type"=>"ENUM","length_value"=>["sell","pay"]],
+			"tran_type"=>["name"=>"รูปแบบเข้าออกเงิน","type"=>"ENUM","length_value"=>["sell","min","mout","ret","pay","canc"]],
+			"tran_rca_type"=>["name"=>"รูปแบหนี้สินเพิ่มลด","type"=>"ENUM","length_value"=>["sell","pay","ret","canc"]],
 			"unit"=>["name"=>"หน่วย","type"=>"CHAR","length_value"=>25],
 			"unit_sku_key"=>["name"=>"รหัสอิงอิงหน่วย","type"=>"CHAR","length_value"=>25],
 			"unit_sku_root"=>["name"=>"รหัสรากหน่วย","type"=>"CHAR","length_value"=>25],

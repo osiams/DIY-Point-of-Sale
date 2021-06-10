@@ -78,7 +78,8 @@ class me extends main{
 				"mout"=>["icon"=>"📤","name"=>"นำเงินออกลิ้นชัก"],
 				"sell"=>["icon"=>"🛒","name"=>"ขายสินค้า"],
 				"ret"=>["icon"=>"↪️","name"=>"คืนสินค้า"],
-				"pay"=>["icon"=>"💸️","name"=>"ชำระค้างจ่าย"]
+				"pay"=>["icon"=>"💸️","name"=>"ชำระค้างจ่าย"],
+				"canc"=>["icon"=>"❌️","name"=>"ยกเลิกใบเสร็จที่ออกไปแล้ว"]
 				
 			];
 			$today=date('Y-m-d') ;//== date('Y-m-d', strtotime($timestamp));
@@ -95,6 +96,7 @@ class me extends main{
 			echo '<table>
 				<tr><th>ที่</th><th>เวลา</th><th>ประเภท</th><th>💬</th><th>เข้า</th><th>ออก</th><th>คงเหลือ</th></tr>';		
 			$q=0;
+			//print_r($this->my_tran);
 			for($i=0;$i<count($this->my_tran);$i++){
 				$d=explode(" ",$this->my_tran[$i]["date_reg"]);
 				
@@ -120,7 +122,15 @@ class me extends main{
 				$tt=$this->my_tran[$i]["tran_type"];
 				$type_tx=$type_icon;
 				if($tt=="sell"){
-					$type_tx='<span class="me_time_log_span" onclick="Me.showBill(this,\''.$tt.'\',\''.$this->my_tran[$i]["ref"].'\','.($i+1).'.)" title="ใบเสร็จเลขที่ '.$this->my_tran[$i]["ref"].'">'.$type_icon.'</span>';
+					$type_tx='<span class="me_time_log_span" onclick="Me.showBill(this,\''.$tt.'\',\''.$this->my_tran[$i]["ref"].'\','.($i+1).')" title="ใบเสร็จเลขที่ '.$this->my_tran[$i]["ref"].'">'.$type_icon.'</span>';
+				}else if($tt=="pay"){
+					$type_tx='<span class="me_time_log_span" onclick="Me.showBill(this,\''.$tt.'\',\''.$this->my_tran[$i]["ref"].'\','.($i+1).')" title="ใบเสร็จเลขที่ '.$this->my_tran[$i]["ref"].'">'.$type_icon.'</span>';
+				}else if($tt=="ret"){
+					$type_tx='<span class="me_time_log_span" onclick="Me.showBill(this,\''.$tt.'\',\''.$this->my_tran[$i]["ref"].'\','.($i+1).')" title="ใบเสร็จเลขที่ '.$this->my_tran[$i]["ref"].'">'.$type_icon.'</span>';
+				}else if($tt=="canc"){
+
+					$bil=preg_replace(["/.[0-9]{1,}$/"],[""], $this->my_tran[$i]["ref"]);
+					$type_tx='<span class="me_time_log_span" onclick="Me.showBill(this,\'sell\',\''.$bil.'\','.($i+1).')" title="ใบเสร็จเลขที่ '.$bil.'">'.$type_icon.'</span>';
 				}
 				echo '<tr class="i'.$tr.'">
 					<td>'.($i+1).'.</td>

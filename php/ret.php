@@ -77,6 +77,7 @@ class ret extends main{
 	}
 	private function fetchRetSave(array $dt):array{
 		//print_r($dt);exit;
+		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$user=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$sku=$this->getStringSqlSet($dt["sku"]);
 		$ch2=$this->getStringSqlSet($dt["ch2"]);
@@ -96,6 +97,16 @@ class ret extends main{
 			@date:='',
 			@TEST:='//-',
 			@stkey:='proot',
+			@sump_ret:=0,
+			@ip:='".$_SESSION["ip"]."',
+			@time_id:='".$_SESSION["time_id"]."',
+			@money_balance:=(SELECT IFNULL(`money_balance`,0) FROM `device_pos` WHERE `ip`='".$_SESSION["ip"]."' AND `user` = '".$_SESSION["sku_root"]."' AND `onoff` = '1'),
+			@drawers_id:=(SELECT `drawers_id` FROM `device_pos` WHERE `ip`='".$_SESSION["ip"]."' AND `user` = '".$_SESSION["sku_root"]."' AND `onoff` = '1'),
+			@user_key:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1),
+			@member_id:=0,
+			@user_id:='".$_SESSION["id"]."',
+			@max_id:=(SELECT MAX(`id`)+1 FROM `bill_in`),
+			@rca_sum:=-1,
 			@has:=(SELECT  COUNT(*)  FROM bill_sell WHERE  sku=@sku);
 		";
 		$sql["set2"]="
@@ -119,6 +130,8 @@ class ret extends main{
 			DECLARE date_reg CHAR(19) DEFAULT NOW();
 			DECLARE r__ INT DEFAULT 0;
 			DECLARE __r INT DEFAULT 0;
+			DECLARE bill_rca_id INT DEFAULT 0;
+			DECLARE credit_cut FLOAT DEFAULT 0;
 			DECLARE addsku CHAR(25) CHARACTER SET ascii DEFAULT @sku;
 			DECLARE r ROW (id INT,
 													lot VARCHAR(25),
@@ -134,7 +147,18 @@ class ret extends main{
 													cost FLOAT,
 													name  VARCHAR(255)  CHARACTER SET utf8,
 													price FLOAT
-													);										
+													);
+			DECLARE rbill ROW (price FLOAT,credit FLOAT,member_id INT);		
+			DECLARE r0 ROW (
+				`id`INT ,
+				`ip`CHAR(25),
+				`onoff` CHAR(1),
+				`drawers_id`INT ,
+				`money_start` FLOAT,
+				`money_balance` FLOAT,
+				`user` CHAR(25),
+				`date_reg` TIMESTAMP
+			);														
 			DECLARE cur1 CURSOR FOR 
 			SELECT  `bill_sell_list`.`id`,IFNULL(bill_sell_list.lot,''),bill_in.lot_root, bill_sell_list.product_sku_key , bill_sell_list.product_sku_root	, 
 				bill_sell_list.n,bill_sell_list.n_wlv,bill_sell_list.r,
@@ -152,7 +176,7 @@ class ret extends main{
 			#SET @TEST=CONCAT(@TEST,'--',CURTIME(6),'');
 			SET @TEST=CONCAT(@TEST,'*',@jspd);
 			SET @date=date_reg;
-			SET k=KEY_();
+			SET k=CONCAT(@sku,'-',@max_id);
 			SET n_list=0;
 			FOR i IN 0..(@pd_length-1) DO
 				SET done = 0;
@@ -208,13 +232,70 @@ class ret extends main{
 			IF __r=0 THEN 
 				SET __r=r__;
 			END IF;
-			INSERT INTO  bill_in  (in_type,sku,lot_from,lot_root,bill,n,sum,changto,user,note,r_,_r) 
-			VALUES ('r',k,NULL,NULL,@sku,n_list,sum_cost,'0',@user,@nt_head,r__,__r);
+			INSERT INTO  bill_in  (time_id,in_type,sku,lot_from,lot_root,bill,n,sum,changto,user,note,r_,_r) 
+			VALUES (@time_id,'r',k,NULL,NULL,@sku,n_list,sum_cost,'0',@user,@nt_head,r__,__r);
 			SET @sku_ret=k;
+			SET bill_rca_id=(SELECT `id` FROM `bill_in` WHERE `sku`= @sku_ret LIMIT 1);
+			SET @TEST=CONCAT(@TEST,';@sku_ret=',@sku_ret,';@sku=',@sku);
+			IF  bill_rca_id> 0 THEN
+				SELECT `bill_sell`.`price`,`bill_sell`.`credit`,`member_ref`.`id` AS `member_id`
+					INTO rbill.price,rbill.credit,rbill.member_id 
+					FROM `bill_sell` 
+					LEFT JOIN `member_ref`
+					ON(`bill_sell`.`member_sku_key`=`member_ref`.`sku_key`) 
+					WHERE `bill_sell`.`sku`=@sku LIMIT 1;
+				SET @member_id=rbill.member_id;
+				SET @sump_ret=(SELECT  SUM(product_ref.price) AS `product_sum_price`
+					FROM `bill_in` 
+					LEFT JOIN `bill_in_list` 
+					ON(bill_in_list.id>=bill_in.r_ AND bill_in_list.id<=bill_in._r And bill_in.sku=bill_in_list.bill_in_sku)
+					LEFT JOIN product_ref
+					ON(bill_in_list.product_sku_key=product_ref.sku_key)
+					WHERE bill_in.sku=@sku_ret);
+				SET @rca_sum=(SELECT SUM(`credit`) FROM `rca` WHERE `member_id`=rbill.member_id);
+				IF rbill.credit > 0 THEN
+					IF @sump_ret <= rbill.credit THEN
+						SET credit_cut=@sump_ret;
+					ELSEIF @sump_ret > rbill.credit THEN 
+						SET credit_cut=rbill.credit;
+					END IF;
+					INSERT INTO `tran_rca` (
+							`time_id`				,`tran_rca_type`		,`bill_rca_id`					,`min`					,`ip`		,`drawers_id`,
+							`member_id`			,`user_id`					,`money_balance`			,`date_reg`
+						)VALUES(
+							@time_id				,'ret'							,bill_rca_id						,credit_cut					,@ip		,@drawers_id,
+							rbill.member_id		,@user_id					,(@rca_sum-credit_cut)	,date_reg
+						)
+					;	
+					UPDATE `rca` SET `credit`= (`credit`-credit_cut) WHERE `bill_sell_id` = @sku;
+					UPDATE `member` SET `credit` = (@rca_sum-credit_cut) WHERE `id` = @member_id;
+				END IF;
+				IF @sump_ret - rbill.credit > 0 THEN
+					INSERT INTO `tran`(
+							`time_id`		,`mout`							,`tran_type`			,`ref`	,`ip`,
+							`drawers_id`	,`user`,
+							`money_balance`	,
+							`date_reg`
+						)VALUES(
+							@time_id		,(@sump_ret - rbill.credit)	,'ret'						,@sku_ret	,@ip,
+							@drawers_id	,@user_key, 
+							(@money_balance-(@sump_ret - rbill.credit)),
+							date_reg
+						)
+					;
+					UPDATE `device_pos` 
+						SET `money_balance` = (@money_balance-(@sump_ret - rbill.credit))
+						WHERE `ip`= @ip;	
+				END IF;
+			END IF;
+			SET @TEST=CONCAT(@TEST,';@sump_ret=',@sump_ret);
+			SET @TEST=CONCAT(@TEST,';rbill.price=',rbill.price);
+			SET @TEST=CONCAT(@TEST,';rbill.credit=',rbill.credit);
 		END;	";
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@sku_ret AS `sku`,@TEST AS `TEST`";
 		$se=$this->metMnSql($sql,["result"]);
-		//print_r($se);
+		//echo "ggggggggggg";
+		print_r($se);exit;
 		if($se["result"]==1&&$se["message_error"]==""){
 			$re["result"]=true;
 			$re["sku"]=$se["data"]["result"][0]["sku"];
@@ -324,7 +405,7 @@ class ret extends main{
 		if($head["member_sku"]!=""){
 			$mbty="?";
 			if(isset($this->mb_type[$head["mb_type"]])){
-				$mbty=$this->mb_type[$head["mb_type"]]["icon"]." ".$this->mb_type[$head["mb_type"]]["name"];
+				$mbty=$this->mb_type[$head["mb_type"]];
 			}
 			echo '<div class="r"><b>🧾 ผู้ซื้อ</b> : <a href="?a=member&amp;b=details&amp;sku_root='.$head["member_sku_root"].'">'.htmlspecialchars($head["member_name"]).'</a> ,
 				<b>ประเภท</b> : '.$mbty.' ,

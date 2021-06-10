@@ -423,6 +423,16 @@ class sell extends main{
 									lastid_bill_sell	,@credit		,@member_id		,@user_id	,date_reg
 								);
 								UPDATE `member` SET `credit`=((IFNULL(`credit`,0))+@credit) WHERE `sku_root` = @member;
+								
+								INSERT INTO `tran_rca` (
+										`time_id`				,`tran_rca_type`		,`bill_rca_id`					,`mout`		,`ip`		,`drawers_id`,
+										`member_id`			,`user_id`					,`money_balance`			,`date_reg`
+									)VALUES(
+										@time_id				,'sell'							,lastid_bill_sell				,@credit				,@ip		,@drawers_id,
+										@member_id			,@user_id					,(SELECT IFNULL(`credit`,0) FROM `member` WHERE `sku_root` = @member)	,date_reg
+									)
+								;	
+								
 							END IF;
 							IF @min > 0 OR (@payu_sum-@sums) > 0 THEN
 								INSERT INTO `tran`(

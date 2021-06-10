@@ -901,7 +901,7 @@ class bills_in extends bills{
 			LEFT JOIN `user_ref`
 			ON( `bill_in`.`user`=`user_ref`.`sku_key`)
 			LEFT JOIN `partner_ref`
-			ON (`bill_in`.`pn_root`=`partner_ref`.`sku_key`)
+			ON (`bill_in`.`pn_key`=`partner_ref`.`sku_key`)
 			WHERE bill_in.in_type='b' 
 			GROUP BY bill_in.date_reg
 			ORDER BY `bill_in`.`id` DESC LIMIT ".(($this->page-1)*$this->per).",".$this->per."";

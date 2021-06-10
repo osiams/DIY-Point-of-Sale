@@ -40,7 +40,8 @@ class bills_ret extends bills{
 		$se=$this->getBillsRetList($sku);
 		//print_r($se);
 		if(count($se["list"])>0&&count($se["head"])>0){
-			$rt=preg_replace("/\\D/","", $se["head"][0]["date_reg"])."-".$se["head"][0]["bill"];
+			//$rt=preg_replace("/\\D/","", $se["head"][0]["date_reg"])."-".$se["head"][0]["bill"];
+			$rt=$se["head"][0]["sku"];
 			$this->addDir("?a=bills&amp;c=ret&amp;b=view&amp;sku=".$sku,"เลขที่ ".$rt);
 			$this->pageHead(["title"=>"ใบคืนสินค้า DIYPOS","xdir"=>true,"css"=>["ret"]]);
 			$this->writeContentpageView($sku,$rt,$se["head"],$se["list"]);
@@ -210,7 +211,7 @@ class bills_ret extends bills{
 			WHERE bill_in.sku=".$sku."
 		";
 		$se=$this->metMnSql($sql,["head","list"]);
-		//print_r($se);
+		print_r($se);
 		if($se["result"]){
 			$re["head"]=$se["data"]["head"];
 			$re["list"]=$se["data"]["list"];
@@ -252,7 +253,8 @@ class bills_ret extends bills{
 			}else if($se[$i]["changto"]=="1"){
 				$change=' สินค้า';
 			}
-			$rt=preg_replace("/\\D/","", $se[$i]["date_reg"])."-".$se[$i]["bill"];
+			//$rt=preg_replace("/\\D/","", $se[$i]["date_reg"])."-".$se[$i]["bill"];
+			$rt=$se[$i]["sku"];
 			$cm=($i%2!=0)?" class=\"i2\"":"";
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
 				<td>'.$se[$i]["date_reg"].'</td>

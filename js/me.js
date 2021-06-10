@@ -164,14 +164,24 @@ class me extends main {
 	}
 	showBill(did,type,ref,at){
 		let rid = this.rid()
+		let title="";
 		let ct=this.ce("div",{"class":"c"})
 			let ct1=this.ce("div",{"class":"me_time_log_img_bill"})
 		if(type=="sell"){
 			let img=this.ce("img",{"src":"?a=bill58&b=viewbill&sku="+ref})
+			title=at+". ใบเสร็จรับเงิน เลขที่ "+ref;
+			this.end(ct1,[img])
+		}else if(type=="pay"){
+			let img=this.ce("img",{"src":"?a=bill58&b=viewbillpay&sku="+ref})
+			title=at+". ใบเสร็จรับเงินค้างจ่าย เลขที่ "+ref;
+			this.end(ct1,[img])
+		}else if(type=="ret"){
+			let img=this.ce("img",{"src":"?a=bill58&b=viewret&sku="+ref})
+			title=at+". ใบคืนสินค้า เลขที่ "+ref;
 			this.end(ct1,[img])
 		}
 		this.end(ct,[ct1])
 		let bts = []
-		this.dialog({"rid":rid,"display":1,"bts":bts,"bts0":null,"ct":ct,"title":at+". ใบเสร็จรับเงิน เลขที่ "+ref,"width":"424","height":window.innerHeight})
+		this.dialog({"rid":rid,"display":1,"bts":bts,"bts0":null,"ct":ct,"title":title,"width":"424","height":window.innerHeight})
 	}
 }

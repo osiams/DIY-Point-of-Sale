@@ -544,7 +544,7 @@ class install extends main{
 					ON DUPLICATE KEY UPDATE  `bs_c`=(IFNULL(`bs_c`,0)+1),`bsr_`=IFNULL(`bsr_`,maxid),`bs_r`=maxid;		
 					UPDATE `s` SET bs_c=(bs_c+1) WHERE tr=1;	
 				ELSEIF `table_`='bill_rca' THEN
-					SET maxid=(SELECT MAX(id) FROM bill_pay);
+					SET maxid=(SELECT MAX(id) FROM bill_rca);
 					INSERT INTO `s` (`tr`,`bp_c`,`bpr_`,`bp_r`) VALUES (yyyy,1,maxid,maxid) 
 					ON DUPLICATE KEY UPDATE  `bp_c`=(IFNULL(`bp_c`,0)+1),`bpr_`=IFNULL(`bpr_`,maxid),`bp_r`=maxid;
 					INSERT INTO `s` (`tr`,`bp_c`,`bpr_`,`bp_r`) VALUES (yyyymm,1,maxid,maxid) 
@@ -553,7 +553,7 @@ class install extends main{
 					ON DUPLICATE KEY UPDATE  `bp_c`=(IFNULL(`bp_c`,0)+1),`bpr_`=IFNULL(`bpr_`,maxid),`bp_r`=maxid;				
 					INSERT INTO `s` (`tr`,`bp_c`,`bpr_`,`bp_r`) VALUES (yyyymmdd,1,maxid,maxid) 
 					ON DUPLICATE KEY UPDATE  `bp_c`=(IFNULL(`bp_c`,0)+1),`bpr_`=IFNULL(`bpr_`,maxid),`bp_r`=maxid;		
-					UPDATE `s` SET bp_c=(bs_c+1) WHERE tr=1;
+					UPDATE `s` SET bp_c=(bp_c+1) WHERE tr=1;
 				ELSEIF `table_`='bill_rca_list' THEN
 					SET maxid=(SELECT MAX(id) FROM bill_rca_list);
 					INSERT INTO `s` (`tr`,`bpl_c`,`bplr_`,`bpl_r`) VALUES (yyyy,1,maxid,maxid) 

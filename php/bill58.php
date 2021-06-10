@@ -78,6 +78,9 @@ class bill58 extends main{
 				require_once("php/class/barcode.php");
 				$this->bc=new barcode($this->font_file2);
 				$this->viewmmm($_GET["sku"]);
+			}else if($_GET["b"]=="viewbillpay"&&isset($_GET["sku"])
+				&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku"])){
+				$this->viewPay($_GET["sku"]);
 			}else if($_GET["b"]=="labelimg"&&isset($_GET["sku_root"])&&$this->isSKU($_GET["sku_root"])){
 				require_once("php/class/barcode.php");
 				$this->bc=new barcode($this->font_file2);
@@ -165,6 +168,9 @@ class bill58 extends main{
 		}else if(isset($_POST["b"])&&$_POST["b"]=="print_ret"
 			&&(isset($_POST["sku"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["sku"]))){
 			$this->retPrint($_POST["sku"]);
+		}else if(isset($_POST["b"])&&$_POST["b"]=="print_pay"
+			&&(isset($_POST["sku"])&&preg_match("/^[0-9]{1,25}$/",$_POST["sku"]))){
+			$this->payPrint($_POST["sku"]);
 		}else if(isset($_POST["b"])&&$_POST["b"]=="print_mmm"
 			&&(isset($_POST["sku"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["sku"]))){
 			require_once("php/class/barcode.php");
@@ -409,6 +415,13 @@ class bill58 extends main{
 			}
 		}
 		$imr = imagescale ($im,(2/3)*$this->bill_width,$this->bill_height,IMG_BILINEAR_FIXED);
+		$wt = imagecreatefrompng('img/pos/384x256_canc.png');
+		imagealphablending($wt, false); 
+		imagesavealpha($wt, true);
+		imagefilter($wt, IMG_FILTER_COLORIZE, 0,0,0,127*0.5);
+		imagecopy($imr, $wt, 0, 0, 0, 0,384, 256);
+		imagedestroy($wt);	
+
 		return $imr;
 	}
 	protected function setTm0(string $sku):array{
@@ -574,7 +587,8 @@ class bill58 extends main{
 		$se=$this->getRetBillData($sku);
 		//print_r($se);
 		if(count($se["list"])>0&&count($se["head"])>0){
-			$rt=preg_replace("/\\D/","", $se["head"][0]["date_reg"])."-".$se["head"][0]["bill"];
+			//$rt=preg_replace("/\\D/","", $se["head"][0]["date_reg"])."-".$se["head"][0]["bill"];
+			$rt=$se["head"][0]["sku"];
 			$l=explode("\n",$this->receipt->receipt58->sale->head);
 			for($i=0;$i<count($l);$i++){
 				$re["shop_".$i]=[["t"=>$l[$i],"lcr"=>"l"]];
@@ -605,6 +619,11 @@ class bill58 extends main{
 			$re["total"]=[
 				["t"=>"รวม ".$n_list." รายการ","lcr"=>"l"],
 				["t"=>"รวมเงิน ".number_format($sum,2,'.',',')." บาท ","lcr"=>"r"]
+			];
+			$re["listhreg"]=[["t"=>"------------------------------------------------------------------------","lcr"=>"c"]];
+			$re["rett"]=[
+				["t"=>"คืนเป็นเงินสด","lcr"=>"l"],
+				["t"=>number_format($sum,2,'.',',')." บาท ","lcr"=>"r"]
 			];
 			$re["tail"]=[["t"=>$this->receipt->receipt58->sale->foot,"lcr"=>"c"]];
 			for($i=0;$i<$this->printer->feed;$i++){
@@ -1085,6 +1104,180 @@ class bill58 extends main{
 				$re["line_feed_".$i]=[["t"=>" ","lcr"=>"l"]];
 			}
 		//print_r($re);
+		return $re;
+	}
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	private function viewPay(string $sku){
+		$tm0=$this->paySetTm0($sku);
+		$im=$this->createImg($tm0);
+		header('Content-Type: image/png');
+		imagepng($im);
+		imagedestroy($im);
+	}
+	protected function payPrint(string $sku){
+		$re=["result"=>false,"message_error"=>"","sku"=>$sku];
+		try {
+			if($this->checkNP("exists")){
+				if($this->checkNP("writable")){
+					$printer = new Printer($this->fnConect());	
+					$this->printLogo($printer);
+					$foo = new GdEscposImage();
+					$tm0=$this->paySetTm0($sku);
+					$imr=$this->createImg($tm0);
+					$foo -> readImageFromGdResource($imr);
+					$this->pulse($printer);
+					$printer->bitImageColumnFormat($foo);
+					$this->printCut($printer);
+					$printer -> close();
+					$re["result"]=true;
+				}else{
+					throw new Exception("ไมสามารถเขียนไฟล์ได้ \n".$this->usb." \nโปรดตรวจสอบ\nการตั้งค่าผู้ใช้ในกลุ่มเครื่องพิมพ์");
+				}
+			}else{
+				throw new Exception("ไม่พบที่อยู่ปลายทาง \n".$this->usb." \nโปรดตรวจสอบการเชื่อมต่ออุปกรณ์ \nหรือการตั้งค่าที่อยู่ของเครื่องพิมพ์");
+			}
+		}catch (Exception $e) {
+			$re["message_error"]=$e->getMessage();
+		}
+		header('Content-type: application/json');
+		echo json_encode($re);
+	}
+	private function paySetTm0(string $sku):array{
+		$re=[];
+		$se=$this->getPayBillData($sku);
+		$payu=json_decode($se["head"]["payu_json"],true);
+		$payu=$this->cutValue0($payu);
+		//print_r($se);
+		if(count($se["list"])>0&&count($se["head"])>0){
+			$rt=$se["head"]["sku"];
+			$l=explode("\n",$this->receipt->receipt58->sale->head);
+			for($i=0;$i<count($l);$i++){
+				$re["shop_".$i]=[["t"=>$l[$i],"lcr"=>"l"]];
+			}
+			$re["usertime"]=[
+				["t"=>" พ:".$se["head"]["user_sku"]." " ,"lcr"=>"l"],
+				["t"=>substr($se["head"]["date_reg"],0,-3)." " ,"lcr"=>"r"]
+			];
+			if($se["head"]["member_sku"]!=""){
+				$re["member"]=[
+					["t"=>"สมาชิก : ".$se["head"]["member_name"]."  รหัส : ".$se["head"]["member_sku"]." " ,"lcr"=>"l"]
+				];
+			}
+			$re["rt"]=[["t"=>"เลขที่ : ".$rt." " ,"lcr"=>"l"]];
+			$re["recv"]=[["t"=>"ใบเสร็จรับเงินชำระค้างจ่าย","lcr"=>"c"]];
+			$n_list=0;
+			$credit=0;
+			$sum=0;
+			$re["thr_0"]=[
+				["t"=>"-----------------------------------------------------------------------","lcr"=>"c"]
+			];	
+			$re["th"]=[
+				["t"=>"  รายละเอียด ใบเสร็จ","lcr"=>"l"],
+				["t"=>"ตัดยอดชำระ  ","lcr"=>"r"]
+			];
+			$re["thr_1"]=[
+				["t"=>"-----------------------------------------------------------------------","lcr"=>"c"]
+			];
+			for($i=0;$i<count($se["list"]);$i++){
+				$n_list+=1;
+				$sum+=$se["list"][$i]["min"];
+				$credit+=$se["list"][$i]["credit"];
+				$re["listp_".$i]=[
+					["t"=>$se["list"][$i]["bill_sell_sku"]." ".substr($se["list"][$i]["bill_sell_date_reg"],0,-3),"lcr"=>"l"],
+					["t"=>number_format($se["list"][$i]["min"],2,".",","),"lcr"=>"r"]
+				];
+				$re["blo_".$i]=[
+					["t"=>"  *ยอดค้าง ".number_format($se["list"][$i]["credit"],2,".",",")."","lcr"=>"l"]
+
+				];		
+			$re["hr_".$i]=[
+				["t"=>"-----------------------------------------------------------------------","lcr"=>"c"]
+			];	
+			}
+			/*for($i=0;$i<count($se["list"]);$i++){
+				$re["listp_".$i]=[
+					["t"=>$se["list"][$i]["bill_sell_sku"]." ".substr($se["list"][$i]["bill_sell_date_reg"],0,-3),"lcr"=>"l"],
+					["t"=>number_format($se["list"][$i]["min"],2,".",","),"lcr"=>"r"]
+
+				];
+			}*/
+			$re["total"]=[
+				["t"=>"ค้างชำระ ".$n_list." ใบเสร็จ เงินรวม","lcr"=>"l"],
+				["t"=>"".number_format($credit,2,'.',',')." บาท ","lcr"=>"r"]
+			];
+			$re["paynow"]=[
+				["t"=>"ชำระครั้งนี้","lcr"=>"l"],
+				["t"=>"".number_format($sum,2,'.',',')." บาท ","lcr"=>"r"]
+			];
+			
+			$q=0;	
+			$re["bal"]=[
+				["t"=>"ยอดค้างชำระ คงเหลือ","lcr"=>"l"],
+				["t"=>"".number_format(($credit-$sum),2,'.',',')." บาท ","lcr"=>"r"]
+			];
+			$re["pay_by"]=[["t"=>"ชำระโดย","lcr"=>"c"]];			
+			$sum_pay=0;
+			foreach($payu as $k=>$v){
+				$q+=1;
+				$sum_pay+=$v["value"];
+				$re["payu_".$q]=[
+					["t"=>"".htmlspecialchars($v["name"])." ","lcr"=>"l"],
+					["t"=>"".number_format($v["value"],2,'.',',')." บาท ","lcr"=>"r"]			
+				];	
+			}
+
+			$mout=$sum_pay-$credit;
+			$mout=($mout<0)?0:$mout;
+			$re["payu_mout"]=[
+				["t"=>"เงินทอน ".number_format($mout,2,'.',',')." บาท ","lcr"=>"r"]			
+			];	
+			
+			$re["tail"]=[["t"=>$this->receipt->receipt58->sale->foot,"lcr"=>"c"]];
+			for($i=0;$i<$this->printer->feed;$i++){
+				$re["line_feed_".$i]=[["t"=>" ","lcr"=>"l"]];
+			}
+		}
+		//print_r($re);exit;
+		return $re;
+	}
+	private function getPayBillData(string $sku):array{
+		$re=["head"=>[],"list"=>[]];
+		$sku=$this->getStringSqlSet($sku);
+		$sql=[];
+		$sql["head"]="SELECT  @bill_rca_id:=`bill_rca`.`id`  AS  `id`,`bill_rca`.`sku`  AS  `sku`,
+				`bill_rca`.`pay`,`bill_rca`.`credit`,`bill_rca`.`onoff`,
+				GetPayuArrRefData_(`bill_rca`.`payu_json`) AS `payu_json`,
+				`bill_rca`.`date_reg` AS `date_reg`,
+				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
+				`user_ref`.`sku` AS `user_sku`,
+				CONCAT(`user_ref2`.`name`,' ', `user_ref2`.`lastname`) AS `user_name_edit`,
+				IFNULL(NVL2(`member_ref`.`id`,CONCAT(`member_ref`.`name`,' ', `member_ref`.`lastname`),''),'') AS `member_name`,
+				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`,IFNULL(`member_ref`.`sku`,'') AS `member_sku`,
+				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`,
+				`member_ref`.`sku_root` AS `member_sku_root`
+			FROM `bill_rca` 
+			LEFT JOIN `user_ref`
+			ON( `bill_rca`.`user`=`user_ref`.`sku_key`)
+			LEFT JOIN `user_ref` AS `user_ref2`
+			ON( `bill_rca`.`user_edit`=`user_ref2`.`sku_key`)
+			LEFT JOIN `member_ref`
+			ON( `bill_rca`.`member_sku_key`=`member_ref`.`sku_key`)
+			WHERE `bill_rca`.`sku`=".$sku."";
+		$sql["list"]="SELECT  
+				bill_rca_list.credit	,bill_rca_list.min	,bill_rca_list.money_balance,
+				`bill_sell`.`sku` AS `bill_sell_sku`,
+				`bill_sell`.`date_reg` AS `bill_sell_date_reg`
+			FROM `bill_rca_list` 
+			LEFT JOIN `bill_sell`
+			ON(bill_rca_list.bill_sell_id=`bill_sell`.`id`)
+			WHERE `bill_rca_id`=@bill_rca_id 
+			ORDER BY `bill_rca_list`.`id` ASC";
+		$se=$this->metMnSql($sql,["head","list"]);
+		//print_r($se);
+		if($se["result"]&&isset($se["data"]["head"][0])){
+			$re["head"]=$se["data"]["head"][0];
+			$re["list"]=$se["data"]["list"];
+		}
 		return $re;
 	}
 }

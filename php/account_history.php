@@ -1,20 +1,12 @@
 <?php
-class account_rca extends account{
+class account_history extends account{
 	public function __construct(){
 		parent::__construct();
-		$this->b="account_rca";
-		$this->get_rca=[];
-		$this->per=1;
-		$this->page=1;
-		$this->txsearch="";
-		$this->fl="";
-		$this->lid=0;
-		$this->sh="";
+		$this->b="account_history";
 		$this->title_b="ลูกหนี้ ค้างชำระ";
 		$this->title_c="";
-		$this->form_py=null;
 	}
-	public function fetch(){//print_r($_POST);
+	public function xxxxxxxxxxxxxxxxxxxfetch(){//print_r($_POST);
 		$re=["result"=>false,"message_error"=>"","data"=>[]];
 		if(isset($_POST["c"])){
 			if($_POST["c"]=="pay_rca"){
@@ -30,7 +22,7 @@ class account_rca extends account{
 		echo json_encode($re);
 	}
 	
-	private function fetchRcaSave(array $post):array{
+	private function xxxxxxxxxxxxxxxxxxxxxxxxxfetchRcaSave(array $post):array{
 		$pn=(float) $_POST["pay"];
 		$payu_json0=$this->cutPerfix($_POST["payu"]);
 		$note=(isset($_POST["note"]))?$_POST["note"]:"";
@@ -224,115 +216,111 @@ class account_rca extends account{
 		return $re;
 	}*/
 	public function run(){
-		$this->page=$this->setPageR();
-		$this->addDir("?a=".$this->a."&amp;b=".$this->b."",$this->title_b);
-		if(isset($_GET["c"])){
-			if($_GET["c"]=="pay"){
-				if(isset($_POST["member_id"])&&preg_match("/^[0-9]{1,10}$/",$_POST["member_id"])){
-					$this->title_c="ชำระ ค้างจ่าย";
-					$file = "php/form_selects.php";
-					require($file);	
-					$this->payPage();					
-				}else{
-					$this->defaultAccountRcaPage();
-				}
-			}else{
-				$this->defaultAccountRcaPage();
-			}
+		$this->addDir("?a=".$this->a."&amp;b=account_rca",$this->title_b);
+		if(isset($_GET["sku_root"])&&$this->isSKU($_GET["sku_root"])){
+			$this->title_c="ประวัติชำระ ค้างจ่าย";
+			$this->historyPage($_GET["sku_root"]);					
 		}else{
-			$this->defaultAccountRcaPage();
+			echo "no";
 		}
 	}
-	private function payPage():void{
-		$mid=(int) $_POST["member_id"];
-		//echo $mid;
-		$data=$this->payGetData($mid);
+	private function historyPage(string $root):void{
+		$data=$this->historyGetData($root);
 		//print_r($data);
-		$this->addDir("?a=".$this->a."&amp;b=".$this->b."&amp;c=pay",$this->title_c);
-		$this->pageHead(["title"=>$this->title_c." DIYPOS","css"=>["account","form_selects"],"js"=>["account","Ac","form_selects","Fsl"],"run"=>["Ac","Fsl"]]);
+		$this->title_c="ประวัติหนี้สิน ของ ".htmlspecialchars($data["member"]["name"]." ".$data["member"]["lastname"]);
+		$this->addDir("?a=".$this->a."&amp;b=".$this->b."&amp;sku_root=".$root,$this->title_c);
+		$this->pageHead(["title"=>$this->title_c." DIYPOS","css"=>["account"],"js"=>["me","Me"],"run"=>[]]);
 		echo '<div class="content">';
 	
 		echo '	<div class="form">
 			<h1 class="c">'.$this->title_c.'</h1>';
-		$this->payWriteContent($data);		
+		$this->historyWriteContent($data);		
 		echo '</div></div>';
 		$this->pageFoot();
 	}
-	private function payWriteContent(array $data):void{
-		if(count($data["member"])>0){
-			if(count($data["rca"])>0){
-				$payu_list_id=$this->key("key",7);
-				echo '<div class="account_rca_pay">';
-				echo '<form class="form100" name="account_pay">
-					<input type="hidden" name="sku_root" value="'.$data["member"]["sku_root"].'" />
-					<input type="hidden" id="'.$payu_list_id.'" data-disabled=",creditroot," name="payu_list" value=",defaultroot," />
-				';
-				echo '<div class="member_info">
-					<p class="th">รายละเอียดผู้ค้างชำระ</p>
-					<p class="info">
-						ชื่อ <span>'.$data["member"]["name"].'</span>
-						นามสกุล <span>'.$data["member"]["lastname"].'</span>
-						เลขที่สมาชิก <span>'.$data["member"]["sku"].'</span>
-						เบอร์โทรศัพท์ <span>'.$data["member"]["tel"].'</span>
-					</p>
-					<p class="th">จำนวน '.count($data["rca"]).' ใบเสร็จ ที่มียอดค้างชำระ</p>
-					<p class="l">รายละเอียด</p>';
-				$sum_credit=0;
-				$sum_pay=0;
-				$ar=[];
-				for($i=0;$i<count($data["rca"]);$i++){
-					$sum_credit+=$data["rca"][$i]["rca_credit"];
-					$ar[$data["rca"][$i]["bill_sell_id"]]=[
-						"rca_credit"=>(float) $data["rca"][$i]["rca_credit"],
-						"pay"=>0
-					];
-					if($i==0){
-						echo '<hr>';
-					}
-					echo '<div class="list">
-						<div>
-							<input data-rca_credit="'.$data["rca"][$i]["rca_credit"].'" id="account_cb_'.$data["rca"][$i]["bill_sell_id"].'" name="cb_'.$data["rca"][$i]["bill_sell_id"].'" value="'.$data["rca"][$i]["bill_sell_id"].'" type="checkbox"  /> 
-							#'.$data["rca"][$i]["sku"].' วันที่ '.$data["rca"][$i]["date_reg"].' ยอดค้างชำระ '.number_format($data["rca"][$i]["rca_credit"],2,".",",").'
-						</div>
-						<div id="account_div_pay_'.$data["rca"][$i]["bill_sell_id"].'" class="r">
-							ยอดเงินที่ต้องการชำระ <span id="account_pay_'.$data["rca"][$i]["bill_sell_id"].'" class="pay_list">'.number_format($data["rca"][$i]["rca_credit"],2,".",",").'</span>
-						</div>
-					</div>
-					<hr>';
+	private function historyWriteContent(array $data):void{
+		$type=[
+			"sell"=>["icon"=>"📥","name"=>"ซื้อสินค้าแบบมีค้างชำระ"],
+			"ret"=>["icon"=>"↪️","name"=>"คืนสินค้า หักยอดค้างชำระออก"],
+			"pay"=>["icon"=>"💸️","name"=>"ชำระค้างจ่าย"]
+		];
+		$today=date('Y-m-d') ;//== date('Y-m-d', strtotime($timestamp));
+		$yesterday= Date('Y-m-d', strtotime('-1 day'));
+		$date="";
+		echo '<table style="width:360px">
+			<tr>
+				<th>ที่</th>
+				<th>เวลา</th>
+				<th>ประเภท</th>
+				<th>หนี้เพิ่ม</th>
+				<th>หนี้ลด</th>
+				<th>หนี้คงเหลือ</th>
+			</tr>';
+		for($i=0;$i<count($data["list"]);$i++){
+			$d=explode(" ",$data["list"][$i]["date_reg"]);
+			if($d[0]!=$date){
+				$q=1;
+				if($d[0]==$today){
+					echo '<tr><td colspan="6" class="rcapay_time_log_date_th">↓ วันนี้</td></tr>';
+				}else if($d[0]==$yesterday){
+					echo '<tr><td colspan="6" class="rcapay_time_log_date_th">↓ เมื่อวานนี้</td></tr>';
+				}else{
+						echo '<tr><td colspan="6" class="rcapay_time_log_date_th">↓ '.$d[0].'</td></tr>';
 				}
-				echo '<div class="sum">
-					<div>จำนวนยอดค้างชำระทั้งหมด <span class="pay">'.number_format($sum_credit,2,".",",").'</span></div>
-					<div>จำนวนที่ต้องการชำระ <span class="pay"><input type="number" name="pay" step="0.01" / value="" data-pay_old="'.number_format($sum_credit,2,".",",").'" /></span></div>
-					<div>ยอดค้างชำระคงเหลือ <span class="pay" id="account_rca_balance">'.number_format($sum_credit,2,".",",").'</span></div>
-				';
-				echo '</div>';
-						echo '<div id="account_rca_payu" class="payu"><div><span>รูปแบบ การรับชำระ</span></div>';
-						$payu_json='{"defaultroot":0}';
-						$this->form_py=new form_selects("payu","คู่ค้า","account_pay",$this->key("key",7),$payu_list_id);	
-						$this->form_py->writeForm($payu_json);
-						/*for($i=0;$i<count($data["payu"]);$i++){	
-							echo '<div>
-								<img src="img/gallery/32x32_'.$data["payu"][$i]["icon"].'" onerror="this.src=\'img/gallery/32x32_null.png\'" />
-								'.htmlspecialchars($data["payu"][$i]["name"]).'
-								<input type="number" step="0.01"/>
-							</div>';
-						}*/
-						echo '</div>';
-				
-				echo '</div>';
-				
-				echo '<br /><p class="c"><input type="button" value="ชำระเงิน" onclick="Ac.pay()" /></p>';
-				echo '</form>';	
-				echo '</div>';	
-				$json=json_encode($ar);
-				echo '<script type="text/javascript">Ac.accountRcaRun();let js='.$json.';Ac.paySetListPay(js)</script>';		
+				$date=$d[0];
 			}
+			$min_txt="";//($data["list"][$i]["min"]>0)?"+".number_format($data["list"][$i]["min"],2,".",","):"";
+			$mout_txt="";//($data["list"][$i]["mout"]>0)?"-".number_format($data["list"][$i]["mout"],2,".",","):"";
+			$balance_txt=($data["list"][$i]["money_balance"]>0)?number_format($data["list"][$i]["money_balance"],2,".",","):"";
+			
+			$type_icon=$type[$data["list"][$i]["tran_rca_type"]]["icon"];
+			$q+=1;
+			$tr=($q%2)+1;
+			//$cm=($this->my_tran[$i]["note"]!="")?"<span class=\"me_time_log_note\" onclick=\"M.tooltups(this,'".htmlspecialchars($this->my_tran[$i]["note"])."',200)\">💬</span>":"";
+			$tt=$data["list"][$i]["tran_rca_type"];
+			$type_tx=$type_icon;
+			if($tt=="sell"){
+				$type_tx='<span class="rcapay_time_log_span" onclick="Me.showBill(this,\''.$tt.'\',\''.$data["list"][$i]["ref"].'\','.($i+1).')" title="ใบเสร็จเลขที่ '.$data["list"][$i]["ref"].'">'.$type_icon.'</span>';
+				$min_txt=($data["list"][$i]["mout"]>0)?"+".number_format($data["list"][$i]["mout"],2,".",","):"";
+			}else if($tt=="pay"){
+				$type_tx='<span class="rcapay_time_log_span" onclick="Me.showBill(this,\''.$tt.'\',\''.$data["list"][$i]["ref"].'\','.($i+1).')" title="ใบเสร็จเลขที่ '.$data["list"][$i]["ref"].'">'.$type_icon.'</span>';
+				$df=$data["list"][$i]["min"]-$data["list"][$i]["mout"];
+				$mout_txt="-".number_format($df,2,".",",");
+			}else if($tt=="ret"){
+				$type_tx='<span class="rcapay_time_log_span" onclick="Me.showBill(this,\''.$tt.'\',\''.$data["list"][$i]["ref"].'\','.($i+1).')" title="ใบเสร็จเลขที่ '.$data["list"][$i]["ref"].'">'.$type_icon.'</span>';
+				$mout_txt=($data["list"][$i]["min"]>0)?"-".number_format($data["list"][$i]["min"],2,".",","):"";
+			}
+			echo '<tr class="i'.$tr.'">
+				<td>'.($i+1).'.</td>
+				<td>'.substr($d[1],0,5).'</td>
+				<td>'.$type_tx.'</td>
+				<td class="r">'.$min_txt.'</td>
+				<td class="r">'.$mout_txt.'</td>
+				<td class="r">'.$balance_txt.'</td>
+			</tr>';
 		}
+		echo '</table>';
+			echo '<p class="c">';
+			foreach($type as $k=>$v){
+				echo '<span class="rcapay_time_log_note_disc">'.$v["icon"].' = '.$v["name"].'</span>';
+			}
+			echo '</p>';
 	}
-	private function payGetData(int $member_id):array{
-		$re=["member"=>[],"rca"=>[]];
+	private function historyGetData(string $sku_root):array{
+		$re=["member"=>[],"list"=>[]];
 		$sql=[];
-		$sql["set"]="SELECT @member_id:=".$member_id."";
+		$sql["set"]="SELECT @member_sku_root:='".$sku_root."',
+			@member_id:=(SELECT `id` FROM `member` WHERE `sku_root`=@member_sku_root)";
+		$sql["member"]="SELECT * FROM `member` WHERE `id`=@member_id";
+		$sql["list"]="SELECT `tran_rca`.`tran_rca_type`		,RcaGetBillSKU_(`tran_rca`.`tran_rca_type`,`tran_rca`.`bill_rca_id`) AS `ref`,
+				`tran_rca`.`min`											,`tran_rca`.`mout`,
+				`tran_rca`.`money_balance`							,`tran_rca`.`date_reg`
+			FROM `tran_rca`
+			WHERE `tran_rca`.`member_id`=@member_id;
+		
+		";
+		$se=$this->metMnSql($sql,["member","list"]);
+		/*$sql["set"]="SELECT @member_id:=".$member_id."";
 		$sql["get_member"]="SELECT `id`,`name`,IFNULL(`lastname`,'') AS `lastname`,IFNULL(`icon`,'null.png') AS `icon`,`sku`,`sku_root` ,
 				`sku`,IFNULL(`tel`,'-') AS `tel`,`mb_type`,`credit`
 			FROM `member` WHERE `id`=@member_id";
@@ -346,12 +334,13 @@ class account_rca extends account{
 		$sql["get_payu_all"]="SELECT `payu`.`name`	,`payu`.`sku_root`,IFNULL(`payu`.`icon`,'') AS `icon`
 			FROM `payu`
 			WHERE `payu`.`money_type` != 'cd' ORDER BY `id`";
-		$se=$this->metMnSql($sql,["get_member","get_rca","get_payu_all"]);
+		$se=$this->metMnSql($sql,["get_member","get_rca","get_payu_all"]);*/
 		//print_r($se);
 		if($se["result"]){
-			$re["member"]=$se["data"]["get_member"][0];
-			$re["rca"]=$se["data"]["get_rca"];
-			$re["payu"]=$se["data"]["get_payu_all"];
+			if(isset($se["data"]["member"])&&count($se["data"]["member"])==1){
+				$re["member"]=$se["data"]["member"][0];
+				$re["list"]=$se["data"]["list"];
+			}
 		}
 		return $re;
 	}
@@ -464,7 +453,7 @@ class account_rca extends account{
 				<td class="action">
 						<a onclick="G.action(this)" data-width="350" title="เลือกกระทำ">⚙️</a>
 						<a onclick="Ac.toPay(\''.$se[$i]["id"].'\')" title="ชำระเงิน">💰</a>
-						<a onclick="location.href=\'?a=account&amp;b=account_history&amp;sku_root='.$se[$i]["sku_root"].'\'" title="ประวัติ ยอดค้างชำระ/ชำระ">🕐</a>
+						<a onclick="location.href=\'?a=account&amp;b=account_history\'" title="ประวัติ ยอดค้างชำระ/ชำระ">🕐</a>
 					</td>
 				</tr>';
 				$this->lid=$se[$i]["id"];

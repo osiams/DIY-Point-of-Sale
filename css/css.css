@@ -28,7 +28,7 @@ table.select td{border-bottom: 1px solid #ddd;}
 td > p.p_bc{padding-left:30px;font-size:0.9em;color:MediumBlue;text-align:left}
 #billsin td > input[type="number"]{width:70px;}
 #billsin td > p >input{background:transparent;border:0px;height:20px;}
-th{background-color:#666666;color:#ffffff;font-weight:bold;padding:3px;position: sticky;top: 0px;border-bottom:1px solid gray;box-shadow: 0px 4px 4px gray;}
+th{background-color:#666666;color:#ffffff;font-weight:bold;padding:3px;position: sticky;top: 0px;z-index:2;border-bottom:1px solid gray;box-shadow: 0px 4px 4px gray;}
 tr{background-color:#f9f9f9;}
 .i1{background-color:#f9f9f9;}
 .i2{background-color:#dfdfdf;}
@@ -63,6 +63,7 @@ form >  fieldset  >  div{direction:ltr;text-align:left;}
 .orange{color:orange;}
 .green{color:green;}
 .darkgreen{color:DarkGreen;}
+.darkred{color:DarkRed}
 .blue{color:blue;}
 .darkgoldenrod{color:DarkGoldenRod}
 .saddlebrown{color:SaddleBrown;}

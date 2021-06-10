@@ -14,7 +14,7 @@ class bills_pay extends bills{
 	public function run(){
 		$this->page=$this->setPageR();
 		$q=["select","selectview","view","delete"];
-		$this->addDir("?a=bills&amp;c=sell",$this->title);
+		$this->addDir("?a=bills&amp;c=pay",$this->title);
 		if(isset($_GET["b"])&&in_array($_GET["b"],$q)){
 			$t=$_GET["b"];
 			if($t=="view"&&(isset($_GET["sku"])&&preg_match("/^[0-9]{1,25}$/",$_GET["sku"]))){
@@ -43,12 +43,11 @@ class bills_pay extends bills{
 		}
 	}
 	private function pageView(string $sku):void{
-		$se=$this->getBillsSellList($sku);
+		$se=$this->getBillPayList($sku);
 		//print_r($se);
 		if(count($se["head"])>0&&count($se["list"])>0){
-			$this->addDir("?a=bills&amp;c=sell&amp;b=view&amp;sku=".$se["head"]["sku"],"เลขที่ ".$se["head"]["sku"]);
-			$this->pageHead(["title"=>"ใบเสร็จ DIYPOS","xdir"=>true,"css"=>["bills_sell"],"js"=>["billsell","Bs"]]);
-			
+			$this->addDir("?a=bills&amp;c=pay&amp;b=view&amp;sku=".$se["head"]["sku"],"เลขที่ ".$se["head"]["sku"]);
+			$this->pageHead(["title"=>"ใบเสร็จ รับเงิน ชำระค้างจ่าย DIYPOS","xdir"=>true,"css"=>["bill_pay"],"js"=>["pay","Pa"]]);
 			$this->writeContentpageView($se["head"],$se["list"]);
 			$this->pageFoot();
 		}
@@ -57,9 +56,9 @@ class bills_pay extends bills{
 		//print_r($head);
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
 		echo '<div class="content">
-			<h2 class="c">ใบเสร็จเลขที่ '.$head["sku"].'</h2>
+			<h2 class="c">ใบเสร็จชำระค้างจ่าย เลขที่ '.$head["sku"].'</h2>
 			<div>';
-		if($head["stat"]=="c"){
+		if($head["onoff"]=="0"){
 			
 			
 /*$reg=new DateTime($head["date_reg"]);
@@ -69,12 +68,8 @@ echo $mo->format('U')-$reg->format("U");*/
 			echo '<div class="error">ใบเสร็จนี้ถูกยกเลิก โดย '.htmlspecialchars($head["user_name_edit"]).'
 			หลังจากออกใบเสร็จไป '.$this->ago($head["dif"]).'
 			</div>';
-		}else if($head["stat"]=="r"){
-			echo '<div class="warning">ใบเสร็จนี้มีคืนสินค้า โดย '.htmlspecialchars($head["user_name_edit"]).'
-			หลังจากออกใบเสร็จไป '.$this->ago($head["dif"]).'
-			</div>';
 		}
-		echo '	<div class="l"><b>👫 ผู้ขาย</b> : '.htmlspecialchars($head["user_name"]).' ,
+		echo '	<div class="l"><b>👫 ผู้รับชำระ</b> : '.htmlspecialchars($head["user_name"]).' ,
 				<b>🕒 วันที่</b> : '.$head["date_reg"].' น.
 			</div>';
 
@@ -93,83 +88,35 @@ echo $mo->format('U')-$reg->format("U");*/
 		$payu=json_decode($head["payu_json"],true);
 		//print_r($payu);
 		echo '	</div>
-			<table class="billlsselllist">
+			<table class="billpaylist">
 				<tr>
 					<th>ที่</th>
-					<th>รหัสแท่ง</th>
-					<th>สินค้า</th>
-					<th>จำนวน</th>
-					<th>หน่วย</th>
-					<th>ราคา/น.</th>
-					<th>รวม</th>
-					<th>กำไร</th>
+					<th>ใบเสร็จ</th>
+					<th>ค้างชำระ</th>
+					<th>ชำระ</th>
+					<th>คงเหลือ</th>
 				</tr>';
-				//print_r($head);
-				$pf=0;
-				$pfr=0;
-				$nr_list=0;
-				$nr=0;
-				$sumr=0;
-				$TEST="<br>";
 				for($i=0;$i<count($list);$i++){
-					if($list[$i]["c"]!=0){
-						if($list[$i]["r"]>0){
-							$nr+=1;
-							if($list[$i]["r"]==$list[$i]["n"]){
-								$nr_list+=1;
-							}
-						}
+					if(1==1){
 						$rt="";
-						$cm=($list[$i]["sq"]%2!=1)?" class=\"i2\"":"";
-						if($list[$i]["product_sku_root"]==$edd){
-							$cm=' class="ed"';
-						}
-						if($list[$i]["r"]>0){
-							$rt='<p class="saddlebrown l size12">คืน '.$list[$i]["n_r"].''.($list[$i]["s_type"]!="p"?"×".($list[$i]["n_wlv"]*1):"").' '.$list[$i]["unit_name"].' 📌 '.htmlspecialchars($list[$i]["note"]).'</p>';
-						}
-						$sum_r=($list[$i]["product_price"]*($list[$i]["c"]-$list[$i]["r"])*$list[$i]["n_wlv"]);
-						$TEST.=$sum_r."<br>";
-						if($list[$i]["c"]!=0){
-							$pft=(($list[$i]["product_price"]-$list[$i]["product_lot_cost"]/$list[$i]["c"])*$list[$i]["c"]*$list[$i]["n_wlv"]);
-						}else{
-							$pft=0;
-						}
-						#$pftr=(($list[$i]["product_price"]-$list[$i]["product_lot_cost"]/($list[$i]["n"]))*($list[$i]["n"]-$list[$i]["r"]));
-						$pftr=((($list[$i]["c"])*$list[$i]["product_price"])-$list[$i]["product_lot_cost"])*$list[$i]["n_wlv"]-(($list[$i]["product_price"]*$list[$i]["n_r"])-$list[$i]["product_lot_costr"])*$list[$i]["n_wlv"];
-						$pf+=$pft;
-						$pfr+=$pftr;
-						$sumr+=$sum_r;
-						$barcode=$list[$i]["product_barcode"];
-						
-						if($list[$i]["s_type"]!="p" && $barcode!==null){
-							$barcode=$this->createBcWLV($barcode,$list[$i]["n_wlv"]*1);
-						}
+						$cm=($i%2!=1)?" class=\"i2\"":"";
+
 						echo '<tr'.$cm.'>
-							<td>'.($list[$i]["sq"]).'</td>
-							<td class="l">'.$barcode.'</td>
-							<td><div>'.$list[$i]["product_name"].'
-								'.($list[$i]["s_type"]!="p"?" ".($list[$i]["n_wlv"]*1)." ".$list[$i]["unit_name"]:"").'
-								'.$rt.'</div>
-								<div>'.$list[$i]["product_barcode"].'</div>
-							</td>
-							<td><div class="r">'.$list[$i]["c"].''.($list[$i]["s_type"]!="p"?"×".($list[$i]["n_wlv"]*1):"").'</div>
-								<div>'.$list[$i]["unit_name"].'</div>
-							</td>
-							<td class="l">'.$list[$i]["unit_name"].'</td>
-							<td class="r">'.number_format($list[$i]["product_price"],2,'.',',').'</td>
-							<td class="r">'.number_format(($list[$i]["product_price"]*$list[$i]["c"]*$list[$i]["n_wlv"]),2,'.',',').'</td>
-							<td class="darkgreen r">'.number_format($pft,2,'.',',').'</td>
+							<td>'.($i+1).'</td>
+							<td class="l"><a href="?a=bills&amp;c=sell&amp;b=view&amp;sku='.$list[$i]["bill_sell_sku"].'">'.$list[$i]["bill_sell_sku"].'</a> ['.substr($list[$i]["bill_sell_date_reg"],0,16).']</td>
+							<td>'.number_format($list[$i]["credit"],2,".",",").'</td>
+							<td>'.number_format($list[$i]["min"],2,".",",").'</td>
+							<td>'.number_format($list[$i]["money_balance"],2,".",",").'</td>
 						</tr>';
 					}
 				}
 		echo '</table>
 				<div>
-					<div class="r">📃 จำนวน : <b>'.count($list).'</b> รายการ
-						💰ยอดขาย : <b>'.$head["price"].'</b> บาท,กำไร <span class="green"><b>'.number_format($pf,2,'.',',').'</b></span> บ.</div>';
-		if($nr>0){
-				echo '<div class="r">*หักคืนสินค้า จะได้ 📃 จำนวน : <b>'.(count($list)-$nr_list).'</b> รายการ
-						💰ยอดขาย : <b>'.$sumr.'</b> บาท,กำไร <span class="darkgreen"><b>'.number_format($pfr,2,'.',',').'</b></span> บ.</div>';
-		}		
+					<div class="r">📃 จำนวน : <b>'.count($list).'</b> รายการ</div>
+					<div class="r">📃 ชำระมา : <b>'.number_format($head["pay"],2,".",",").'</b> บาท</div>
+					<div class="r">📃 ยอดค้างชำระคงเหลือ : <b>'.number_format($head["credit"],2,".",",").'</b> บาท</div>
+		</div>';
+	
 		//----------------
 		echo '<div class="r"><b>💰 รูปแบบการชำระ</b> : [';
 		$e=0;
@@ -181,11 +128,10 @@ echo $mo->format('U')-$reg->format("U");*/
 			}
 		}		
 		echo ']</div>';	
-		echo '<div class="r"><b>ทอนเงินสด : </b>'.number_format($head["mout"],2,".",",").' บ.</div>';
-		echo '</div>';
+		echo '</div><br />';
 		//------------------
-		echo '		<br /><img src="?a=bill58&amp;b=viewbill&amp;sku='.$head["sku"].'" class="imgbill" alt="ภาพใบเสร็จเลขที่ '.$head["sku"].'"  /><br />
-			<a onclick="M.printAgain(\'bill58\',\'print\',\''.$head["sku"].'\')">🖨 พิมพ์อีกครั้ง</a><br /><br />
+		echo '		<br /><img src="?a=bill58&amp;b=viewbillpay&amp;sku='.$head["sku"].'" class="imgbill" alt="ภาพใบเสร็จเลขที่ '.$head["sku"].'"  /><br />
+			<a onclick="M.printAgain(\'bill58\',\'print_pay\',\''.$head["sku"].'\')">🖨 พิมพ์อีกครั้ง</a><br /><br />
 		</div></div>';		
 		//echo $TEST;
 		$this->stockCut($head["sku"]);
@@ -290,49 +236,38 @@ echo $mo->format('U')-$reg->format("U");*/
 		}
 		return $re;
 	}
-	private function getBillsSellList($sku):array{
+	private function getBillPayList(string $sku):array{
 		$re=["head"=>[],"list"=>[]];
 		$sku=$this->getStringSqlSet($sku);
 		$sql=[];
-		$sql["head"]="SELECT  `bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`, `bill_sell`.`stat`  AS  `stat`, 
-				`bill_sell`.`price` AS `price`,bill_sell.w, `bill_sell`.`modi_date` AS `modi_date`, 
-				`bill_sell`.`mout` AS `mout`,
-				GetPayuArrRefData_(`bill_sell`.`payu_json`) AS `payu_json`,
-				`bill_sell`.`date_reg` AS `date_reg`,
+		$sql["head"]="SELECT  @bill_rca_id:=`bill_rca`.`id`  AS  `id`,`bill_rca`.`sku`  AS  `sku`,
+				`bill_rca`.`pay`,`bill_rca`.`credit`,`bill_rca`.`onoff`,
+				GetPayuArrRefData_(`bill_rca`.`payu_json`) AS `payu_json`,
+				`bill_rca`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
+				`user_ref`.`sku` AS `user_sku`,
 				CONCAT(`user_ref2`.`name`,' ', `user_ref2`.`lastname`) AS `user_name_edit`,
-				TIMESTAMPDIFF(SECOND,bill_sell.date_reg,bill_sell.modi_date) AS dif,
 				IFNULL(NVL2(`member_ref`.`id`,CONCAT(`member_ref`.`name`,' ', `member_ref`.`lastname`),''),'') AS `member_name`,
 				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`,IFNULL(`member_ref`.`sku`,'') AS `member_sku`,
+				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`,
 				`member_ref`.`sku_root` AS `member_sku_root`
-			FROM `bill_sell` 
+			FROM `bill_rca` 
 			LEFT JOIN `user_ref`
-			ON( `bill_sell`.`user`=`user_ref`.`sku_key`)
-			LEFT JOIN `user_ref` AS user_ref2
-			ON( `bill_sell`.`user_edit`=`user_ref`.`sku_key`)
+			ON( `bill_rca`.`user`=`user_ref`.`sku_key`)
+			LEFT JOIN `user_ref` AS `user_ref2`
+			ON( `bill_rca`.`user_edit`=`user_ref2`.`sku_key`)
 			LEFT JOIN `member_ref`
-			ON( `bill_sell`.`member_sku_key`=`member_ref`.`sku_key`)
-			WHERE bill_sell.sku=".$sku." LIMIT 1
-		";
+			ON( `bill_rca`.`member_sku_key`=`member_ref`.`sku_key`)
+			WHERE `bill_rca`.`sku`=".$sku."";
 		$sql["list"]="SELECT  
-				bill_sell_list.product_sku_root AS product_sku_root,bill_sell_list.n AS n,bill_sell_list.n_wlv AS n_wlv,`bill_sell_list`.`c`  AS  `c`,bill_sell_list.r AS r,IFNULL(bill_sell_list.note,'') AS `note`,
-				product_ref.name AS product_name,product_ref.barcode AS product_barcode,product_ref.cost AS product_cost,product_ref.price AS product_price,
-				SUM(bill_sell_list.r) AS `n_r`,bill_sell_list.sq,
-				unit_ref.name AS unit_name,
-				SUM(IFNULL((bill_in_list.sum/(IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv))),product_ref.cost)*IF(bill_sell_list.c>0,bill_sell_list.c,bill_sell_list.u)) AS product_lot_cost,
-				SUM(IFNULL((bill_in_list.sum/(IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv))),product_ref.cost)*bill_sell_list.r) AS product_lot_costr,
-				product_ref.s_type
-				
-			FROM `bill_sell_list` 
-			LEFT JOIN product_ref
-			ON( `bill_sell_list`.`product_sku_key`=`product_ref`.`sku_key`)
-			LEFT JOIN unit_ref
-			ON( bill_sell_list.unit_sku_key=unit_ref.sku_key)
-			LEFT JOIN bill_in_list
-			ON(bill_sell_list.bill_in_list_id=bill_in_list.id)
-			WHERE bill_sell_list.sku=".$sku."
-			GROUP BY bill_sell_list.product_sku_root,bill_sell_list.id
-			ORDER BY `bill_sell_list`.`id` ASC";
+				bill_rca_list.credit	,bill_rca_list.min	,bill_rca_list.money_balance,
+				`bill_sell`.`sku` AS `bill_sell_sku`,
+				`bill_sell`.`date_reg` AS `bill_sell_date_reg`
+			FROM `bill_rca_list` 
+			LEFT JOIN `bill_sell`
+			ON(bill_rca_list.bill_sell_id=`bill_sell`.`id`)
+			WHERE `bill_rca_id`=@bill_rca_id 
+			ORDER BY `bill_rca_list`.`id` ASC";
 		$se=$this->metMnSql($sql,["head","list"]);
 		//print_r($se);
 		if($se["result"]&&isset($se["data"]["head"][0])){
@@ -342,7 +277,7 @@ echo $mo->format('U')-$reg->format("U");*/
 		return $re;
 	}
 	private function pageBillPay():void{
-		$this->pageHead(["title"=>$this->title." DIYPOS","js"=>[],"css"=>["bills_sell"],"js"=>["billsell","Bs"]]);
+		$this->pageHead(["title"=>$this->title." DIYPOS","css"=>["bill_pay"],"js"=>[]]);
 		echo '<div class="content">
 				<div class="form">
 					<h1 class="c">'.$this->title.'</h1>';
@@ -356,14 +291,12 @@ echo $mo->format('U')-$reg->format("U");*/
 		$se=$sea["row"];
 		echo '<form class="form100" name="billsin" method="post">
 			<input type="hidden" name="sku" value="" />
-			<table class="billssell"><tr><th>ที่</th>
+			<table class="billpay"><tr><th>ที่</th>
 			<th>วันบันทึก</th>			
 			<th  class="showhide">เลขที่</th>		
-			<th>รก.</th>
-			<th>จำนวนเงิน</th>
-			<th>กำไร</th>
-			<th>ผู้บันทึก</th>
-
+			<th>ชำระเงิน</th>
+			<th>ค้างชำระ</th>
+		
 			<th>กระทำ</th>
 			</tr>';
 		for($i=0;$i<count($se);$i++){
@@ -371,38 +304,21 @@ echo $mo->format('U')-$reg->format("U");*/
 			if($se[$i]["sku"]==$edd){
 				$ed='<span title="โอเค เรียบร้อย"> 👌 </span>';
 			}
-			$wn="";
-			if($se[$i]["w"]=="1"){
-				$wn="⚠️";
-			}
-			$stat="";
-			if($se[$i]["stat"]=="c"){
-				$stat=' <apan class="red bold">[ถูกยกเลิก]</span>';
-			}else if($se[$i]["stat"]=="r"){
-				$stat=' <apan class="saddlebrown bold">[มีคืนสินค้า]</span>';
-			}
+
 			$cm=($i%2!=0)?" class=\"i2\"":"";
-			$pf=0;
-			if($se[$i]["stat"]!="c"){
-				$pf=$se[$i]["price"]-$se[$i]["pricer"]-($se[$i]["cost"]-$se[$i]["costr"]);
-			}
+
+
 			$mb=htmlspecialchars($this->setMemberTxt($se[$i]["member_name"],$se[$i]["mb_type"],""));
-			$s_credit="";
-			if($se[$i]["credit"]>0){
-				$s_credit=' <span class="s_credit">👎 '.number_format($se[$i]["credit"],2,".",",").'</span>';
-			}
+
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
 				<td>
-					<div><a href="?a=bills&amp;c=sell&amp;b=view&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$wn.''.$stat.'</a>'.$s_credit.'</div>
-					<div>'.$se[$i]["date_reg"].'</div>
-					<div>'.$se[$i]["user_name"].'</div>
+					<div><a href="?a=bills&amp;c=pay&amp;b=view&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].'</a></div>
+					<div>'.substr($se[$i]["date_reg"],0,10).'</div>
 					<div>'.$mb.'</div>
 				</td>
-				<td  class="showhide l"><a href="?a=bills&amp;c=sell&amp;b=view&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].''.$wn.''.$stat.'</a>'.$s_credit.'<div>'.$mb.'</div></td>
-				<td class="r">'.$se[$i]["n"].'</td>
-				<td class="r">'.number_format($se[$i]["price"],2,'.',',').'</td>
-				<td class="r darkgreen">'.number_format($pf,2,'.',',').'</td>
-				<td class="l">'.$se[$i]["user_name"].'</td>
+				<td  class="showhide l"><a href="?a=bills&amp;c=pay&amp;b=view&amp;sku='.$se[$i]["sku"].'" title="ดูรายละเอียด">'.$se[$i]["sku"].'</a><div class="r">'.$mb.'</div></td>
+				<td class="r">'.number_format($se[$i]["pay"],2,'.',',').'</td>
+				<td class="r darkred">'.number_format($se[$i]["credit"],2,'.',',').'</td>
 
 				<td class="action">
 					<a data-sku="'.$se[$i]["sku"].'" onclick="Bs.delete(this)" title="ทิ้ง">🗑</a>
@@ -412,25 +328,24 @@ echo $mo->format('U')-$reg->format("U");*/
 		}
 		echo '</table></form>';
 			$count=(isset($sea["count"]))?$sea["count"]:0;
-			$this->page($count,$this->per,$this->page,"?a=bills&amp;c=sell&amp;page=");
+			$this->page($count,$this->per,$this->page,"?a=bills&amp;c=pay&amp;page=");
 	}
 	private function getAllBillPay():array{
 		$re=[];
 		$sql=[];
 		$sql["count"]="SELECT @count:=bp_c FROM `s` WHERE `tr`=1";
-		$sql["get"]="SELECT  `bill_sell`.`id`  AS  `id`,`bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`,`bill_sell`.`stat`  AS  `stat`,
-				`bill_sell`.`cost`,`bill_sell`.`costr`,`bill_sell`.`price` AS `price`,`bill_sell`.`pricer` AS `pricer`,IFNULL(bill_sell.w,0) AS `w`, 
-				IFNULL(`bill_sell`.`credit`,0) AS `credit`,
-				`bill_sell`.`date_reg` AS `date_reg`,
+		$sql["get"]="SELECT  `bill_rca`.`id`  AS  `id`,`bill_rca`.`sku`  AS  `sku`,
+				`bill_rca`.`pay`,`bill_rca`.`credit`,
+				`bill_rca`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
 				IFNULL(NVL2(`member_ref`.`id`,CONCAT(`member_ref`.`name`,' ', `member_ref`.`lastname`),''),'') AS `member_name`,
 				IFNULL(`member_ref`.`mb_type`,'') AS `mb_type`
-			FROM `bill_sell` 
+			FROM `bill_rca` 
 			LEFT JOIN `user_ref`
-			ON( `bill_sell`.`user`=`user_ref`.`sku_key`)
+			ON( `bill_rca`.`user`=`user_ref`.`sku_key`)
 			LEFT JOIN `member_ref`
-			ON( `bill_sell`.`member_sku_key`=`member_ref`.`sku_key`)
-			ORDER BY `bill_sell`.`id` DESC LIMIT ".(($this->page-1)*$this->per).",".$this->per."";
+			ON( `bill_rca`.`member_sku_key`=`member_ref`.`sku_key`)
+			ORDER BY `bill_rca`.`id` DESC LIMIT ".(($this->page-1)*$this->per).",".$this->per."";
 		$sql["result"]="SELECT @count AS count";
 		$se=$this->metMnSql($sql,["get","result"]);
 		if($se["result"]){
@@ -442,7 +357,7 @@ echo $mo->format('U')-$reg->format("U");*/
 	private function selectBillsSellPage(string $for=null){
 		$sea=$this->getAllBillsSell($for);
 		$se=$sea["row"];
-		$this->pageHead(["title"=>"ใบเสร็จ DIYPOS","dir"=>false,"css"=>["bills_sell"],"js"=>["billsell","Bs"]]);
+		$this->pageHead(["title"=>"ใบเสร็จ DIYPOS","dir"=>false,"css"=>["bill_pay"],"js"=>[]]);
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
 		//$se=$this->getAllBillsSell();
 		echo '<form class="form100" name="billsin" method="post">
@@ -508,7 +423,7 @@ echo $mo->format('U')-$reg->format("U");*/
 	private function pageSelectView(string $sku):void{
 		$se=$this->getBillsSellList($sku);
 		if(count($se["head"])>0&&count($se["list"])>0){
-			$this->pageHead(["title"=>"ใบเสร็จ DIYPOS","dir"=>false,"css"=>["bills_sell"]]);
+			$this->pageHead(["title"=>"ใบเสร็จ DIYPOS","dir"=>false,"css"=>["bill_pay"]]);
 			echo '<div class="billssellback"><a onclick="history.back()">🔙 กลับ</a></div>';
 			$this->writeContentpageView($se["head"],$se["list"]);
 			$this->pageFoot();
