@@ -571,8 +571,32 @@ class gpu extends main {
 	rMore(did){
 		let a=did.parentNode
 		let w = this.b.offsetWidth;
-		let c=document.querySelector("body > div.content"); 
-		if(a.className=="menu_more menu_more_min"){
+		let c=document.querySelector("body > div.content_rmore"); 
+		let th=""
+		//M.l(a)
+		//alert(a.childNodes[3].className)
+		if(did.className=="click0"||did.className=="click1"||did.className=="click2"){
+			th=getComputedStyle(document.querySelector("div."+did.className), "::before").getPropertyValue('content')
+			if(th=="\"❱\""){
+				did.className="click1"
+				a.childNodes[5].className="menu_more_min_r"
+				c.style.margin="0px 0px 0px 0px"
+			}else if(th=="\"☰\""){
+				did.className="click2"
+				a.childNodes[5].className="menu_more_max_r"
+				//c.style.margin="0px 250px 0px 0px"
+				if(w>360+250+20){
+					c.style.margin="0px 250px 0px 0px"
+				}
+				window.scrollTo({ top:0,left:0,behavior: "smooth"})
+			}
+			
+		}
+		//console.log(getComputedStyle(document.querySelector("div.click0"), "::before").getPropertyValue('content'));
+	/*	if(a.className="click){
+			
+		}*/
+		/*if(a.className=="menu_more menu_more_min"){
 			if(w>360+250+20){
 				c.style.margin="0px 250px 0px 0px"
 			}
@@ -585,7 +609,7 @@ class gpu extends main {
 			did.innerHTML="☰"
 			a.childNodes[3].className="menu_more_min_r"
 			c.style.margin="0px 0px 0px 0px"
-		}
+		}*/
 		
 		
 	}

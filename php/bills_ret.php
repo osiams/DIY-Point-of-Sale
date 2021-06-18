@@ -211,7 +211,7 @@ class bills_ret extends bills{
 			WHERE bill_in.sku=".$sku."
 		";
 		$se=$this->metMnSql($sql,["head","list"]);
-		print_r($se);
+		//print_r($se);
 		if($se["result"]){
 			$re["head"]=$se["data"]["head"];
 			$re["list"]=$se["data"]["list"];

@@ -297,7 +297,7 @@ echo $mo->format('U')-$reg->format("U");*/
 			<th>ชำระเงิน</th>
 			<th>ค้างชำระ</th>
 		
-			<th>กระทำ</th>
+			<!--<th>กระทำ</th>-->
 			</tr>';
 		for($i=0;$i<count($se);$i++){
 			$ed='';
@@ -320,10 +320,10 @@ echo $mo->format('U')-$reg->format("U");*/
 				<td class="r">'.number_format($se[$i]["pay"],2,'.',',').'</td>
 				<td class="r darkred">'.number_format($se[$i]["credit"],2,'.',',').'</td>
 
-				<td class="action">
+				<!--<td class="action">
 					<a data-sku="'.$se[$i]["sku"].'" onclick="Bs.delete(this)" title="ทิ้ง">🗑</a>
 					'.$ed.'
-					</td>
+					</td>-->
 				</tr>';
 		}
 		echo '</table></form>';

@@ -799,10 +799,12 @@ class main{
 	}
 	protected function rMore(array $data):void{
 		//print_r($data);
-		//--tap ,spacebar เป็น childNodes ของ .menu_more อยู่ ห้ามเอาอะไรมาใส่ หรือลบ
-		echo '<div class="menu_more menu_more_min" >	 
-			<div onclick="G.rMore(this)">☰</div>	
-			<div class="menu_more_min_r">
+		//--tap ,spacebar เป็น childNodes ของ .menu_more อยู่ ห้ามเอาอะไรมาใส่ หรือลบ 
+		echo '<div class="menu_more menu_more_min" >	
+		
+			<div class="click0" onclick="G.rMore(this)"></div>	
+			<!--<xdiv class="menu_more_min_r">-->
+			<div class="menu_more_auto">
 				<div>';
 		for($i=0;$i<count($data["menu"]);$i++){
 			$a=($data["menu"][$i]["b"]==$data["active"])?" class=\"menu_more_active\"":"";

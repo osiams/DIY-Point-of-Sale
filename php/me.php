@@ -65,7 +65,7 @@ class me extends main{
 		$tl="บันทึกเงินสด เข้า-ออก ลิ้นชัก";
 		$this->addDir("",$tl);
 		$this->pageHead(["title"=>$tl." DIYPOS","css"=>["me"],"js"=>["me","Me"],"run"=>["Me"],"r_more"=>$this->r_more]);
-		echo '<div class="content">
+		echo '<div class="content_rmore">
 			<h2>'.$tl.'</h2>';
 		$this->writeTranLog();
 		echo '</div>';
@@ -128,7 +128,6 @@ class me extends main{
 				}else if($tt=="ret"){
 					$type_tx='<span class="me_time_log_span" onclick="Me.showBill(this,\''.$tt.'\',\''.$this->my_tran[$i]["ref"].'\','.($i+1).')" title="ใบเสร็จเลขที่ '.$this->my_tran[$i]["ref"].'">'.$type_icon.'</span>';
 				}else if($tt=="canc"){
-
 					$bil=preg_replace(["/.[0-9]{1,}$/"],[""], $this->my_tran[$i]["ref"]);
 					$type_tx='<span class="me_time_log_span" onclick="Me.showBill(this,\'sell\',\''.$bil.'\','.($i+1).')" title="ใบเสร็จเลขที่ '.$bil.'">'.$type_icon.'</span>';
 				}
@@ -265,7 +264,7 @@ class me extends main{
 		$this->pageHead(["title"=>"ฉัน DIYPOS","css"=>["me"],"js"=>["me","Me"],"run"=>["Me"],"r_more"=>$this->r_more]);
 		$pem=true;
 		$dis="";
-		echo '<div class="content"><div class="form">';
+		echo '<div class="content_rmore"><div class="form">';
 		echo '<h2 class="c">แก้ไข ฉัน</h2>';
 		if($error!=""){
 			echo '<div class="error">'.$error.'</div>';
@@ -333,7 +332,7 @@ class me extends main{
 		$this->pageHead(["title"=>"ฉัน DIYPOS","css"=>["me"],"js"=>["me","Me"],"run"=>["Me"],"r_more"=>$this->r_more]);
 		$pem=true;
 		$dis="";
-		echo '<div class="content">';
+		echo '<div class="content_rmore">';
 		$this->writeMyTime();
 		echo '</div>';
 		/*$this->btMore([
@@ -387,7 +386,7 @@ class me extends main{
 		}
 	}
 	private function regisDevice():void{
-		echo '<div class="content">
+		echo '<div class="content_rmore">
 			<div class="form">
 				<br />
 				<div class="error">อุปกรณ์ หมายเลข IP '.$_SESSION["ip"].' นี้ ยังไม่มีในระบบ</div>

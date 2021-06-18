@@ -97,7 +97,8 @@ div.setting > textarea{height:300px;}
 .c{text-align:center;}
 .l{text-align:left;}
 .r{text-align:right;}
-.content{text-align:center;transition-duration:0.2s;}
+.content{text-align:center;}
+.content_rmore{text-align:center;transition-duration:0.2s;}
 .block{width:350px;margin:0 auto;}
 .back{display:inline-block;width:24px;height:24px;background-color:#ffffff;border:1px solid #aaaaaa;border-radius: 12px 12px 12px 12px;line-height:24px;}
 .want{background-color:Gold;}
@@ -259,10 +260,13 @@ div.page{margin:2px auto;}
 .menu_more_max{right:0px;top:32px;}
 .menu_more_min_r{width:0px;right:0px;}
 .menu_more_max_r{width:250px;right:00px;}
-.menu_more{display:grid;grid-template-columns:40px 0px;align-content:start;justify-content:center;position:absolute;z-index:1;width:40px;
+.menu_more{display:grid;grid-template-columns:40px 0px;align-content:start;justify-content:center;position:absolute;z-index:3;width:40px;
 	user-select: none;transition-duration:0.2s}
 .menu_more > div:nth-child(1){display:grid;align-content:center;justify-content:center;padding-left:5px;color:rgba(255,255,255,0.5);position:fixed;z-index:2;
 	height:40px;width:40px;background-color:rgba(45, 89, 134,0.5);border-radius: 20px 0px 0px 20px;cursor:pointer;}
+.menu_more > div.click0::before{content: "☰";}
+.menu_more > div.click1::before{content: "☰";}
+.menu_more > div.click2::before{content: "❱";}
 .menu_more  > div:nth-child(1):hover{background-color:rgba(45, 89, 134,1.0);color:rgba(255,255,255,1.0);}
 .menu_more > div:nth-child(2){overflow-y:auto;overflow-x:hidden;background-color:gray;position:absolute;transition-duration:0.5s;z-index:1;}
 .menu_more > div:nth-child(2) > div{margin:0px 0px 0px 0px;padding:0px 0px 1px 0px;background-color:Silver;width:100%;}
@@ -271,6 +275,17 @@ div.page{margin:2px auto;}
 .menu_more > div:nth-child(2) > div > div:hover{background-color:white;border-left:5px solid orange}
 .menu_more > div:nth-child(2) > div > div > a{width:100%;display:block;padding:10px 5px;font-weight:inherit}
 
+@media screen and (min-width: 630px) {
+.menu_more_auto{overflow-y:auto;overflow-x:hidden;background-color:gray;position:absolute;transition-duration:0.5s;z-index:1;width:250px;right:00px;}
+body > div.content_rmore{margin:0px 250px 0px 0px}
+.menu_more > div.click0::before{content: "❱";}
+.menu_more_max_r{background-color:red}
+}
+@media screen and (max-width: 630px) {
+.menu_more_auto{overflow-y:auto;overflow-x:hidden;background-color:gray;position:absolute;transition-duration:0.5s;z-index:1;width:0px;right:00px;}
+body > div.content_rmore{margin:0px 0px 0px 0px}
+
+}
 /*link เกี่ยวข้องใต้หน้า*/
 .bt_more{}
 .bt_more > span{display:inline-block;padding:5px;background-color:white;border:1px solid gray;margin:3px;}

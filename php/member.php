@@ -83,13 +83,41 @@ class member extends main{
 			$url_refer=(isset($_GET["url_refer"]))?$_GET["url_refer"]:"";
 			$sku_root=$this->getStringSqlSet($_POST["sku_root"]);
 			$sql=[];
-			$sql["set"]="SELECT @sku_root:=".$sku_root.";";
-			$sql["del"]="DELETE FROM `member` WHERE `sku_root`=".$sku_root;
-			$re = $this->metMnSql($sql,[]);
-			$pt="/&ed=[0-9a-zA-Z-+\.&\/]{1,25}/";
-			$pr='';
-			$url=preg_replace($pt, $pr,$url_refer)."&ed=".$_POST["sku_root"];
-			header('Location:'.$url);
+			$sql["set"]="SELECT 
+				@result:=0,
+				@message_error:='',
+				@sku_root:=".$sku_root.",
+				@member_name:=(SELECT CONCAT(`name`,' ',`lastname`) FROM `member` WHERE `sku_root`=@sku_root),
+				@bill_sell_has:=IFNULL((SELECT `id` FROM `bill_sell` WHERE `member_sku_root`=@sku_root LIMIT 1),0)
+			
+			;";
+			$sql["check"]="
+				IF @bill_sell_has > 0 THEN
+					SET @message_error=CONCAT('ไม่สามารถลบ สมาชิก \"',@member_name,'\" นี้ได้ เนื่องจากข้อมูลถูกนำไปใช้อ้างอิงแล้ว');
+				END IF;
+			";
+			$sql["del"]="
+				IF LENGTH(@message_error) = 0 THEN
+					DELETE FROM `member` WHERE `sku_root`=".$sku_root." AND @bill_sell_has > 0;
+					SET @result=1;
+				END IF";
+			$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@member_name AS `member_name`";
+			$re = $this->metMnSql($sql,["result"]);
+			$mer="";
+			if($re["result"]){
+				if(isset($re["data"]["result"][0]["rsult"])&&$re["data"]["result"][0]["result"]=="1"){
+					$pt="/&ed=[0-9a-zA-Z-+\.&\/]{1,25}/";
+					$pr='';
+					$url=preg_replace($pt, $pr,$url_refer)."&ed=".$_POST["sku_root"];
+					header('Location:'.$url);	
+					exit;				
+				}else{
+					$mer=$re["message_error"]."".$re["data"]["result"][0]["message_error"];
+				}
+			}
+			$this->pageHead(["title"=>"ลบสมาชิก DIYPOS"]);
+			echo '<div class="error">'.htmlspecialchars($mer).'</div>';
+			$this->pageFoot();
 		}
 	}
 	private function editMemberPage(string $error):void{

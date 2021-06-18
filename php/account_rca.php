@@ -22,7 +22,7 @@ class account_rca extends account{
 				if(!$se["result"]){
 					$re["message_error"]=$se["message_error"];
 				}else{
-					$this->fetchRcaSave($_POST);
+					$re=$this->fetchRcaSave($_POST);
 				}
 			}
 		}
@@ -31,6 +31,7 @@ class account_rca extends account{
 	}
 	
 	private function fetchRcaSave(array $post):array{
+		$re=["result"=>false,"message_error"=>"","data"=>[]];
 		$pn=(float) $_POST["pay"];
 		$payu_json0=$this->cutPerfix($_POST["payu"]);
 		$note=(isset($_POST["note"]))?$_POST["note"]:"";
@@ -54,6 +55,7 @@ class account_rca extends account{
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
 			@TEST:='',
+			@bill_rca_sku:=0,
 			@message_error:='',
 			@ip:='".$_SESSION["ip"]."',
 			@pay:=".$post["pay"].",
@@ -142,6 +144,7 @@ class account_rca extends account{
 				IF lastid > 0 THEN
 					SET i_fag=lastid;
 					SET bill_rca_sku=LPAD(CAST(i_fag AS CHAR(25)),9,'0');
+					SET @bill_rca_sku=bill_rca_sku;
 					UPDATE `bill_rca` SET `sku`=bill_rca_sku WHERE `id`= lastid;
 					UPDATE `member` SET `credit` = (@rca_sum-@pay) WHERE `id` = @member_id;
 					INSERT INTO `tran_rca` (
@@ -200,13 +203,34 @@ class account_rca extends account{
 						SET __r=r__;
 					END IF;
 					UPDATE bill_rca SET `r_`=r__,`_r`=__r WHERE `id` = lastid ;
+					SET @result=1;
 				END IF;
 			END IF;
 		END;";
-		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@TEST";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,
+			@min AS `cash`,
+			(@py_sum-@pay) AS `change`,
+			@bill_rca_sku AS `bill_sku`
+			";
 		$se=$this->metMnSql($sql,["result"]);
-		print_r($se);
-		return $se;
+		//print_r($se);
+		if($se["result"]&&isset($se["data"]["result"])){
+			$dt=$se["data"]["result"][0];
+			if($dt["result"]=="1"){
+				$re["result"]=true;
+				$re["data"]["cash"]=$dt["cash"];
+				$re["data"]["change"]=$dt["change"];
+				$re["data"]["bill_sku"]=$dt["bill_sku"];
+			}
+		}else{
+			if($se["message_error"]!=""){
+				$re["message_error"]=$se["message_error"];
+			}else{
+				$re["message_error"]=$se["data"]["result"][0]["message_error"];
+			}
+		}
+		//print_r($se);
+		return $re;
 	}
 	/*private function rcaCheck(array $post):array{
 		$re=["result"=>false,"message_error"=>""];

@@ -60,9 +60,30 @@ class account extends main{
 	payResult(re,form,bt){
 		if(re["result"]){
 			
+			let sku=re["data"]["bill_sku"]
+			let cash=M.nb(re["data"]["cash"],2)
+			let change=M.nb(re["data"]["change"],2)
+			let formData = new FormData()
+			formData.append("submith","clicksubmit")		
+			formData.append("a","bill58")	
+			formData.append("b","print_pay")	
+			formData.append("sku",sku)	
+			M.fec("POST","",Ac.printResult,Ac.printError,null,formData)
+			alert("สำเร็จ\nรับมา\t\t\t"+cash+"\tบาท\nเงินทอน\t\t\t"+change+"\tบาท")
 		}else{
 			Ac.payError(re,form,bt)
 		}
+	}
+	printResult(re,form,bt){
+		if(!re["result"]){
+			S.printError(re,form,bt)
+		}else{
+			location.href="?a=bills&c=pay&b=view&sku="+form.get("sku")
+		}
+	}
+	printError(re,form,bt){
+		alert("❌ พิมพ์ใบเร็จ ไม่สำเร็จ\n\n"+re["message_error"])
+		location.href="?a=bills&c=pay&b=view&sku="+form.get("sku")
 	}
 	payError(re,form,bt){
 		alert(re["message_error"])

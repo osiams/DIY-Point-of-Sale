@@ -88,16 +88,20 @@ class device_pos extends device{
 	}
 	private function fetchPOSEdit():void{
 		$error="";
+		$type="error";
 		if(isset($_POST["submith"])&&$_POST["submith"]=="clicksubmit"){
 			$se=$this->checkSet("device_pos",["post"=>["name","sku","no","disc","drawers_id"]],"post");
 			if(!$se["result"]){
 				$error=$se["message_error"];
+				$type="error";
 			}else{
 				$qe=$this->fetchPOSUpdate();
 				if(!$qe["result"]){
 					$error=$qe["message_error"];
+					$type=$qe["type_error"];
 				}else if($qe["result"]==0){
 					$error=$qe["message_error"];
+					$type=$qe["type_error"];
 				}else if($qe["result"]==1){
 					header('Content-type: application/json');
 					$d=["result"=>true,"message_error"=>"","data"=>["ip"=>$qe["ip"]]];
@@ -105,7 +109,7 @@ class device_pos extends device{
 				}
 			}
 			if($error!=""){
-				$this->fetchPOSPage($error);
+				$this->fetchPOSPage($error,$type);
 			}
 		}else{
 			$this->fetchPOSPage($error);
@@ -122,6 +126,7 @@ class device_pos extends device{
 		$icon_arr=$this->setPropR($this->getStringSqlSet($_POST["gallery_list"]));
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
+			@type_error:='error',
 			@message_error:='',
 			@ip:=".$ip.",
 			@sku:=".$sku.",
@@ -130,6 +135,7 @@ class device_pos extends device{
 			@disc:=".$disc.",
 			@drawers_id:=".$drawers_id.",
 			@icon_arr:=".$this->getStringSqlSet(json_encode($icon_arr)).",
+			@drawers_now:=(SELECT IFNULL((SELECT `drawers_id` FROM `device_pos` WHERE `ip`=@ip LIMIT 1),0)),
 			@drawers_pair:=(SELECT (SELECT `ip`  FROM `device_pos` WHERE `drawers_id`=@drawers_id AND `drawers_id` > 0 LIMIT 1)),
 			@count_drawers:=(SELECT COUNT(*)  FROM `device_drawers` WHERE `id`=@drawers_id ),
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
@@ -139,6 +145,9 @@ class device_pos extends device{
 				SET @message_error='เกิดขอผิดพลาด ลิ้นชักที่ระบุมมาไม่มี';
 			ELSEIF @drawers_pair IS NOT NULL THEN
 				SET @message_error=CONCAT('ลิ้นชักที่ระบุมมา ถูกจับคู่ กับ ',CAST(@drawers_pair AS CHAR CHARACTER SET utf8), ' ไปแล้ว ');
+			ELSEIF (@drawers_id != @drawers_now && @drawers_id != 0) THEN
+				SET @message_error=CONCAT('คุณต้องการเปลี่ยนลิ้นชัก ระบบจะปิดกะปัจจุบันนี้ และออกจากระบบ คุณจะต้องเข้าระบบใหม่ และเปิดกะใหม่ ');
+				SET @type_error='confirm';
 			END IF;			
 		";
 		$sql["run"]="BEGIN NOT ATOMIC 
@@ -153,7 +162,7 @@ class device_pos extends device{
 				SET @result=1;
 			END IF;
 		END;";
-		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@ip AS `ip`";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@ip AS `ip`,@type_error AS `type_error`";
 		$se=$this->metMnSql($sql,["result"]);
 		//print_r($se);exit;
 		return $se["data"]["result"][0];
@@ -229,9 +238,10 @@ class device_pos extends device{
 		//print_r($se);
 		return $se["data"]["result"][0];
 	}
-	private function fetchPOSPage($error){
+	private function fetchPOSPage(string $error,string $type="error"){
 		$re=["result"=>false,"message_error"=>""];
 		$re["message_error"]=$error;
+		$re["type_error"]=$type;
 		$js=json_encode($re);
 		header('Content-type: application/json');
 		echo $js;

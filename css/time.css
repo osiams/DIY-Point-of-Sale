@@ -5,3 +5,5 @@
 .history_last_time > div >   div:nth-child(1){font-family: monospace;font-size:1.2em;font-weight:bold;}
 
 .history_last_time > p.history_drawers_wn{display:block;font-size:1.2em}
+
+.time_orther_close{background-color:#eeeeee;color:black;padding:5px;}

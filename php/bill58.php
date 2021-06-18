@@ -66,7 +66,7 @@ class bill58 extends main{
 	public function run(){
 		if(isset($_GET["b"])){
 			if($_GET["b"]=="viewbill"){
-			$this->viewBill($_GET["sku"]);
+				$this->viewBill($_GET["sku"]);
 			}else if($_GET["b"]=="viewret"&&isset($_GET["sku"])
 				&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku"])){
 				$this->viewRet($_GET["sku"]);
@@ -344,7 +344,7 @@ class bill58 extends main{
 					$this->printLogo($printer);
 					$foo = new GdEscposImage();
 					$tm0=$this->setTm0($billid);
-					$imr=$this->createImg($tm0);
+					$imr=$this->createImg($tm0[0],$tm0[1]);
 					$foo -> readImageFromGdResource($imr);
 					$this->pulse($printer);
 					$printer->bitImageColumnFormat($foo);
@@ -365,12 +365,12 @@ class bill58 extends main{
 	}
 	protected function viewBill(string $billid){
 		$tm0=$this->setTm0($billid);
-		$im=$this->createImg($tm0,"view");
+		$im=$this->createImg($tm0[0],$tm0[1]);
 		header('Content-Type: image/png');
 		imagepng($im);
 		imagedestroy($im);
 	}
-	protected function createImg(array $tm){
+	protected function createImg(array $tm,string $stat=NULL){
 		$xy=imagettfbbox($this->font_size, 0, $this->font_file,"กูกี่"); //$v."กูกี่"
 		$ht=$xy[1]-$xy[7];
 		$this->bill_height=$ht*count($tm)+$ht/3;
@@ -414,14 +414,26 @@ class bill58 extends main{
 				imagettftext($im,$this->font_size,0,$left, $top, $this->black, $this->font_file,$vu);
 			}
 		}
+		if($stat=="c"){
+			$wt = imagecreatefrompng('img/pos/384x256_canc.png');
+			imagealphablending($wt, false); 
+			imagesavealpha($wt, true);
+			imagefilter($wt, IMG_FILTER_COLORIZE, 0,0,0,127*0.2);
+			
+			//imagecopyresampled($im, $wt, 0, 0, 0, 0, 575*3/2, 256, 575, 256);
+			//$wt = imagescale ($wt,576,256,IMG_BILINEAR_FIXED);
+			imagecopy($im, $wt, 0, 0, 0, 0,576, 256);
+			imagedestroy($wt);	
+		}
 		$imr = imagescale ($im,(2/3)*$this->bill_width,$this->bill_height,IMG_BILINEAR_FIXED);
-		$wt = imagecreatefrompng('img/pos/384x256_canc.png');
-		imagealphablending($wt, false); 
-		imagesavealpha($wt, true);
-		imagefilter($wt, IMG_FILTER_COLORIZE, 0,0,0,127*0.5);
-		imagecopy($imr, $wt, 0, 0, 0, 0,384, 256);
-		imagedestroy($wt);	
-
+		/*if($stat=="c"){
+			$wt = imagecreatefrompng('img/pos/384x256_canc.png');
+			imagealphablending($wt, false); 
+			imagesavealpha($wt, true);
+			imagefilter($wt, IMG_FILTER_COLORIZE, 0,0,0,127*0.0);
+			imagecopy($imr, $wt, 0, 0, 0, 0,380, 256);
+			imagedestroy($wt);	
+		}*/
 		return $imr;
 	}
 	protected function setTm0(string $sku):array{
@@ -470,6 +482,12 @@ class bill58 extends main{
 			}else{
 				$re["pay_by"]=[["t"=>"ชำระโดย","lcr"=>"c"]];
 				$q=0;
+				if(count($payu)==1&&isset($payu["creditroot"])){
+					$re["pay_by_cash"]=[
+						["t"=>"เงินสด/โอน/เช็ก","lcr"=>"l"],
+						["t"=>"0.00 บาท ","lcr"=>"r"]			
+					];	
+				}
 				foreach($payu as $k=>$v){
 					$q+=1;
 					$re["payu_".$q]=[
@@ -495,7 +513,7 @@ class bill58 extends main{
 				$re["line_feed_".$i]=[["t"=>" ","lcr"=>"l"]];
 			}
 		}
-		return $re;
+		return [$re,$se["head"]["stat"]];
 	}
 	private function cutValue0(array $payu):array{
 		$re=[];
@@ -512,7 +530,7 @@ class bill58 extends main{
 		$sql=[];
 		$sql["head"]="SELECT  `bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`, 
 				IFNULL(`bill_sell`.`min`,0) AS `min`,IFNULL(`bill_sell`.`mout`,0) AS `mout`,
-				IFNULL(`bill_sell`.`credit`,0) AS `credit`,
+				IFNULL(`bill_sell`.`credit`,0) AS `credit`,`bill_sell`.`stat`,
 				GetPayuArrRefData_(`bill_sell`.`payu_json`) AS `payu_json`,
 				`bill_sell`.`price` AS `price`, `bill_sell`.`date_reg` AS `date_reg`,
 				`user_ref`.`sku` AS `user_sku`,
@@ -1226,7 +1244,7 @@ class bill58 extends main{
 				];	
 			}
 
-			$mout=$sum_pay-$credit;
+			$mout=$sum_pay-$sum;
 			$mout=($mout<0)?0:$mout;
 			$re["payu_mout"]=[
 				["t"=>"เงินทอน ".number_format($mout,2,'.',',')." บาท ","lcr"=>"r"]			
@@ -1245,7 +1263,7 @@ class bill58 extends main{
 		$sku=$this->getStringSqlSet($sku);
 		$sql=[];
 		$sql["head"]="SELECT  @bill_rca_id:=`bill_rca`.`id`  AS  `id`,`bill_rca`.`sku`  AS  `sku`,
-				`bill_rca`.`pay`,`bill_rca`.`credit`,`bill_rca`.`onoff`,
+				`bill_rca`.`pay`,`bill_rca`.`min`,`bill_rca`.`credit`,`bill_rca`.`onoff`,
 				GetPayuArrRefData_(`bill_rca`.`payu_json`) AS `payu_json`,
 				`bill_rca`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,

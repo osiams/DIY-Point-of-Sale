@@ -44,7 +44,9 @@ class bill_sell_delete extends bills{
 			@max_id:=(SELECT MAX(`id`)+1 FROM `bill_in`),
 			@money_balance:=(SELECT IFNULL(`money_balance`,0) FROM `device_pos` WHERE `ip`='".$_SESSION["ip"]."' AND `user` = '".$_SESSION["sku_root"]."' AND `onoff` = '1'),
 			@drawers_id:=(SELECT `drawers_id` FROM `device_pos` WHERE `ip`='".$_SESSION["ip"]."' AND `user` = '".$_SESSION["sku_root"]."' AND `onoff` = '1'),
+			@user_id:='".$_SESSION["id"]."',
 			@user_key:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$user." LIMIT 1),
+			@rca_sum:=-1,
 			@has:=(SELECT  COUNT(*)  FROM bill_sell WHERE  sku=@sku);
 		";
 		$sql["check"]="
@@ -152,6 +154,19 @@ class bill_sell_delete extends bills{
 							ON(`bill_sell`.`member_sku_key`=`member_ref`.`sku_key`) 
 							WHERE `bill_sell`.`sku`=@sku LIMIT 1;
 						SET @member_id=rbill.member_id;
+						IF rbill.credit > 0 THEN
+							SET @rca_sum=(SELECT SUM(`credit`) FROM `rca` WHERE `member_id`=rbill.member_id);
+							INSERT INTO `tran_rca` (
+									`time_id`				,`tran_rca_type`		,`bill_rca_id`					,`min`					,`ip`		,`drawers_id`,
+									`member_id`			,`user_id`					,`money_balance`			,`date_reg`
+								)VALUES(
+									@time_id				,'canc'						,bill_canc_id					,rbill.credit				,@ip		,@drawers_id,
+									rbill.member_id		,@user_id					,(@rca_sum-rbill.credit)	,date_reg
+								)
+							;	
+							UPDATE `rca` SET `credit`= 0 WHERE `bill_sell_id` = @sku;
+							UPDATE `member` SET `credit` = (@rca_sum-rbill.credit) WHERE `id` = @member_id;
+						END IF;
 						IF rbill.price > 0 THEN
 							INSERT INTO `tran`(
 									`time_id`		,`mout`			,`tran_type`			,`ref`	,`ip`,

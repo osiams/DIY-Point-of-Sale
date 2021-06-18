@@ -1,5 +1,5 @@
 <?php
-
+require("library/barcode-master/barcode.php");
 class login extends main{
 	public function __construct(){
 		parent::__construct();
@@ -26,21 +26,27 @@ class login extends main{
 					if(is_array($re["data"])){
 						if(count($re["data"]["result"])==1
 							&&password_verify($_POST["p"],$re["data"]["result"][0]["password"])){
-							$_SESSION["login"]=true;
-							$_SESSION["cookie"]=false;
-							$_SESSION["sku_root"]=$re["data"]["result"][0]["sku_root"];
-							$_SESSION["id"]=$re["data"]["result"][0]["id"];
-							$_SESSION["user"]=$re["data"]["result"][0]["email"];
-							$_SESSION["name"]=$re["data"]["result"][0]["name"];
-							$_SESSION["lastname"]=$re["data"]["result"][0]["lastname"];
-							$_SESSION["email"]=$re["data"]["result"][0]["email"];
-							$_SESSION["userceo"]=$re["data"]["result"][0]["userceo"];
-							$_SESSION["oa"]=CF["userceo"][$_SESSION["userceo"]]["a"];
-							$_SESSION["ip"]=$this->userIPv4();
-							$_SESSION["onoff"]=0;
-							$_SESSION["time_id"]=0;
-							header('Location:index.php?a=time');
-							exit;
+							/*$s=$this->findIPv4();
+							$c=$this->userIPv4();
+							if(($s==$c&&$re["data"]["result"][0]["userceo"]>=8)||($s!=$c&&$re["data"]["result"][0]["userceo"]<8)){
+							*/	$_SESSION["login"]=true;
+								$_SESSION["cookie"]=false;
+								$_SESSION["sku_root"]=$re["data"]["result"][0]["sku_root"];
+								$_SESSION["id"]=$re["data"]["result"][0]["id"];
+								$_SESSION["user"]=$re["data"]["result"][0]["email"];
+								$_SESSION["name"]=$re["data"]["result"][0]["name"];
+								$_SESSION["lastname"]=$re["data"]["result"][0]["lastname"];
+								$_SESSION["email"]=$re["data"]["result"][0]["email"];
+								$_SESSION["userceo"]=$re["data"]["result"][0]["userceo"];
+								$_SESSION["oa"]=CF["userceo"][$_SESSION["userceo"]]["a"];
+								$_SESSION["ip"]=$this->userIPv4();
+								$_SESSION["onoff"]=0;
+								$_SESSION["time_id"]=0;
+								header('Location:index.php?a=time');
+								exit;
+							/*}else if($s==$c&&$re["data"]["result"][0]["userceo"]<8){
+								$rel=array("message_error"=>"ระดับผู้ใช้ของคุณ ไม่สามารถเข้าใช้งานเครื่องนี้ได้ ");
+							}*/
 						}else{
 						$rel=array("message_error"=>"ไม่พบผู้ใช้ และ หรือ รหัส ที่รับมา");
 						}
@@ -52,7 +58,11 @@ class login extends main{
 				}
 			}
 		}
-		$this->pageLogin($ck,$rel);
+		if(isset($_GET["v"])&&$_GET["v"]=="vqrc"){
+			$this->qrc();
+		}else{
+			$this->pageLogin($ck,$rel);
+		}
 	}
 	public function logout(){
 		session_unset();
@@ -84,6 +94,10 @@ class login extends main{
 		return $re;
 	}
 	private function pageLogin(array $ck=NULL,array $re=NULL):void{
+		$lan=$_SERVER['REQUEST_SCHEME']."://".$_SERVER['SERVER_NAME'].":".$_SERVER['SERVER_PORT']."".$_SERVER['PHP_SELF'];
+		$lanphpadmin=$_SERVER['REQUEST_SCHEME']."://".$_SERVER['SERVER_NAME'].":".$_SERVER['SERVER_PORT']."/phpmyadmin/";
+		$lan2="http://".$this->findIPv4().":".CF["http_port"]."".$_SERVER['PHP_SELF'];
+		$lan3="https://".$this->findIPv4().":".CF["https_port"]."".$_SERVER['PHP_SELF'];
 		if(!isset($_COOKIE['printer_'])){
 			setcookie("printer_",0,  ["expires"=>time()+(3600*24*30*12*10),"samesite" =>"Lax"]);
 		}		
@@ -138,10 +152,21 @@ class login extends main{
 				</div>
 				</div>
 				</div>
-				<div class="version"><b class="">'.$this->about->name.' Version '.$this->about->version.'</b> ('.$this->about->date.')</div>
+				
+					<div class="login_qrc">
+						
+						<div><img src="?a=login&amp;v=vqrc&amp;s=qrl&amp;d='.$lan2.'" /></div>
+						<div><img src="?a=login&amp;v=vqrc&amp;s=qrl&amp;d='.$lan3.'" /></div>	
+						<div class="c">http://</div><div class="c">https://</div>
+					</div>	
+				<div class="version"><b class="">'.$this->about->name.' Version '.$this->about->version.'</b> ('.$this->about->date.')</div>		
 				</td></tr></table>
 				';
 		$this->pageFoot();
+	}
+	public function qrc(){
+		$generator = new barcode_generator($_REQUEST['d'], $_REQUEST);
+		$generator->output_image("png", $_REQUEST['s'], $_REQUEST['d'],"png");
 	}
 }
 

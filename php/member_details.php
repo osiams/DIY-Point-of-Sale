@@ -101,12 +101,23 @@ class member_details extends member{
 		if(!empty($dt["disc"])){$s+=1;
 			echo '<tr class="i'.(($s%2)+1).'"><td class="l">รายละเอียด</td><td class="l">'.htmlspecialchars($dt["disc"]).'</td></tr>';
 		}
-		if((float) $dt["credit"] >0){$s+=1;
+		if(1==1){$s+=1;
+			$tc=trim($dt["credit"]);
+			$cd=(float) $dt["credit"];
 			$linktp="";
-			if($dt["credit"]>0){
+			$linkhs='<a onclick="location.href=\'?a=account&amp;b=account_history&amp;sku_root='.$dt["sku_root"].'\'">ประวัติหนี้สิน</a>';
+			if($cd > 0){
 				$linktp=' <a onclick="Mb.toPay(\''.$dt["id"].'\')">ชำระค้างจ่าย</a>';
 			}
-			echo '<tr class="i'.(($s%2)+1).'"><td class="l">ยอดค้างชำระ</td><td class="l">'.number_format($dt["credit"],2,".",",").''.$linktp.'</td></tr>';
+			if($tc!=""){
+				if($cd>0){
+					echo '<tr class="i'.(($s%2)+1).'"><td class="l">ยอดค้างชำระ</td><td class="l"><b class="darkred">'.number_format($dt["credit"],2,".",",").'</b> '.$linktp.'<br />'.$linkhs.'</td></tr>';
+				}else{
+					echo '<tr class="i'.(($s%2)+1).'"><td class="l">ยอดค้างชำระ</td><td class="l"><b>'.number_format($dt["credit"],2,".",",").'</b> <br />'.$linkhs.'</td></tr>';
+				}
+			}else{
+				echo '<tr class="i'.(($s%2)+1).'"><td class="l">ยอดค้างชำระ</td><td class="l"><b class="green">ไม่มีประวัติการค้างชำระ</b></td></tr>';
+			}
 		}
 		if(!empty($dt["date_reg"])){$s+=1;
 			echo '<tr class="i'.(($s%2)+1).'"><td class="l">วันที่ลงทะเบียน</td><td class="l">'.htmlspecialchars($dt["date_reg"]).'</td></tr>';

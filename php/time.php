@@ -22,16 +22,95 @@ class time extends main{
 		}
 	}
 	public function fetch(){
-		$p=["close"];
+		$p=["close","closeother"];
 		if(isset($_POST["b"])&&in_array($_POST["b"],$p)){
 			$t=$_POST["b"];
 			if($t=="close"){
 				$this->fetchCloseTime();
+			}else if($t=="closeother"){
+				$this->fetchCloseOtherTime();
 			}
 		}else{
 			header('Content-type: application/json');
 			print_r("{}");
 		}		
+	}
+	private function fetchCloseOtherTime():void{
+		$re=["result"=>false,"message_error"=>"","data"=>[]];
+		$a=$this->closeOtherTime();
+		//print_r($a);
+		$re=$a;
+		if($a["result"]){
+			session_unset();
+		}else{
+			$re["message_error"]=$a["message_error"];
+		}
+		header('Content-type: application/json');
+		echo json_encode($re);
+	}
+	private function closeOtherTime():array{
+		$time_closeto=($this->pem[$this->user_ceo]["time_closeto"]==true)?1:0;
+		$re=["result"=>false,"message_error"=>""];
+		$sql=[];
+		$sql["set"]="SELECT 
+			@result:=0,
+			@time_closeto:=".$time_closeto.",
+			@message_error:='',
+			@TEST:='',
+			@user_close:='".$_SESSION["user"]."',
+			@user:='".$_SESSION["sku_root"]."',
+			@ip:='".$_SESSION["ip"]."';
+			;
+		";
+		$sql["run"]="BEGIN NOT ATOMIC 
+			DECLARE lastid INT DEFAULT NULL;
+			DECLARE r ROW (
+				`time_id` INT,
+				`ip`CHAR(25),
+				`onoff` CHAR(1),
+				`drawers_id`INT ,
+				`money_start` FLOAT,
+				`money_balance` FLOAT,
+				`user` CHAR(25),
+				`date_reg` TIMESTAMP
+			);
+			SELECT `time_id`	,`ip`		,`onoff`		,`drawers_id`	,`money_start`	,`money_balance`,
+						`user`		,`date_reg` I
+				INTO 	r.time_id	,r.ip	,r.onoff			,r.drawers_id		,r.money_start	,r.money_balance	,
+						r.user	,r.date_reg
+				FROM `device_pos` WHERE `ip`= @ip LIMIT 1;
+			IF r.onoff='1'  && r.ip=@ip THEN
+				INSERT INTO `time`(
+					`id`	,`ip`				,`drawers_id`	,`user`		,`money_start`		,`money_balance`	,
+					`note`	,`date_reg`	,`date_exp`
+				)VALUES(
+					r.time_id	,@ip				,r.drawers_id		,r.user		,r.money_start		,r.money_balance	,
+					CONCAT('ถูกปิดกะ โดย ',@user_close)	,r.date_reg		,NOW()
+				) ON DUPLICATE KEY UPDATE `ip`=@ip,`drawers_id`=r.drawers_id,`user`=r.user,`money_start`=r.money_start,
+					`note`=CONCAT('ถูกปิดกะ โดย ',@user_close) ,`date_reg`=r.date_reg,`date_exp`=NOW();
+				# SET lastid=(SELECT LAST_INSERT_ID());
+				 IF r.time_id > 0 THEN
+					UPDATE `device_pos` 
+						SET `time_id`=r.time_id,`onoff`='0' ,`money_start`=`money_balance`,`user`=NULL ,`date_reg`=NULL
+						WHERE `ip`=@ip;
+					SET @result=1;
+				END IF;
+			ELSEIF r.onoff != '1' THEN
+				SET @message_error='ไม่สามาถปิดกะได้ เนื่องจาก ปิดอยู่แล้ว';
+			ELSEIF r.ip != @ip THEN
+				SET @message_error='ไม่สามาถปิดกะได้ เนื่องจาก  IP เครื่องไม่ตรงกับที่บันทึก';
+			END IF;
+			SET @TEST=r.onoff;
+		END";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@TEST";
+		$se=$this->metMnSql($sql,["result"]);
+		if($se["result"]){
+			if(isset($se["data"]["result"][0])){
+				$re=$se["data"]["result"][0];
+			}
+		}
+		//print_r($se);
+		return $re;
 	}
 	private function fetchCloseTime():void{
 		$re=["result"=>false,"message_error"=>"","data"=>[]];
@@ -193,7 +272,13 @@ class time extends main{
 								<form name="time" method="post" action="?a=time">
 									<input type="hidden" name="b" value="" />';
 						if($a["get_pos"]["user"]!=$_SESSION["sku_root"]){
-							echo '<div class="error">คุณไม่สามารถเข้าใช้งานขณะนี้ เนื่องจากเครื่องนี้เปิดกะทำงานค้างไว้อยู่</div>';
+							echo '<div class="error"><span>คุณไม่สามารถเข้าใช้งานขณะนี้ เนื่องจากเครื่องนี้เปิดกะทำงานค้างไว้อยู่ โดย <b><i>'.htmlspecialchars($a["get_pos"]["user_name"]).'</i></b> </span>';
+							if($this->pem[$this->user_ceo]["time_closeto"]){
+								echo '<div class="time_orther_close l">สวัสดีคุณ <b><i>'.htmlspecialchars($_SESSION["name"]." ".$_SESSION["lastname"]).'</i></b> 
+									หากคุณต้องการปิกกะ ของผู้ใช้ <b><i>'.htmlspecialchars($a["get_pos"]["user_name"]).'</i></b> กดปุ่มด้านล่างได้เลย 
+									<div class="c"><input type="button" value="ปิดกะของผู้ใช้นี้" onclick="Ti.closeTime(\''.htmlspecialchars($a["get_pos"]["user_name"]).'\')" /></div></div>';
+							}
+							echo '</div>';
 						}				
 						$this->writeLastTime2($a["get_pos"]["ip"],$a["get_pos"]);			
 						echo '		<div class="c">';
@@ -236,73 +321,6 @@ class time extends main{
 				$this->viewTimeMe();
 			}
 		}
-		/*if(!isset($_SESSION["time_stat"])){
-			$a=$this->checkTime();
-			//print_r($a);
-			$this->pageHead(["title"=>$this->title." DIYPOS","css"=>["time"],"js"=>["time","Ti"],"run"=>["Ti"]]);
-			if($a["is_regis"]==1){
-				//--ผู้ใช้ไม่ได้ใช้เครื่องใดเลย
-				if($a["count_user"]==0 ) {
-					if($a["get_pos"]["onoff"] == 0){
-						echo '<div class="content">
-							<div class="form">
-								<h2>'.$this->title.'</h2>
-								<form name="time" method="post" action="?a=time">
-									<input type="hidden" name="b" value="" />';
-						$this->writeLastTime($a["get_pos"]["ip"],$a["get_last_time"]);
-									
-						echo '		<div class="c">
-										<input type="button" value="เริ่มกะทำงานใหม่" onclick="Ti.newTimeSubmit()" />
-										<input type="button" value="ออกจากระบบ" onclick="Ti.logout()" />
-									</div>
-								</form>
-							</div>
-						</div>';
-					}else{
-						echo '<div class="content">
-							<div class="form">
-								<h2>'.$this->title.'</h2>
-								<form name="time" method="post" action="?a=time">
-									<input type="hidden" name="b" value="" />';
-						$this->writeLastTime2($a["get_pos"]["ip"],$a["get_last_time"]);
-									
-						echo '		<div class="c">
-										<input type="button" value="เริ่มกะทำงานนี้ต่อ" onclick="Ti.newTimeSubmit()" />
-										<input type="button" value="ออกจากระบบ" onclick="Ti.logout()" />
-									</div>
-								</form>
-							</div>
-						</div>';
-					}
-				}
-			}else{
-				
-			}
-		}else{
-			if($_SESSION["time_stat"]=="device_regis"){
-				if(isset($_GET["a"])&&$_GET["a"]=="device"||isset($_POST["a"])&&$_POST["a"]=="device"){
-					$_POST["b"]="pos";
-					$_POST["c"]="regis";
-					require_once("php/device.php");
-					(new device)->run();				
-				}else{
-					$this->pageHead(["title"=>$this->title." DIYPOS","css"=>["time"],"js"=>["time","Ti"],"run"=>["Ti"]]);
-					echo '<div class="content">
-						<div class="form">
-							<br />
-							<div class="error">อุปกรณ์ หมายเลข IP '.$_SESSION["ip"].' นี้ ยังไม่มีในระบบ</div>
-							<br />
-							<input type="button" value="ลงทะเบียนอุปกรณ์" onclick="location.href=\'?a=device\'" />
-						</div>
-					</div>';
-					$this->pageFoot();
-				}
-			}else if($_SESSION["time_stat"]=="view_me"){
-				unset($_SESSION["time_stat"]);
-				$_SESSION["onoff"]=1;
-				$this->viewTimeMe();
-			}
-		}*/
 	}
 	private function writeLastTime(string $ip,array $time):void{
 		//print_r($time);
@@ -316,7 +334,7 @@ class time extends main{
 			}
 			echo '<div class="start_time">เปิดกะ เวลา<div>'.$time["date_reg"].' น.</div></div>
 					<div class="start_time">ปิดกะ เวลา<div>'.$time["date_exp"].' น.</div></div>
-					<div class="start_time">ผู้ใช้<div>'.htmlspecialchars($time["user_name"]).'</div></div>';
+					<div class="start_time">ผู้ใช้ (ผู้เปิดกะ)<div>'.htmlspecialchars($time["user_name"]).' </div></div>';
 			if($time["drawers_sku"]!=""){
 				echo '	<div class="start_time">ลิ้นชัก/ที่เก็บเงิน
 						<div>
@@ -349,7 +367,7 @@ class time extends main{
 			}	
 			echo '<div class="start_time opened">เปิดกะ เวลา<div>'.$time["date_reg"].' น.</div></div>
 					<div class="start_time opened">เปิดกะมานาน<div id="time_ago">00:00:00</div></div>
-					<div class="start_time opened">ผู้ใช้<div>'.htmlspecialchars($time["user_name"]).'</div></div>';
+					<div class="start_time opened">ผู้ใช้ (ผู้เปิดกะ) <div>'.htmlspecialchars($time["user_name"]).'</div></div>';
 				if($time["drawers_sku"]!=""){
 					echo '<div class="start_time opened">ลิ้นชัก/ที่เก็บเงิน
 						<div>

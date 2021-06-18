@@ -24,3 +24,5 @@
 	100%   {background-color:#eeeeee}
 }
 .version{text-align:center;margin:10px auto;}
+.login_qrc{display:grid;grid-template-columns:50% 50%;grid-gap:0px 0px;padding:5px;background-color:white;width:240px;margin:0 auto;}
+.login_qrc >div >img{width:calc(100% - 5px);}

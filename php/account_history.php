@@ -240,9 +240,10 @@ class account_history extends account{
 	}
 	private function historyWriteContent(array $data):void{
 		$type=[
-			"sell"=>["icon"=>"📥","name"=>"ซื้อสินค้าแบบมีค้างชำระ"],
+			"sell"=>["icon"=>"🛒","name"=>"ซื้อสินค้าแบบมีค้างชำระ"],
 			"ret"=>["icon"=>"↪️","name"=>"คืนสินค้า หักยอดค้างชำระออก"],
-			"pay"=>["icon"=>"💸️","name"=>"ชำระค้างจ่าย"]
+			"pay"=>["icon"=>"💸️","name"=>"ชำระค้างจ่าย"],
+			"canc"=>["icon"=>"❌️️","name"=>"ยกเลิกใบเสร็จที่ออกไปแล้ว"]
 		];
 		$today=date('Y-m-d') ;//== date('Y-m-d', strtotime($timestamp));
 		$yesterday= Date('Y-m-d', strtotime('-1 day'));
@@ -271,7 +272,7 @@ class account_history extends account{
 			}
 			$min_txt="";//($data["list"][$i]["min"]>0)?"+".number_format($data["list"][$i]["min"],2,".",","):"";
 			$mout_txt="";//($data["list"][$i]["mout"]>0)?"-".number_format($data["list"][$i]["mout"],2,".",","):"";
-			$balance_txt=($data["list"][$i]["money_balance"]>0)?number_format($data["list"][$i]["money_balance"],2,".",","):"";
+			$balance_txt=($data["list"][$i]["money_balance"]>0)?number_format($data["list"][$i]["money_balance"],2,".",","):"0.00";
 			
 			$type_icon=$type[$data["list"][$i]["tran_rca_type"]]["icon"];
 			$q+=1;
@@ -288,6 +289,10 @@ class account_history extends account{
 				$mout_txt="-".number_format($df,2,".",",");
 			}else if($tt=="ret"){
 				$type_tx='<span class="rcapay_time_log_span" onclick="Me.showBill(this,\''.$tt.'\',\''.$data["list"][$i]["ref"].'\','.($i+1).')" title="ใบเสร็จเลขที่ '.$data["list"][$i]["ref"].'">'.$type_icon.'</span>';
+				$mout_txt=($data["list"][$i]["min"]>0)?"-".number_format($data["list"][$i]["min"],2,".",","):"";
+			}else if($tt=="canc"){
+				$bil=preg_replace(["/.[0-9]{1,}$/"],[""], $data["list"][$i]["ref"]);
+				$type_tx='<span class="rcapay_time_log_span" onclick="Me.showBill(this,\'sell\',\''.$bil.'\','.($i+1).')" title="ใบเสร็จเลขที่ '.$bil.'">'.$type_icon.'</span>';
 				$mout_txt=($data["list"][$i]["min"]>0)?"-".number_format($data["list"][$i]["min"],2,".",","):"";
 			}
 			echo '<tr class="i'.$tr.'">
