@@ -7,3 +7,5 @@
 .history_last_time > p.history_drawers_wn{display:block;font-size:1.2em}
 
 .time_orther_close{background-color:#eeeeee;color:black;padding:5px;}
+
+.time_log_date_th{background-color:gray;color:white;padding:5px;position: sticky;top:25px;z-index:1}

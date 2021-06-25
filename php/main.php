@@ -109,8 +109,8 @@ class main{
 			],
 			"device_drawers"=>[
 				"name"=>"device_drawers",
-				"column"=>["id"			,"sku"			,"name"				,"no",		
-									"disc"		,"icon_arr"		,"icon_gl"			,"modi_date"	,
+				"column"=>["id"			,"sku"				,"name"				,"no",		
+									"money_balance"				,"disc"		,"icon_arr"		,"icon_gl"			,"modi_date"	,
 									"date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],					
 				"primary"=>"sku",
@@ -1130,6 +1130,31 @@ class main{
 			$re=floor(($s/(60*60*24))/7)." สัปดาห์";
 		}
 		return $re;
+	}
+	protected function ago2(int $ss):string{
+		$re="";
+		$h="00";
+		$m="00";
+		$s="00";
+		$ah=floor($ss/3600);
+		$am=$ss%3600;
+		$as=$ss%60;
+		if($as<10){
+			$s="0".$as;
+		}else{
+			$s="".$as;
+		}
+		if($am<600){
+			$m="0".(($am-$as)/60);
+		}else{
+			$m=(($am-$as)/60);
+		}
+		if($ah<10){
+			$h="0".$ah;
+		}else{
+			$h=$ah;
+		}
+		return "".$h.":".$m.":".$s."";
 	}
 	protected function billNote(string $type,string $note,string $nt2=""):string{
 		$not=$note;

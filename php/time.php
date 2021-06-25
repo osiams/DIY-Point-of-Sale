@@ -18,7 +18,18 @@ class time extends main{
 				(new login)->logout();
 			}
 		}else{
-			$this->defaultTimePage();
+			if(isset($_GET["b"])){
+				$t=$_GET["b"];
+				if($t=="time_all"){
+					require_once("php/time_all.php");
+					(new time_all)->run();					
+				}else if($t=="time_view"){
+					require_once("php/time_view.php");
+					(new time_view)->run();	
+				}
+			}else{
+				$this->defaultTimePage();
+			}
 		}
 	}
 	public function fetch(){
@@ -330,7 +341,7 @@ class time extends main{
 				<div class="history_last_time">
 					<p>ล่าสุด '.$ip.'<p>';
 			if($time["drawers_sku"]==""){
-				echo '	<p class="warning history_drawers_wn">อุปกรณ์นี้ไม่ได้ระบุ ลิ้นชัก/ที่เก็บเงิน จะไม่สามารถทำกิจกรรมที่เกียวข้องกับ การรับ จ่าย ทอน เงิดสดได้</p>';
+				echo '	<p class="warning history_drawers_wn">อุปกรณ์ไม่ได้ระบุ ลิ้นชัก/ที่เก็บเงิน จะไม่สามารถทำกิจกรรมที่เกียวข้องกับ การรับ จ่าย ทอน เงิดสดได้</p>';
 			}
 			echo '<div class="start_time">เปิดกะ เวลา<div>'.$time["date_reg"].' น.</div></div>
 					<div class="start_time">ปิดกะ เวลา<div>'.$time["date_exp"].' น.</div></div>

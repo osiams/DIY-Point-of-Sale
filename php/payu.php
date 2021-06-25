@@ -57,7 +57,7 @@ class payu extends main{
 		$icon_load=(isset($_POST["icon_load"]))?$_POST["icon_load"]:"";
 		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
 		$sku=(isset($_POST["sku"]))?htmlspecialchars($_POST["sku"]):"";
-		$money_type = (isset($_POST["money_type"]))?htmlspecialchars($_POST["money_type"]):"ca";
+		$money_type = (isset($_POST["money_type"]))?htmlspecialchars($_POST["money_type"]):"tr";
 		$note=(isset($_POST["note"]))?htmlspecialchars($_POST["note"]):"";
 		$sku_root=(isset($_POST["sku_root"]))?htmlspecialchars($_POST["sku_root"]):"";
 		$this->addDir("","แก้ไข".$this->title.' '.$name );
@@ -80,10 +80,10 @@ class payu extends main{
 			<p><label for="tp_type">ประเภทเงิน</label></p>
 			<div>
 				<select name="money_type">	
-					<option value="ca"'.($money_type == "ca"?" selected":"").'>'.$this->money_type["ca"]["icon"].' '.$this->money_type["ca"]["name"].'</option>				
+					<option value="ca"'.($money_type == "ca"?" selected":"").' disabled>'.$this->money_type["ca"]["icon"].' '.$this->money_type["ca"]["name"].'</option>				
 					<option value="tr"'.($money_type == "tr"?" selected":"").'>'.$this->money_type["tr"]["icon"].' '.$this->money_type["tr"]["name"].'</option>
 					<option value="ck"'.($money_type == "ck"?"selected":"").'>'.$this->money_type["ck"]["icon"].' '.$this->money_type["ck"]["name"].'</option>
-					<option value="cd"'.($money_type == "cd"?"selected":"").'>'.$this->money_type["cd"]["icon"].' '.$this->money_type["cd"]["name"].'</option>
+					<option value="cd"'.($money_type == "cd"?"selected":"").' disabled>'.$this->money_type["cd"]["icon"].' '.$this->money_type["cd"]["name"].'</option>
 				</select>
 			</div>
 			<p><label for="note">รายละเอียดย่อ</label></p>
@@ -110,6 +110,14 @@ class payu extends main{
 		$set_img=0;
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
 			$se=$this->checkSet("partner",["post"=>["name","sku","money_type","note"]],"post");
+			if(isset($_POST["money_type"])){
+				if($se["message_error"]==""){
+					if($_POST["money_type"]!="tr"&&$_POST["money_type"]!="ck"){
+						$se["message_error"]="เลือกประเภทเงินโอน หรือ เช็ก เท่านั้น";
+						$se["result"]=false;
+					}
+				}
+			}
 			if(isset($_POST["icon"])&&$_POST["icon"]!=""){
 				$img=$this->img->imgCheck("icon");
 				if($img["result"]==false&&$se["result"]){
@@ -254,6 +262,14 @@ class payu extends main{
 		$mime="";
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
 			$se=$this->checkSet("payu",["post"=>["name","sku","note","money_type"]],"post");
+			if(isset($_POST["money_type"])){
+				if($se["message_error"]==""){
+					if($_POST["money_type"]!="tr"&&$_POST["money_type"]!="ck"){
+						$se["message_error"]="เลือกประเภทเงินโอน หรือ เช็ก เท่านั้น";
+						$se["result"]=false;
+					}
+				}
+			}
 			if(isset($_POST["icon"])&&$_POST["icon"]!=""){
 				$img=$this->img->imgCheck("icon");
 				if($img["result"]==false&&$se["result"]){
@@ -360,7 +376,7 @@ class payu extends main{
 		$name=(isset($_POST["name"]))?htmlspecialchars($_POST["name"]):"";
 		$sku=(isset($_POST["sku"]))?htmlspecialchars($_POST["sku"]):"";
 		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
-		$money_type = (isset($_POST["money_type"]))?htmlspecialchars($_POST["money_type"]):"ca";
+		$money_type = (isset($_POST["money_type"]))?htmlspecialchars($_POST["money_type"]):"tr";
 		$note=(isset($_POST["note"]))?htmlspecialchars($_POST["note"]):"";
 		$this->addDir("","เพิ่มคู่ค้า");
 		$this->pageHead(["title"=>"เพิ่ม".$this->title." DIYPOS","js"=>["payu","Py","fileupload","Ful"],"run"=>["Py"],"css"=>["payu","fileupload"]]);
@@ -380,10 +396,10 @@ class payu extends main{
 			<p><label for="tp_type">ประเภทเงิน</label></p>
 			<div>
 				<select name="money_type">	
-					<option value="ca"'.($money_type == "ca"?" selected":"").'>'.$this->money_type["ca"]["icon"].' '.$this->money_type["ca"]["name"].'</option>				
+					<option value="ca"'.($money_type == "ca"?" selected":"").' disabled>'.$this->money_type["ca"]["icon"].' '.$this->money_type["ca"]["name"].'</option>				
 					<option value="tr"'.($money_type == "tr"?" selected":"").'>'.$this->money_type["tr"]["icon"].' '.$this->money_type["tr"]["name"].'</option>
 					<option value="ck"'.($money_type == "ck"?"selected":"").'>'.$this->money_type["ck"]["icon"].' '.$this->money_type["ck"]["name"].'</option>
-					<option value="cd"'.($money_type == "cd"?"selected":"").'>'.$this->money_type["cd"]["icon"].' '.$this->money_type["cd"]["name"].'</option>
+					<option value="cd"'.($money_type == "cd"?"selected":"").' disabled>'.$this->money_type["cd"]["icon"].' '.$this->money_type["cd"]["name"].'</option>
 				</select>
 			</div>
 			<p><label for="note">รายละเอียดย่อ</label></p>

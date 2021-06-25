@@ -32,7 +32,7 @@ class account_rca extends account{
 	
 	private function fetchRcaSave(array $post):array{
 		$re=["result"=>false,"message_error"=>"","data"=>[]];
-		$pn=(float) $_POST["pay"];
+		$pn=(float) $_POST["pay"];	
 		$payu_json0=$this->cutPerfix($_POST["payu"]);
 		$note=(isset($_POST["note"]))?$_POST["note"]:"";
 		$note=$this->getStringSqlSet($note);

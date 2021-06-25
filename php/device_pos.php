@@ -103,8 +103,11 @@ class device_pos extends device{
 					$error=$qe["message_error"];
 					$type=$qe["type_error"];
 				}else if($qe["result"]==1){
+					if((int) $qe["drawers_change"]==1){
+						session_unset();
+					}
 					header('Content-type: application/json');
-					$d=["result"=>true,"message_error"=>"","data"=>["ip"=>$qe["ip"]]];
+					$d=["result"=>true,"message_error"=>"","data"=>["ip"=>$qe["ip"],"drawers_change"=>(int) $qe["drawers_change"]]];
 					echo json_encode($d,true);
 				}
 			}
@@ -120,6 +123,7 @@ class device_pos extends device{
 		$name=$this->getStringSqlSet($_POST["name"]);
 		$sku=$this->getStringSqlSet($_POST["sku"]);
 		$no=$this->getStringSqlSet($_POST["no"]);
+		$drawers_change=((isset($_POST["drawers_change"])&&$_POST["drawers_change"]=="1")?1:0);
 		$drawers_id=(int) $_POST["drawers_id"];
 		$sku_root=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$ip=$this->getStringSqlSet($this->userIPv4());
@@ -128,29 +132,44 @@ class device_pos extends device{
 		$sql["set"]="SELECT @result:=0,
 			@type_error:='error',
 			@message_error:='',
-			@ip:=".$ip.",
+			@ip:='".$_SESSION["ip"]."',
 			@sku:=".$sku.",
 			@name:=".$name.",
+			@drawers_change:=".$drawers_change.",
 			@no:=".$no.",
 			@disc:=".$disc.",
 			@drawers_id:=".$drawers_id.",
 			@icon_arr:=".$this->getStringSqlSet(json_encode($icon_arr)).",
+			@time_id:='".$_SESSION["time_id"]."',
+			@user_sku_root:=".$sku_root.",
 			@drawers_now:=(SELECT IFNULL((SELECT `drawers_id` FROM `device_pos` WHERE `ip`=@ip LIMIT 1),0)),
 			@drawers_pair:=(SELECT (SELECT `ip`  FROM `device_pos` WHERE `drawers_id`=@drawers_id AND `drawers_id` > 0 LIMIT 1)),
 			@count_drawers:=(SELECT COUNT(*)  FROM `device_drawers` WHERE `id`=@drawers_id ),
 			@user:=(SELECT `sku_key`  FROM `user` WHERE `sku_root`=".$sku_root." LIMIT 1);
-		";
+		";		
 		$sql["check"]="
 			IF @count_drawers = 0 && @drawers_id != 0 THEN 
 				SET @message_error='เกิดขอผิดพลาด ลิ้นชักที่ระบุมมาไม่มี';
-			ELSEIF @drawers_pair IS NOT NULL THEN
+			ELSEIF @drawers_pair IS NOT NULL && @drawers_pair != @ip THEN
 				SET @message_error=CONCAT('ลิ้นชักที่ระบุมมา ถูกจับคู่ กับ ',CAST(@drawers_pair AS CHAR CHARACTER SET utf8), ' ไปแล้ว ');
-			ELSEIF (@drawers_id != @drawers_now && @drawers_id != 0) THEN
-				SET @message_error=CONCAT('คุณต้องการเปลี่ยนลิ้นชัก ระบบจะปิดกะปัจจุบันนี้ และออกจากระบบ คุณจะต้องเข้าระบบใหม่ และเปิดกะใหม่ ');
-				SET @type_error='confirm';
+			ELSEIF (@drawers_id != @drawers_now ) THEN
+				IF @drawers_change = 0 THEN
+					SET @message_error=CONCAT('คุณต้องการเปลี่ยนลิ้นชัก ระบบจะปิดกะปัจจุบันนี้ และออกจากระบบ คุณจะต้องเข้าระบบใหม่ และเปิดกะใหม่ ');
+					SET @type_error='confirm';
+				END IF;
 			END IF;			
 		";
 		$sql["run"]="BEGIN NOT ATOMIC 
+			DECLARE lastid INT DEFAULT NULL;
+			DECLARE r ROW (
+				`ip`CHAR(25),
+				`onoff` CHAR(1),
+				`drawers_id`INT ,
+				`money_start` FLOAT,
+				`money_balance` FLOAT,
+				`user` CHAR(25),
+				`date_reg` TIMESTAMP
+			);
 			IF @drawers_id = 0 THEN
 				SET @drawers_id = NULL;
 			END IF;
@@ -160,9 +179,35 @@ class device_pos extends device{
 						`ip`=@ip		,`disc`=@disc,`icon_arr`=JSON_UNQUOTE(@icon_arr)
 					WHERE `ip`=@ip;
 				SET @result=1;
+				IF @drawers_change = 1 THEN
+					SELECT `ip`		,`onoff`		,`drawers_id`	,`money_start`	,`money_balance`,
+								`user`	,`date_reg` I
+						INTO 	r.ip	,r.onoff			,r.drawers_id		,r.money_start	,r.money_balance	,
+								r.user	,r.date_reg
+						FROM `device_pos` WHERE `ip`= @ip AND `user`=@user AND `onoff`='1' LIMIT 1;
+					IF r.onoff='1' && r.user=@user_sku_root && r.ip=@ip THEN
+						INSERT INTO `time`(
+							`id`	,`ip`				,`drawers_id`	,`user`		,`money_start`		,`money_balance`	,
+							`date_reg`	,`date_exp`
+						)VALUES(
+							@time_id	,@ip				,@drawers_now		,r.user		,r.money_start		,r.money_balance	,
+							r.date_reg		,NOW()
+						) ON DUPLICATE KEY UPDATE `ip`=@ip,`drawers_id`=r.drawers_id,`user`=r.user,`money_start`=r.money_start,
+							`date_reg`=r.date_reg,`date_exp`=NOW();
+						# SET lastid=(SELECT LAST_INSERT_ID());
+						 IF @time_id > 0 THEN
+							UPDATE `device_pos` 
+								SET `time_id`=@time_id,`onoff`='0' ,`money_start`=`money_balance`,`user`=NULL ,`date_reg`=NULL
+								WHERE `ip`=@ip;
+							SET @result=1;
+						END IF;
+					ELSE
+						SET @drawers_change=-1;
+					END IF;
+				END IF;
 			END IF;
 		END;";
-		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@ip AS `ip`,@type_error AS `type_error`";
+		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@ip AS `ip`,@type_error AS `type_error`,@drawers_change AS `drawers_change`";
 		$se=$this->metMnSql($sql,["result"]);
 		//print_r($se);exit;
 		return $se["data"]["result"][0];

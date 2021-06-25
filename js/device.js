@@ -101,7 +101,7 @@ class device extends main{
 		f.sku.value=sku
 		f.submit()
 	}
-	deviceSumit(device){
+	deviceSumit(device,drawers_change=0){
 		let f=null
 		let gl_list_value=""
 		if(device=="pos"){
@@ -115,7 +115,7 @@ class device extends main{
 		let dt={}
 		if(device=="pos"){
 			dt={"data":{"a":"device","submith":"clicksubmit","b":device,"c":"edit",
-				"no":f.no.value,"sku":f.sku.value,"gallery_list":gl_list_value,
+				"no":f.no.value,"sku":f.sku.value,"gallery_list":gl_list_value,"drawers_change":drawers_change,
 				"name":f.name.value,"disc":f.disc.value,"drawers_id":f.drawers_id.value},
 				"result":Dv.devicePOSEditResult,"error":Dv.devicePOSEditError}	
 		}else if(device=="drawers"){
@@ -147,10 +147,23 @@ class device extends main{
 	posUploafFileError(ed=""){
 		location.href="?a=device&b=pos&ed="+ed
 	}
-	devicePOSEditError(re,form,bt){M.l(re)
+	devicePOSEditError(re,form,bt){
 		if(re["result"]!=undefined){
-			alert("เกิดข้อผิดพลาด\n"+re["message_error"])
+			if(re["type_error"]=="confirm"){
+				Dv.posConfirm(re["message_error"])
+			}else{
+				alert("เกิดข้อผิดพลาด\n"+re["message_error"])
+			}
 		}
+	}
+	posConfirm(msg){
+		let rid=this.rid()
+		let dt={"title":"โปรดยืนยัน","msg":msg,"width":350,"callback":"Dv.posConfirm2('"+rid+"')","rid":rid}
+		this.dialogConfirm(dt)
+	}
+	posConfirm2(rid){
+		this.dialogClose(rid,1)
+		this.deviceSumit("pos",1)
 	}
 	deviceDrawersEditResult(re,form,bt){
 		if(re["result"]){

@@ -29,6 +29,7 @@ class home extends main{
 		echo ''.$this->os("payu",'<div  class="icon icon_payu" onclick="location.href=\'?a=payu\'">รูปแบบการชำระ</div>').'';
 		echo ''.$this->os("account",'<div  class="icon icon_account" onclick="location.href=\'?a=account\'">บัญชี</div>').'';
 		echo ''.$this->os("device",'<div  class="icon icon_device" onclick="location.href=\'?a=device\'">อุปกรณ์</div>').'';
+		echo ''.$this->os("time",'<div  class="icon icon_time" onclick="location.href=\'?a=time&amp;b=time_all\'">กะ</div>').'';
 		echo ''.$this->os("tool",'<div  class="icon icon_tool" onclick="location.href=\'?a=tool\'">เครื่องมือ</div>').'';
 		echo ''.$this->os("setting",'<div  class="icon icon_setting" onclick="location.href=\'?a=setting\'">ตั้งค่า</div>').'';
 		echo ''.$this->os("cd",'<div  class="icon icon_cd" onclick="location.href=\'?a=cd\'">จอแสดงผล สำหรับลูกค้า</div>').'';

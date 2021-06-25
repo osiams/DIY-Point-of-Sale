@@ -710,6 +710,7 @@ class install extends main{
 				json_payu_ TEXT CHARACTER SET 'ascii'
 			) RETURNS TEXT CHARACTER SET 'ascii' 
 			BEGIN
+				#หา sku_root ใน payu ปัจุบันที่มี {sku_root1:float1,sku_root2:float2,[]} ถ้าไม่มีจะตัดออก คืนค่าที่เหลือ
 				DECLARE re TEXT CHARACTER SET 'ascii' DEFAULT '{}';
 				DECLARE r ROW (
 					sku_key VARCHAR(25) CHARACTER SET 'ascii'
@@ -739,6 +740,7 @@ class install extends main{
 				json_payu_ TEXT CHARACTER SET 'ascii'
 			) RETURNS  TEXT CHARACTER SET 'utf8' COLLATE 'utf8_bin'
 			BEGIN
+				#หาข้อมูล sku_key ใน payu_ref  รับ{sku_key1,float1,[]}->{sku_key1:{sku_root:value,name:value,icon:value,value:value}}
 				DECLARE re TEXT CHARACTER SET 'utf8' DEFAULT '{}';
 				DECLARE r ROW (
 					sku_key VARCHAR(25) CHARACTER SET 'ascii',
@@ -775,6 +777,29 @@ class install extends main{
 				END FOR;	
 			RETURN re;
 		END ";
+		$sql["getbillsku"]="CREATE OR REPLACE FUNCTION `RcaGetBillSKU_`(
+				type_ CHAR(25) CHARACTER SET 'ascii',
+				id_ INT	
+			) RETURNS CHAR(25) CHARACTER SET 'ascii' 
+			BEGIN
+				DECLARE re CHAR(25) CHARACTER SET 'ascii' DEFAULT '';
+				IF type_='sell' THEN
+					SELECT `sku` INTO re FROM `bill_sell` WHERE `id`=id_;
+				ELSEIF type_='pay' THEN
+					SELECT `sku` INTO re FROM `bill_rca` WHERE `id`=id_;
+				ELSEIF type_='ret' THEN
+					SELECT `sku` INTO re FROM `bill_in` WHERE `id`=id_;
+				ELSEIF type_='canc' THEN
+					SELECT `sku` INTO re FROM `bill_in` WHERE `id`=id_;
+				END IF;
+				RETURN re;
+			END ;
+		";
+		$sql["update_drawers_balance"]="CREATE OR REPLACE DEFINER=`root`@`localhost` TRIGGER `UDD_`
+			AFTER UPDATE ON `device_pos`  FOR EACH ROW 
+			UPDATE `device_drawers` SET `device_drawers`.`money_balance`=NEW.`money_balance` 
+			WHERE `device_drawers`.`id`= NEW.`drawers_id`;
+		";
 		$se=$this->metMnSql($sql,[]);
 		return $se;
 	}
