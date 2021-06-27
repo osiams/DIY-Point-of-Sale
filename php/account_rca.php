@@ -4,7 +4,7 @@ class account_rca extends account{
 		parent::__construct();
 		$this->b="account_rca";
 		$this->get_rca=[];
-		$this->per=1;
+		$this->per=10;
 		$this->page=1;
 		$this->txsearch="";
 		$this->fl="";
@@ -48,10 +48,16 @@ class account_rca extends account{
 			}
 		}
 		$min=0;
+		$min_rca=0;
 		$mout=0;
 		if(isset($py["defaultroot"])){
 			$min=(float) $py["defaultroot"];
-		}		
+		}	
+		foreach($py as $k=>$v){
+			if($k!="creditroot"){
+				$min_rca+=(float) $py[$k];
+			}
+		}	
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
 			@TEST:='',
@@ -151,7 +157,7 @@ class account_rca extends account{
 						`time_id`				,`tran_rca_type`		,`bill_rca_id`					,`min`		,`mout`					,`ip`		,`drawers_id`,
 						`member_id`			,`user_id`					,`money_balance`			,`date_reg`
 					)VALUES(
-						@time_id				,'pay'							,lastid					,@min		,(@py_sum-@pay)		,@ip		,r0.drawers_id,
+						@time_id				,'pay'							,lastid					,@min_rca		,(@py_sum-@pay)		,@ip		,r0.drawers_id,
 						@member_id			,@user_id					,(@rca_sum-@pay)	,date_reg_
 					);		
 					INSERT INTO `tran` (
@@ -316,7 +322,7 @@ class account_rca extends account{
 					echo '<div class="list">
 						<div>
 							<input data-rca_credit="'.$data["rca"][$i]["rca_credit"].'" id="account_cb_'.$data["rca"][$i]["bill_sell_id"].'" name="cb_'.$data["rca"][$i]["bill_sell_id"].'" value="'.$data["rca"][$i]["bill_sell_id"].'" type="checkbox"  /> 
-							#'.$data["rca"][$i]["sku"].' วันที่ '.$data["rca"][$i]["date_reg"].' ยอดค้างชำระ '.number_format($data["rca"][$i]["rca_credit"],2,".",",").'
+							<a href="?a=bills&amp;c=sell&amp;b=view&amp;sku='.$data["rca"][$i]["sku"].'">#'.$data["rca"][$i]["sku"].'</a> วันที่ '.$data["rca"][$i]["date_reg"].' ยอดค้างชำระ '.number_format($data["rca"][$i]["rca_credit"],2,".",",").'
 						</div>
 						<div id="account_div_pay_'.$data["rca"][$i]["bill_sell_id"].'" class="r">
 							ยอดเงินที่ต้องการชำระ <span id="account_pay_'.$data["rca"][$i]["bill_sell_id"].'" class="pay_list">'.number_format($data["rca"][$i]["rca_credit"],2,".",",").'</span>

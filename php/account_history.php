@@ -229,7 +229,7 @@ class account_history extends account{
 		//print_r($data);
 		$this->title_c="ประวัติหนี้สิน ของ ".htmlspecialchars($data["member"]["name"]." ".$data["member"]["lastname"]);
 		$this->addDir("?a=".$this->a."&amp;b=".$this->b."&amp;sku_root=".$root,$this->title_c);
-		$this->pageHead(["title"=>$this->title_c." DIYPOS","css"=>["account"],"js"=>["me","Me"],"run"=>[]]);
+		$this->pageHead(["title"=>$this->title_c." DIYPOS","css"=>["account"],"js"=>["me","Me","account","Ac"],"run"=>[]]);
 		echo '<div class="content">';
 	
 		echo '	<div class="form">
@@ -248,6 +248,7 @@ class account_history extends account{
 		$today=date('Y-m-d') ;//== date('Y-m-d', strtotime($timestamp));
 		$yesterday= Date('Y-m-d', strtotime('-1 day'));
 		$date="";
+		$last_balance=0;
 		echo '<table style="width:360px">
 			<tr>
 				<th>ที่</th>
@@ -273,7 +274,7 @@ class account_history extends account{
 			$min_txt="";//($data["list"][$i]["min"]>0)?"+".number_format($data["list"][$i]["min"],2,".",","):"";
 			$mout_txt="";//($data["list"][$i]["mout"]>0)?"-".number_format($data["list"][$i]["mout"],2,".",","):"";
 			$balance_txt=($data["list"][$i]["money_balance"]>0)?number_format($data["list"][$i]["money_balance"],2,".",","):"0.00";
-			
+			$last_balance=$data["list"][$i]["money_balance"];
 			$type_icon=$type[$data["list"][$i]["tran_rca_type"]]["icon"];
 			$q+=1;
 			$tr=($q%2)+1;
@@ -305,6 +306,13 @@ class account_history extends account{
 			</tr>';
 		}
 		echo '</table>';
+		if($last_balance>0){
+			echo '<br /><form name="account" method="post" action="?a=account&amp;b=account_rca&amp;c=pay">
+				<input type="hidden" name="member_id" value="" />
+				<p class="c"><input type="button" value="ชำระหนี้ '.number_format($last_balance,2,".",",").' เดียวนี้" onclick="Ac.goPagePay(\''.$data["member"]["id"].'\')" /></p>
+				</form>';
+		
+		}
 			echo '<p class="c">';
 			foreach($type as $k=>$v){
 				echo '<span class="rcapay_time_log_note_disc">'.$v["icon"].' = '.$v["name"].'</span>';

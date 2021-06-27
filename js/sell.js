@@ -978,7 +978,7 @@ class sell extends main{
 				this.end(ct,[d1])
 				let rid=this.rid()
 				let vwh=this.setPayuValueDefault()
-				M.l(vwh)
+				//M.l(vwh)
 				this.id("ippayu").value=vwh.payu_value
 				let bts = [
 					{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"',0)"},
@@ -988,10 +988,16 @@ class sell extends main{
 				this.dialog(dt)
 				let value=vwh.ob_value
 				//alert(this.id('ippayu'))
+				this.setValue0()
 				Fsl.setLoadPartner('payu','form_sell',null,'sellpayu','ippayu',value,'S.setDialogPayu(\''+rid+'\')')
-				
 			}
 		}
+	}
+	setValue0(){//M.l(Fsl.partner.sellpayu)
+		/*for (let prop in Fsl.partner.sellpayu) {
+			Fsl.partner.sellpayu[prop].value=5
+			alert(prop)
+		}*/
 	}
 	setPayuValueDefault(){
 		let re={}

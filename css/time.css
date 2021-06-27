@@ -9,3 +9,12 @@
 .time_orther_close{background-color:#eeeeee;color:black;padding:5px;}
 
 .time_log_date_th{background-color:gray;color:white;padding:5px;position: sticky;top:25px;z-index:1}
+.money_log_note_disc{display:inline-block;padding:10px;}
+.paycolor1{background-color:LightGreen;padding:3px 10px;margin-left:5px;border-radius: 5px 5px 5px 5px;}
+.paycolor2{background-color:LightCoral;padding:3px 10px;margin-left:5px;border-radius: 5px 5px 5px 5px;}
+.paycolor3{background-color:LightSkyBlue;padding:3px 10px;margin-left:5px;border-radius: 5px 5px 5px 5px;}
+
+.var{display:inline-block;color:white;font-weight:bold;padding:5px 10px;border-radius: 12px 12px 12px 12px;}
+.var_sum{background-color:black;}
+.var_pay{background-color:green;}
+.var_change{background-color:SaddleBrown;}

@@ -54,7 +54,7 @@ class main{
 			"bill_sell"=>[
 				"name"=>"bill_sell",
 				"column"=>["id","time_id","sku","n","cost","costr","price","pricer","user","user_edit","member_sku_key","member_sku_root","stat","stath","note","w","r_","_r",
-					"min","mout","credit","payu_json","payu_key_json","rca_key_json","modi_date","date_reg"],
+					"min","mout","credit","payu_json","payu_ref_json","payu_key_json","rca_key_json","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pricer"=>0,"costr"=>0,"member_sku_key"=>"NULL","member_sku_root"=>"NULL"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
 				"primary"=>"sku",
@@ -487,6 +487,7 @@ class main{
 			//"partner3"=>["name"=>"คู่ค้า3","type"=>"CHAR","length_value"=>255],
 			"pay"=>["name"=>"ชำระ","type"=>"FLOAT","length_value"=>[15,2]],
 			"payu_json"=>["name"=>"รูปแบบการชำระ","type"=>"VARCHAR","length_value"=>1024],
+			"payu_ref_json"=>["name"=>"รูปแบบการชำระอ้างอิง","type"=>"VARCHAR","length_value"=>1024],
 			"payu_key_json"=>["name"=>"รูปแบบการชำระอ้างอิง","type"=>"VARCHAR","length_value"=>1024],
 			"partner"=>["name"=>"คู่ค้า","type"=>"TEXT","length_value"=>65535],
 			"password"=>["name"=>"รหัสผ่าน","type"=>"CHAR","length_value"=>64],
@@ -1269,6 +1270,17 @@ class main{
 				}
 			}
 		}
+	}
+	protected function jsonDocCut0ToArrayKeyDoc(string $json_doc):string{
+		$h=[];
+		$a=json_decode($json_doc,true);
+		foreach($a as $k=>$v){
+			if($v > 0){
+				$h[$k]=$v;
+			}
+		}
+		$c=json_encode($h);
+		return $c;
 	}
 	protected function jsonDocToArrayKeyDoc(string $json_doc):string{
 		$a=json_decode($json_doc,true);
