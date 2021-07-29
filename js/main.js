@@ -974,15 +974,19 @@ class F{
 			return false
 		}
 	}
-	static showTimeAgo(id,timst){
+	static showTimeAgo(id,now,timst){
 		let d=new Date(timst)
 		let n = parseInt(d.getTime()/1000)
-		setInterval("F.showTimeAgo2('"+id+"',"+n+")",1000)
+		let t=new Date()
+		let time_user_start = parseInt(t.getTime()/1000)
+		let td=new Date(now)
+		let now_ = parseInt(td.getTime()/1000)
+		setInterval("F.showTimeAgo2('"+id+"',"+n+","+now_+","+time_user_start+")",1000)
 	}
-	static showTimeAgo2(id,n){
+	static showTimeAgo2(id,n,now,time_user_start){
 		let t=new Date()
 		let s1 = parseInt(t.getTime()/1000)
-		let c=(s1-n)/1
+		let c=((s1-time_user_start+now)-n)/1
 		let h=Math.floor(c/(60*60))
 		let m=Math.floor((c-(h*60*60))/60)
 		let s=c%60

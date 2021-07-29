@@ -332,7 +332,7 @@ echo $mo->format('U')-$reg->format("U");*/
 		$sql["head"]="SELECT  `bill_sell`.`id` AS `bill_sell_id` ,`bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`, `bill_sell`.`stat`  AS  `stat`, 
 				`bill_sell`.`price` AS `price`,`bill_sell`.`credit` AS `credit`,bill_sell.w, `bill_sell`.`modi_date` AS `modi_date`, 
 				`bill_sell`.`mout` AS `mout`,
-				GetPayuArrRefData_(`bill_sell`.`payu_json`) AS `payu_json`,
+				GetPayuArrRefData_(`bill_sell`.`payu_ref_json`) AS `payu_json`,
 				`bill_sell`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
 				CONCAT(`user_ref2`.`name`,' ', `user_ref2`.`lastname`) AS `user_name_edit`,

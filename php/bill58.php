@@ -531,7 +531,7 @@ class bill58 extends main{
 		$sql["head"]="SELECT  `bill_sell`.`sku`  AS  `sku`,`bill_sell`.`n`  AS  `n`, 
 				IFNULL(`bill_sell`.`min`,0) AS `min`,IFNULL(`bill_sell`.`mout`,0) AS `mout`,
 				IFNULL(`bill_sell`.`credit`,0) AS `credit`,`bill_sell`.`stat`,
-				GetPayuArrRefData_(`bill_sell`.`payu_json`) AS `payu_json`,
+				GetPayuArrRefData_(`bill_sell`.`payu_ref_json`) AS `payu_json`,
 				`bill_sell`.`price` AS `price`, `bill_sell`.`date_reg` AS `date_reg`,
 				`user_ref`.`sku` AS `user_sku`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,

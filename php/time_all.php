@@ -37,7 +37,7 @@ class time_all extends main{
 		echo '</table>';
 		echo '<script type="text/javascript">';
 		foreach($to as $k=>$v){
-			echo 'F.showTimeAgo(\''.$k.'\',\''.$v.'\');';
+			echo 'F.showTimeAgo(\''.$k.'\',\''.date("Y-m-d H:i:s").'\',\''.$v.'\');';
 		}
 		echo '</script>';
 		echo '<br /><table>

@@ -795,6 +795,33 @@ class install extends main{
 				RETURN re;
 			END ;
 		";
+		$sql["check_get_payu"]="CREATE OR REPLACE FUNCTION `PayuInfo_`(
+				json_payu_ TEXT CHARACTER SET 'ascii'	
+			) RETURNS TEXT CHARACTER SET 'utf8' COLLATE 'utf8_bin'
+			BEGIN
+				DECLARE re TEXT CHARACTER SET 'utf8' DEFAULT '{}';
+				DECLARE r ROW (
+					icon VARCHAR(255) CHARACTER SET 'ascii',
+					name VARCHAR(255) CHARACTER SET 'utf8',
+					sku_root VARCHAR(25) CHARACTER SET 'ascii',
+					money_type VARCHAR(25) CHARACTER SET 'ascii'
+				);
+				DECLARE len INT(10);
+				SET len=JSON_LENGTH(json_payu_);
+				FOR i IN 0..(len-1) DO
+					SELECT `icon`,`name`,`sku_root`,`money_type` INTO r
+					FROM `payu` 
+					WHERE `sku_root`=JSON_VALUE(json_payu_,	CONCAT('$[',i,']')	);
+					SET re=JSON_INSERT(
+						re, 
+						CONCAT('$.',r.sku_root),
+						#CONCAT(r.name)
+						JSON_OBJECT(\"name\",r.name,\"icon\",r.icon,\"money_type\",r.money_type)
+					);
+				END FOR;	
+			RETURN re;
+			END ;
+		";
 		$sql["update_drawers_balance"]="CREATE OR REPLACE DEFINER=`root`@`localhost` TRIGGER `UDD_`
 			AFTER UPDATE ON `device_pos`  FOR EACH ROW 
 			UPDATE `device_drawers` SET `device_drawers`.`money_balance`=NEW.`money_balance` 

@@ -105,9 +105,7 @@ class login extends main{
 		$this->home=1;
 		$this->pageHead(["title"=>"เข้าสู่ระบบ DIYPOS","css"=>["login"]]);
 
-		$nm=htmlspecialchars($this->shop->name);
-		$nm=str_replace("\\","\\\\",$nm);
-		$nm=str_replace('&quot;','\"',$nm);
+		$nm=$this->shop->name;
 		echo '<table class="login_vh"><tr class="trh"><td class="ranbg"><div><div class="rtyu">
 				<div id="trb"></div>
 				<script type="text/javascript">

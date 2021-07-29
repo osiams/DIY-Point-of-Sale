@@ -67,6 +67,7 @@ class sell extends main{
 		$member0=(isset($_POST["member"])&&$this->isSKU($_POST["member"]))?$_POST["member"]:"";
 		$member=$this->getStringSqlSet($member0);
 		$payu_doc=(isset($_POST["payu"]))?$_POST["payu"]:'{}';
+		$payu_doc=$this->jsonDocCut0ToArrayKeyDoc($payu_doc);
 		$payu_key_doc=$this->jsonDocToArrayKeyDoc($payu_doc);
 		$min=0;
 		$mout=0;
@@ -272,11 +273,11 @@ class sell extends main{
 					IF @bill_sell_save=1 THEN
 						INSERT INTO `bill_sell`  (
 							time_id	,sku		,n			,price			,user			,member_sku_key			,member_sku_root,
-							min		,mout						,credit		,payu_json			,payu_key_json		,`date_reg`
+							min		,mout						,credit		,payu_json			,payu_ref_json	,payu_key_json		,`date_reg`
 							
 						)VALUES (
 							@time_id	,@sku,	@n		,@sums			,@user		,@member_key				,@member,
-							@min	,(@payu_sum-@sums)	,@credit	,@payu_doc		,@payu_key_doc	,date_reg
+							@min	,(@payu_sum-@sums)	,@credit	,@payu_doc		,GetPayuArrRef_(@payu_doc)	,@payu_key_doc	,date_reg
 						);		
 						SET lastid_bill_sell=(SELECT LAST_INSERT_ID());	
 						SET @TEST=CONCAT(@TEST,';pdl=',pdl);		
@@ -434,7 +435,7 @@ class sell extends main{
 								;	
 								
 							END IF;
-							IF @min > 0 OR (@payu_sum-@sums) > 0 THEN
+							IF @min > 0 OR (@payu_sum-@sums) > 0  OR 1=1 THEN
 								INSERT INTO `tran`(
 									`time_id`		,`min`			,`mout`					,`tran_type`			,`ref`	,`ip`,
 									`drawers_id`	,`user`,

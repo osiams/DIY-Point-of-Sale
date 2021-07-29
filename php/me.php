@@ -378,7 +378,7 @@ class me extends main{
 					';
 				}
 				echo '</div><div><input type="button" value="ปิดกะ และออกจากระบบ" onclick="Me.closeTime()" /></div>
-					<script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.$this->my_time["date_reg"].'\')</script>
+					<script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.date("Y-m-d H:i:s").'\',\''.$this->my_time["date_reg"].'\')</script>
 				</div>';
 			}
 		}else{

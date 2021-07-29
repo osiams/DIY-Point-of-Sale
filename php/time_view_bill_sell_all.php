@@ -87,6 +87,7 @@ class time_view_bill_sell_all extends main{
 			</tr>';
 		}
 		$e=0;
+		$count_bill=count($dt)>0?count($dt):1;
 		echo '</table>';
 		echo '<br /><table class="select" style="max-width:640px;">
 			<tr><th colspan="3">สรุปย่อ</th></tr>
@@ -102,7 +103,7 @@ class time_view_bill_sell_all extends main{
 			</tr>
 			<tr class="i'.((($e++)%2)+1).'">
 				<td class="l">เฉลี่ยอดชำระต่อ 1 ใบเสร็จ</td>
-				<td class="r">'.number_format($all_pay/count($dt),2,".",",").'</td>
+				<td class="r">'.number_format($all_pay/$count_bill,2,".",",").'</td>
 				<td class="r"> บาท</td>
 			</tr>';
 		foreach($pay as $k=>$v){

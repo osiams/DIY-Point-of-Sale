@@ -73,7 +73,7 @@ class time_view extends main{
 		if(!empty($dt["dif"])){$s+=1;
 			$tst=($dt["stat"]==1)?'<span class="bold green" id="time_ago">'.$this->ago2($dt["dif"]).'</span> ผ่านไป':$this->ago2($dt["dif"]);
 			echo '<tr class="i'.(($s%2)+1).'"><td class="l">ชัวโมงงาน hh:mm:ss</td><td class="l">'.$tst.'
-			<script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.$dt["date_reg"].'\')</script>
+			<script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.date("Y-m-d H:i:s").'\',\''.$dt["date_reg"].'\')</script>
 			</td></tr>';
 		}
 		if(1 == 1){$s+=1;

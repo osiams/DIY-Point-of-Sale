@@ -26,6 +26,8 @@ class time extends main{
 				}else if($t=="time_view"){
 					require_once("php/time_view.php");
 					(new time_view)->run();	
+				}else if($_SESSION["time_id"]==0){
+					$this->defaultTimePage();
 				}
 			}else{
 				$this->defaultTimePage();
@@ -390,7 +392,7 @@ class time extends main{
 				}
 			echo '</div>
 			</div>
-			<script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.$time["date_reg"].'\')</script>';
+			<script type="text/javascript">F.showTimeAgo(\'time_ago\',\''.date("Y-m-d H:i:s").'\',\''.$time["date_reg"].'\')</script>';
 		}
 	}
 	private function viewTimeMe(){
