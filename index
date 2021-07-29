@@ -13,43 +13,83 @@ function home():void{
 	(new home)->run();
 }
 if(isset($_SESSION["login"])){
-	if(!$_SESSION["cookie"]){
-		$_SESSION["cookie"]=true;
-		$d=["sku_root"=>$_SESSION["sku_root"],
-			"name"=>$_SESSION["name"]." ".$_SESSION["lastname"],
-			"logintime"=>time(),
-		];
-		$value=json_encode($d);
-		setcookie("ud", $value,  ["samesite" =>"Lax"]);
-	}
-	if(isset($_GET["a"])){
-		$c=$_GET["a"];
-		if(in_array($c, CF["a"])){
-			if(main::oa($c)){
-				require_once("php/".$c.".php");
-				if(isset(CF["require"][$c])){
-					foreach(CF["require"][$c] as $k){
-						require_once("php/".$k.".php");
+	if($_SESSION["ip"]==(new main)->main_ip){
+		if($_SESSION["onoff"]==1){
+			if(!$_SESSION["cookie"]){
+				$_SESSION["cookie"]=true;
+				$d=["sku_root"=>$_SESSION["sku_root"],
+					"name"=>$_SESSION["name"]." ".$_SESSION["lastname"],
+					"logintime"=>time(),
+				];
+				$value=json_encode($d);
+				setcookie("ud", $value,  ["samesite" =>"Lax"]);
+			}
+			if(isset($_GET["a"])){
+				$c=$_GET["a"];
+				if(in_array($c, CF["a"])){
+					if(main::oa($c)){
+						require_once("php/".$c.".php");
+						if(isset(CF["require"][$c])){
+							foreach(CF["require"][$c] as $k){
+								require_once("php/".$k.".php");
+							}
+						}
+						(new $c)->run();
+					}else{
+						home();
 					}
+				}else{
+					if($_GET["a"]=="login"){
+						if(isset($_POST["logout"])){
+							if($_POST["logout"]=="logout"){
+								require_once("php/login.php");
+								(new login)->logout();
+								exit();
+							}
+						}
+					}
+					home();
 				}
-				(new $c)->run();
 			}else{
 				home();
 			}
 		}else{
-			if($_GET["a"]=="login"){
-				if(isset($_POST["logout"])){
-					if($_POST["logout"]=="logout"){
-						require_once("php/login.php");
-						(new login)->logout();
-						exit();
+			$bp=["me","login","fetch"];
+			if(isset($_GET["a"])&&in_array($_GET["a"],$bp)){
+				$c=$_GET["a"];
+				if($_GET["a"]=="login"){
+					if(isset($_POST["logout"])){
+						if($_POST["logout"]=="logout"){
+							require_once("php/login.php");
+							(new login)->logout();
+							exit();
+						}
 					}
+				}else if($_GET["a"]=="fetch"){
+					if(isset($_POST["a"])){
+						if($_POST["a"]=="device"||$_POST["a"]=="fileupload"){
+							require_once("php/".$_POST["a"].".php");
+							eval("(new ".$_POST["a"]."())->fetch();");							
+						}else if($_POST["a"]=="time"&&isset($_POST["b"])){
+							if($_POST["b"]=="closeother"){
+								require_once("php/".$_POST["a"].".php");
+								eval("(new ".$_POST["a"]."())->fetch();");	
+							}
+						}
+					}
+				}else{
+					require_once("php/".$c.".php");
+					(new $c)->run();
 				}
+			}else{
+				require_once("php/time.php");
+				(new time)->run();
 			}
-			home();
 		}
 	}else{
-		home();
+		require_once("php/login.php");
+		(new login)->logout();
+		exit();
 	}
 }else{
 	require_once("php/login.php");
