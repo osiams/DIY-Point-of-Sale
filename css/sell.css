@@ -16,6 +16,7 @@ body{overflow:hidden;}
 #sell > div:nth-child(2) > div:nth-child(2) > div{display:grid;grid-template-columns:25px 120px  60px auto 90px 60px 90px 90px ;width:100%;animation-name:sp1;animation-duration:2s;animation-iteration-count:1;padding:4px 0px;}
 #sell > div:nth-child(2) > div:nth-child(2) > div.updater{animation-name:sp2;animation-duration:2s;animation-iteration-count:1;}
 #sell > div:nth-child(2) > div:nth-child(2) > div.updater2{animation-name:sp3;animation-duration:2s;animation-iteration-count:1;}
+/*
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(1){display: grid;text-align:left;padding:1px 3px;align-content: center;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(2){display: grid;text-align:left;padding:1px 3px; align-content: center;word-break: break-all;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(3){display: grid;text-align:right;padding:1px 3px; align-content: center;word-break: break-all;}
@@ -30,6 +31,24 @@ body{overflow:hidden;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(6){display: grid;text-align:right;padding:1px 3px; align-content: center;overflow-x:hidden}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(7){display: grid;text-align:right;padding:1px 3px; align-content: center;overflow-x:auto;word-break: break-all;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(8){display: grid;text-align:right;padding:1px 3px; align-content: center;overflow-x:auto;word-break: break-all;}
+*/
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(1){display: flex;text-align:left;padding:1px 3px;align-items: center;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(2){display: flex;text-align:left;padding:1px 3px; align-items: center;word-break: break-all;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(3){display: flex;text-align:right;padding:1px 3px; align-items: center;word-break: break-all;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4){display: flex;text-align:left;padding:1px 3px; align-items: center;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4) > div{display:none;padding-left:10px;font-style:italic}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4) > div > span:nth-child(1){font-size:0.9em;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4) > div > span:nth-child(2){font-size:0.9em;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4) > div > span:nth-child(3){font-size:0.9em;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(5){display: flex;text-align:right;padding:1px 3px; align-items: center;overflow-x:auto;word-break: break-all;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(5) > div >div:nth-child(1){display: flex;text-align:right;padding:0px; align-items: center;overflow-x:auto;width:100%;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(5) > div >div:nth-child(2){display: none;text-align:right;padding:0px;overflow-x:hidden;font-style:italic;font-size:0.9em;width:100%;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(6){display: flex;text-align:right;padding:1px 3px; align-items: center;overflow-x:hidden}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(7){display: flex;text-align:right;padding:1px 3px; align-items: center;overflow-x:auto;word-break: break-all;}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(8){display: flex;text-align:right;padding:1px 3px; align-items: center;justify-content:flex-end;overflow-x:auto;word-break: break-all;}
+
+
+
 #sell > div:nth-child(3){display:grid;grid-template-columns:auto 250px;width:100%;height:100%;text-align:left;border-top:1px solid #999999;}
 #sell > div:nth-child(3) > div:nth-child(1){display: grid;text-align:left;padding:1px 3px;align-content: center;overflow:hidden;white-space:nowrap}
 #sell > div:nth-child(3) > div:nth-child(2){text-align:right;display:grid;grid-template-columns:auto 80px;width:100%;}
@@ -43,6 +62,7 @@ body{overflow:hidden;}
 #sell > div:nth-child(2) > div:nth-child(1) >  div:nth-child(3){text-align:left;padding:1px 3px; align-content: center;display:none}
 #sell > div:nth-child(2) > div:nth-child(1) >  div:nth-child(6){text-align:left;padding:1px 3px; align-content: center;display:none}
 #sell > div:nth-child(2) > div:nth-child(1) >  div:nth-child(7){text-align:left;padding:1px 3px; align-content: center;display:none}
+#sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4) {display:block;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(4) > div{display:block;}
 #sell > div:nth-child(2) > div:nth-child(2) > div > div:nth-child(5) > div >div:nth-child(2){display:block}
 #sell > div:nth-child(2) > div:nth-child(2) > div{display:grid;grid-template-columns:25px  auto 60px   70px ;width:100%;/*border-bottom:1px solid #eeeeee;*/}

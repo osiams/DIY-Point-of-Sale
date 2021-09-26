@@ -27,3 +27,7 @@
 .fdro{display:none}
 .fdrp > div >p{font-size:1.5em;font-weight:bold;}
 .fdrp > div{display:grid;align-content:center;justify-content:center;border-radius: 80px 80px 80px 80px;padding:20px;height:100px;width:100px;background-color:Crimson;color:white;animation-name:ranbg;animation-duration:1s;animation-iteration-count:infinite;box-shadow: 3px 3px 15px #000000;}
+
+.fileuploadpre1_gallery_img_list_select{border:0px dotted gray;text-align:left;background-image:url('../img/pos/64x64_null.png');min-height:32px;}
+.fileuploadpre1_gallery_img_list_select > div{border:2px dashed gray;margin:3px;display:inline-block;width:64px;height:64px;background-repeat: no-repeat;background-position:center center;cursor:pointer}
+.fileuploadpre1_gallery_img_list_select > div >div{background-color:rgba(255,255,255,0.7);display:block;float:right;width:20px;height:20px;border-radius: 0px 0px 0px 0px;border:1px solid white;line-height:20px;font-size:20px;text-align:center;cursor:pointer}

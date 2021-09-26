@@ -4,7 +4,7 @@ define("CF", [
 #หน้า index?a=value ทั้งหมดที่มีและใช้งาน
 	"a"=>["product","unit","fetch","me","user","setting","bills","sell","barcode","bill58","ret","it",
 				"day","qrc","cd","group","partner","prop","payu","tool","fileupload","gallery","factory",
-				"member","device","time","tran","account","account_rca"],
+				"member","device","time","tran","account","account_rca","gallary","cv"],
 	"require" => ["group"=>["prop"],"product"=>["group","prop"]],
 #้ข้อมูลการเชื่อมต่อกับ ฐานข้อมูล MariaDB
 	"server"=>"127.0.0.1",
@@ -22,16 +22,16 @@ define("CF", [
 	"timezone"=>"Asia/Bangkok",
 #ตำแหน่งผู้ใช้ ลำดับตามบรรทัดมี 10 ระดับเท่านั้น
 	"userceo"=>[
-		["name"=>"[[SYSTEM]]","a"=>["cd","me","fetch"]],
+		["name"=>"[[SYSTEM]]","a"=>["cd","me","fetch","cv"]],
 		["name"=>"พักหรือออก","a"=>[]],
-		["name"=>"พนักงานขาย","a"=>["sell","me","fetch","product","bills","setting","bill58","barcode","qrc","group","partner","prop","payu","fileupload","gallery","member","device","time","tran","account","account_rca"]],
+		["name"=>"พนักงานขาย","a"=>["sell","me","fetch","product","bills","setting","bill58","barcode","qrc","group","partner","prop","payu","fileupload","gallery","member","device","time","tran","account","account_rca","gallary"]],
 		["name"=>"-","a"=>["me"]],
 		["name"=>"-","a"=>["me"]],
 		["name"=>"-","a"=>["me"]],
 		["name"=>"-","a"=>["me"]],
 		["name"=>"-","a"=>["me"]],
-		["name"=>"ผู้จัดการรร้าน","a"=>["product","unit","fetch","me","user","setting","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop","payu","fileupload","gallery","member","device","time","tran","account","account_rca"]],
-		["name"=>"เจ้าของร้าน","a"=>["product","unit","fetch","me","user","setting","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop","payu","tool","fileupload","gallery","factory","member","device","time","tran","account","account_rca"]]
+		["name"=>"ผู้จัดการรร้าน","a"=>["product","unit","fetch","me","user","setting","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop","payu","fileupload","gallery","member","device","time","tran","account","account_rca","gallary"]],
+		["name"=>"เจ้าของร้าน","a"=>["product","unit","fetch","me","user","setting","bills","sell","bill58","ret","it","day","barcode","qrc","group","partner","prop","payu","tool","fileupload","gallery","factory","member","device","time","tran","account","account_rca","gallary"]]
 	]
 ]);
 #ค่าการอณุญาตการใช้งาน

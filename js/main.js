@@ -18,6 +18,7 @@ class main{
 		this.CookieName={"ud":null}
 		this.cookieData={}
 		this.hostbase=window.location.protocol+"//"+window.location.hostname+""+((window.location.port==80)?"":":"+window.location.port)+""+window.location.pathname
+		this.gl_dir="img/gallery"
 	}
 	run(){
 		this.cookie_set_data()
@@ -39,6 +40,9 @@ class main{
 		}else{
 			return String(int).replace(/(.)(?=(\d{3})+$)/g,'$1'+com)
 		}
+	}
+	gt(){
+		return new Date().getTime();
 	}
 	jsonToObject(json,object_default={}){
 		let re
@@ -388,7 +392,7 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 
 		did.setAttribute("style","z-index:"+(zindex)+";top:calc(50% - "+(tp)+"px);left:calc(50% - "+(lt)+"px);height:"+(height-2+1)+"px;width:"+(width-2+1)+"px;")
 		let a=did.childNodes[1].childNodes[1].childNodes[0]
-		if(a.tagName=="IFRAME"){
+		if(a!=undefined&&a.tagName=="IFRAME"){
 			a.setAttribute("height",height-36)
 		}
 	}
@@ -562,11 +566,25 @@ Tag ที่ถูกกด กว้าง ${pt.width}
 		let t2=b<10?"0"+b:b
 		return [t1,t2]
 	}
+	formTransFocus(){
+		let a=event.target
+		
+		if((a.tagName=="INPUT"||a.tagName=="SELECT")&&a.parentNode.parentNode.parentNode.className=="formg"){
+			M.id("label_"+a.id).className="formg_label_focus"			
+		}
+	}
+	formTransBlur(){
+		let a=event.target
+		if(a.value.length==0){
+			M.id("label_"+a.id).className="formg_label"
+		}
+	}
 }
 class gpu extends main {
 	constructor(){
 		super()
 		this.load={"id":{"has":0,"get":0}}
+		this.set_click_img=0
 	}
 	rMore(did){
 		let a=did.parentNode
@@ -633,11 +651,32 @@ class gpu extends main {
 		this.end(ct,[cl,dm])
 		this.end(this.b,[ct])
 	}
+	viewImg2(did){
+		if(this.set_click_img==1){
+			this.set_click_img=0
+		}else{
+			let a=did.style.backgroundImage.split("\"");
+			let b=a[1].split("/");
+			let c=b[b.length-1]
+			let d=new Image();
+			let s=""
+			for(let i=0;i<b.length-1;i++){
+				s=s+"/"+b[i]
+			}
+			s=s+"/32x32_"+c
+			d.src=s
+			G.view(d,)
+		}
+	}
 	viewClose(did,overflow){
 		did.parentNode.parentNode.removeChild(did.parentNode)
 		if(overflow==1){
 			this.b.style.overflow="auto"
+			//setTimeout("G.we()",0000)
 		}
+	}
+	we(){
+
 	}
 	loading(id,start,has=0,get=0,loadname,percent=null,listen=null){
 		if(start=="start"){
@@ -913,6 +952,9 @@ class gpu extends main {
 			}
 		}
 		return ct
+	}
+	viewGallery(a,skuroot,act="view"){
+		location.href="?a=gallary&b="+a+"&sku_root="+skuroot+"&act="+act+"&ref="+encodeURIComponent(window.location.href)
 	}
 }
 class F{

@@ -8,6 +8,7 @@ class home extends main{
 		$this->pageHead(["title"=>"หน้าหลัก DIYPOS","css"=>["home"]]);
 		$this->pageHome();
 		$this->pageFoot();
+		
 	}
 	protected function pageHome(){
 		$this->avatarWrite("home");
@@ -33,6 +34,7 @@ class home extends main{
 		echo ''.$this->os("tool",'<div  class="icon icon_tool" onclick="location.href=\'?a=tool\'">เครื่องมือ</div>').'';
 		echo ''.$this->os("setting",'<div  class="icon icon_setting" onclick="location.href=\'?a=setting\'">ตั้งค่า</div>').'';
 		echo ''.$this->os("cd",'<div  class="icon icon_cd" onclick="location.href=\'?a=cd\'">จอแสดงผล สำหรับลูกค้า</div>').'';
+		echo ''.$this->os("cv",'<div  class="icon icon_cv" onclick="location.href=\'?a=cv\'">จอตรวจสอบราคาสินค้า</div>').'';
 		echo '<script type="text/javascript">M.b.classList.add(\'bghome\');M.b.classList.add(\'sd\');</script>';
 		echo '</main>';
 	}

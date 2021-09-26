@@ -1,26 +1,58 @@
 <?php
 class partner_details extends partner{
-	public function __construct(string $sku_root){
+	public function __construct(){
 		parent::__construct();
-		$this->sku_root=$sku_root;
+		$this->sku_root=null;
+		$this->r_more=[];
 	}
 	public function run(){
 		$this->addDir("?a=partner","คู่ค้า");
-		$this->detailsPage();
+		$this->setRMore($this->sku_root);
+		$qq=["partner_details_product","partner_details_claim","partner_details_claimsend"];
+		if(isset($_GET["bb"])&&in_array($_GET["bb"],$qq)){
+			$t=$_GET["bb"];
+			$this->r_more["active"]=$t;
+			require_once("php/".$t.".php");
+			eval("\$d=new ".$t."();");
+			$dt=$this->detailsGetData()["partner"];
+				if(count($dt)>0){
+					$pn_name=$dt["name"];
+					$this->r_more["menu"][0]["name"]=$this->firstList($pn_name,$dt["icon"]);
+					$this->r_more["menu"][2]["name"].=' ('.$dt["claim_n_w"].')';
+					$this->r_more["menu"][3]["name"].=' ('.$dt["claim_n_s"].')';
+					$this->addDir("?a=partner&amp;b=details&amp;sku_root=".$this->sku_root,htmlspecialchars($pn_name));
+					$d->dir=$this->dir;
+					$d->sku_root=$this->sku_root;
+					$d->r_more=$this->r_more;
+					$d->run();					
+				}else{
+					$this->detailsPage();
+				}
+		}else{
+			$this->detailsPage();
+		}
 		
+		
+	}
+	private function firstList(string $name,string $icon):string{
+		$t='<div class="c"><img  class="viewimage" src="img/gallery/64x64_'.$icon.'"   onerror="this.src=\'img/pos/64x64_null.png\'" alt="" />
+			<br>'.htmlspecialchars($name).'</div>
+		';
+		return $t;
 	}
 	private function detailsPage():void{
 		$dt=$this->detailsGetData()["partner"];
+		//print_r($dt);
 		if(count($dt)>0){
 			$pn_name=$dt["name"];
+			$this->r_more["menu"][0]["name"]=$this->firstList($pn_name,$dt["icon"]);
+			$this->r_more["menu"][2]["name"].=' ('.$dt["claim_n_w"].')';
 			$this->addDir("",htmlspecialchars($pn_name));
-			$this->pageHead(["title"=>"คู่ค้า ".htmlspecialchars($pn_name),"css"=>["partner"],"js"=>["partner","Pn"],"run"=>["Pn"]]);
-			echo '<div class="content">
+			$this->pageHead(["title"=>"คู่ค้า ".htmlspecialchars($pn_name),"css"=>["partner"],"js"=>["partner","Pn"],"run"=>["Pn"],"r_more"=>$this->r_more]);
+			echo '<div class="content_rmore">
 				<div class="form">
 					<h1 class="c">'.$pn_name.'</h1>';
 			$this->writeContentPartner($dt);		
-			echo '<br />';
-			$this->writeContentProduct();
 			$this->pageFoot();
 		}else{
 			$pn_name="ไม่พบข้อมูลคู่ค้า";
@@ -102,22 +134,6 @@ class partner_details extends partner{
 		
 		
 	}
-	private function writeContentProduct():void{
-		$pd=$this->detailsGetProduct();
-		echo '<table class="table_details">
-			<caption>สินค้า</caption>
-			<tr><th>ที่</th><th>ป.</th><th>รหัสแท่ง</th><th>ชื่อ</th></tr>';
-		for($i=0;$i<count($pd);$i++){
-			$s_type=($pd[$i]["s_type"]!==""&&isset($this->s_type[$pd[$i]["s_type"]]))?$this->s_type[$pd[$i]["s_type"]]["icon"]:"";
-			echo '<tr>
-				<td>'.($i+1).'</td>
-				<td>'.$s_type.'</td>
-				<td class="l">'.$pd[$i]["barcode"].'</td>
-				<td class="l"><a href="?a=product&amp;b=details&amp;sku_root='.$pd[$i]["sku_root"].'">'.htmlspecialchars($pd[$i]["name"]).'</a></td>
-			</tr>';
-		}
-		echo '</table>';
-	}
 	private function detailsGetData(){
 		$sku_root=$this->getStringSqlSet($this->sku_root);
 		$re=["partner"=>[]];
@@ -128,21 +144,23 @@ class partner_details extends partner{
 		$se=$this->metMnSql($sql,["partner"]);
 		if($se["result"]&&isset($se["data"]["partner"][0])){
 			$re["partner"]=$se["data"]["partner"][0];
+			if(empty($re["partner"]["icon"])){
+				$re["partner"]["icon"]="";
+			}
 		}
 		return $re;
 	}
-	private function detailsGetProduct(){
-		$sku_root=$this->getStringSqlSet($this->sku_root);
-		$re=["get"=>[]];
-		$sql=[];
-		$sql["product"]="SELECT `name`,`barcode`,`sku_root`,IFNULL(`s_type`,'') AS `s_type` FROM `product`
-			WHERE JSON_SEARCH(`partner`, 'one', ".$sku_root.") IS NOT NULL;
-		";
-		$se=$this->metMnSql($sql,["product"]);
-		if($se["result"]){
-			$re=$se["data"]["product"];
-		}
-		//print_r($se);
-		return $re;
+	private function setRMore(string $sku_root):void{
+		$url="?a=partner&amp;b=details&amp;sku_root=".$sku_root;
+		$data=[
+			"menu"=>[
+				["b"=>"","name"=>"ข้อมูล คู่ค้า","link"=>$url."&amp;bb=partner_details"],
+				["b"=>"partner_details_product","name"=>"สินค้า","link"=>$url."&amp;bb=partner_details_product"],
+				["b"=>"partner_details_claim","name"=>"สินต้าต้องส่งเคลม","link"=>$url."&amp;bb=partner_details_claim"],	
+				["b"=>"partner_details_claimsend","name"=>"สินต้าส่งเคลมแล้ว","link"=>$url."&amp;bb=partner_details_claimsend"],	
+			],
+			"active"=>""
+		];
+		$this->r_more=$data;
 	}
 }

@@ -18,6 +18,10 @@ class product extends main{
 		$this->pnct="";
 		
 		$this->form_pn=null;
+		
+		$this->img=null;
+		$this->ful=null;
+		$this->max_squar=1024;
 	}
 	public function run(){
 		$this->system=json_decode(file_get_contents("set/system.json"));
@@ -27,6 +31,9 @@ class product extends main{
 			$this->getSelect();
 			$t=$_GET["b"];
 			if($t == "regis" ||$t == "edit"){
+				$file = "php/class/image.php";
+				require($file);	
+				$this->img=new image($this->gallery_dir);	
 				$this->loadGroupAndProp();				
 			}
 			if($t=="regis"||$t=="edit"){
@@ -36,6 +43,9 @@ class product extends main{
 			if($t=="regis"){
 				$this->regisProduct();
 			}else if($t=="edit"){
+				$file = "php/fileupload.php";
+				require($file);	
+				$this->ful=new fileupload($this->gallery_dir);	
 				$this->editProduct();
 			}else if($t=="delete"){
 				$this->deleteProduct();
@@ -156,6 +166,7 @@ class product extends main{
 	}
 	private function selectProductPage(string $for=null){
 		$sea=$this->getAllProduct($for);
+		//print_r($for);
 		//print_r($sea);
 		$se=$sea["row"];
 		$this->pageHead(["title"=>"สินค้า DIYPOS","dir"=>false,"css"=>["product"]]);
@@ -173,6 +184,7 @@ class product extends main{
 				$kbc=str_replace($this->txsearch,'<span class="bgyl">'.$this->txsearch.'</span>',$kbc);
 			}
 			echo '<tr><td>'.($i+1).'.</td>
+				<td class="img32">'.$this->sIcon($se[$i]["icon"],32).'</td>
 				<td class="l"><p>'.$nm.'</p><p class="p_bc"><span class="pwlv">'.$this->s_type[$se[$i]["s_type"]]["icon"].'</span> ';
 			$bcsku="";	
 			$bc=0;
@@ -186,8 +198,8 @@ class product extends main{
 				$bcsku.=$cm."".$se[$i]["sku"];
 			}	
 			echo $bcsku.'</p></td>
-				<td class="r">'.($se[$i]["balance"]*1).'</td>
-				<td class="l">'.$se[$i]["unit_name"].'</td>
+				<td class="r">'.($se[$i]["balance"]*1).'<br /><span class="size0_8 gray">'.$se[$i]["unit_name"].'</span></td>
+				<!--<td class="l">'.$se[$i]["unit_name"].'</td>-->
 				<td class="action c">';
 			if($for=="billsin"){
 				$namejs=$se[$i]["name"];
@@ -254,6 +266,10 @@ class product extends main{
 	}
 	private function editProduct():void{
 		$error="";
+		$img=["result"=>false,"set"=>"","select"=>""];
+		$mime="";
+		$set_img=0;
+		$key=$this->key("key",7);
 		if(isset($_POST["submit"])&&$_POST["submit"]=="clicksubmit"){
 			$_POST["partner"]=isset($_POST["partner_list"])?$_POST["partner_list"]:"";
 			$se=$this->checkSet("product",["post"=>["name","sku","barcode","price","cost","unit","group_root","vat_p","sku_root"]],"post");
@@ -263,20 +279,79 @@ class product extends main{
 			}else if($ckp != ""){
 				$error=$ckp;
 			}else{
-				 $qe=$this->editProductUpdate();
-				if(!$qe["result"]){
-					$error=$qe["message_error"];
-				}else if($qe["data"]["result"][0]["result"]==0){
-					$error=$qe["data"]["result"][0]["message_error"];
-				}else if($qe["data"]["result"][0]["result"]==1){
-					$url_refer=(isset($_POST["url_refer"]))?$_POST["url_refer"]:"";
-					$pt="/&ed=[0-9a-zA-Z-+\.&\/]{1,25}/";
-					$pr='';
-					$url=preg_replace($pt, $pr,$url_refer)."&ed=".$_POST["sku_root"];
-					header('Location:'.$url);
+				$icon_type=["new","load","select","null"];
+				if(isset($_POST["icon_type"])&&in_array($_POST["icon_type"],$icon_type)){
+					if($_POST["icon_type"]=="new"){//--เพิ่มรูปใหม่
+						if(isset($_POST["icon"])&&$_POST["icon"]!=""){
+							$img=$this->img->imgCheck("icon");
+							if($img["result"]==false&&$se["result"]){
+								$se["result"]=false;
+								$se["message_error"]=$img["message_error"];
+							}
+							if($img["result"]){
+								$a=explode("/",$img["mime"]);
+								$mime=$a[1];
+								$img["set"]="new";
+							}
+						}else if(isset($_POST["icon_load"])&&$_POST["icon_load"]!=""){
+							$img=$this->img->imgCheck("icon_load");
+							if($img["result"]==false&&$se["result"]){
+								$se["result"]=false;
+								$se["message_error"]=$img["message_error"];
+							}
+							if($img["result"]){
+								$a=explode("/",$img["mime"]);
+								$mime=$a[1];
+								$img["set"]="new";
+								$_POST["icon"]=$_POST["icon_load"];
+							}
+						}
+					}else if($_POST["icon_type"]=="load"){//--ใช้รูปเดิม ไม่ได้เปลี่ยน
+						if(isset($_POST["icon_load"])){
+							if($_POST["icon_load"]!=""){
+								$img["set"]="load";
+							}else{
+								$img["set"]="null";
+							}
+						}
+					}else if($_POST["icon_type"]=="select"){//--ใช้รูปในคลัง
+						if(isset($_POST["icon_select"])){
+							if($_POST["icon_select"]!=""&&$this->isSKU($_POST["icon_select"])){
+								$img["set"]="select";
+								$img["select"]=$_POST["icon_select"];
+							}
+						}
+					}else if($_POST["icon_type"]=="null"){//--ไม่แสดงรูปไใใช้รุป
+						$img["set"]="null";
+					}
+					/*echo '$_POST["icon_type"]='.$_POST["icon_type"];
+					echo '<br>$_POST["icon_select"]='.$_POST["icon_select"];
+					echo '<br>$img["set"]='.$img["set"];
+					exit;*/
+					$qe=$this->editProductUpdate($key,$img,$mime);
+					if(!$qe["result"]){
+						$error=$qe["message_error"];
+					}else if($qe["data"]["result"][0]["result"]==0){
+						$error=$qe["data"]["result"][0]["message_error"];
+					}else if($qe["data"]["result"][0]["result"]==1){
+						$url_refer=(isset($_POST["url_refer"]))?$_POST["url_refer"]:"";
+						$pt="/&ed=[0-9a-zA-Z-+\.&\/]{1,25}/";
+						$pr='';
+						$url=preg_replace($pt, $pr,$url_refer)."&ed=".$_POST["sku_root"];
+						$this->img->imgSave($img,$key,$this->max_squar);
+						header('Location:'.$url);
+					}
+				}else{
+					$error="เกิดข้อผิดพลาดรูปภาพที่ส่งมา";
 				}
 			}
-			if($error!=""){
+			if($error!=""){//echo "ppp".$_POST["icon_type"];
+				$t=$_POST["icon_type"];
+				if($_POST["icon_type"]=="null"){
+					$_POST["icon_load"]="";
+				}else if($_POST["icon_type"]=="new"){
+					$_POST["icon_load"]=$_POST["icon"];
+				}			
 				$this->editProductPage($error);
 			}
 		}else{
@@ -294,7 +369,8 @@ class product extends main{
 		echo '<p class="c">ไมาสามารถเข้าทางนี้โดยผ่านทาง Url โดยตรง<br /><a onclick="history.back()">กลับหน้าที่แล้ว</a></p>';
 		$this->pageFoot();
 	}
-	private function editProductUpdate():array{
+	private function editProductUpdate(string $key,array $img,string $mime):array{
+		//print_r($img);exit;
 		$name=$this->getStringSqlSet($_POST["name"]);
 		$sku=$this->getStringSqlSet($_POST["sku"]);
 		$barcode=$this->getStringSqlSet($_POST["barcode"]);
@@ -310,11 +386,38 @@ class product extends main{
 		$props = $this->getStringSqlSet($this->setPropR());
 		$pn=$this->setPartnerR($_POST["partner"]);
 		$partner = $this->getStringSqlSet($pn);
+		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
+		$icon_load=(isset($_POST["icon_load"]))?$_POST["icon_load"]:"";
+		$mimefull="NULL";
+		$md5="NULL";
+		$user="NULL";
+		$size=0;
+		$width=0;
+		$height=0;
+		if($img["set"]=="new"){
+			$mimefull=$this->getStringSqlSet($img["mime"]);
+			$md5=$this->getStringSqlSet(md5($img["file"]));
+			$user=$this->getStringSqlSet($_SESSION["sku_root"]);
+			$size=(int) $img["size"];
+			$width=(int) $img["width"];
+			$height=(int) $img["height"];
+		}
+		$icon_tx="";
+		if($img["set"]=="null"){
+			$icon_tx=",`icon`=NULL";
+		}else if($img["set"]=="new"){
+			$icon_tx=",`icon`=\"".$key."\"";
+		}else if($img["set"]=="select"){
+			$icon_tx=",`icon`=\"".$img["select"]."\"";
+		}
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
 			@message_error:='',
 			@group_root:=".$group_root.",
 			@props:=".$props.",
+			@sku_key:='".$key."',
+			@img_set:='".$img["set"]."',
+			@img_select:='".$img["select"]."',
 			@count_name:=(SELECT COUNT(`id`)  FROM `unit` WHERE `name`=".$name." AND `sku_root` !=".$sku_root."),
 			@count_sku:=(SELECT COUNT(`id`)   FROM `unit` WHERE `sku`=".$sku." AND `sku_root` !=".$sku_root."),
 			@count_barcode:=(SELECT COUNT(`id`)   FROM `product` WHERE `barcode`=".$barcode." AND `sku_root` !=".$sku_root."),
@@ -332,19 +435,36 @@ class product extends main{
 				SET @message_error='เกิดขอผิดพลาด หน่วยที่ส่งมา ไม่มีในระบบ โปรดลอง หน่วยอื่น' ; 
 			END IF;			
 		";
-		$sql["run"]="
+		$sql["run"]="BEGIN NOT ATOMIC
 			IF LENGTH(@message_error) = 0 THEN
 				UPDATE `product` SET  `sku`=".$sku.",`sku_key`=".$sku_key.",  `name`= ".$name." ,  `barcode`=".$barcode.", `price`=".$price.",`s_type`=".$s_type.",
 					 `cost`=".$cost.", `unit`=".$unit." , `vat_p`=".$vat_p.",`group_key` = @group_key,`group_root` = @group_root,`props` = JSON_MERGE_PATCH(`props`,@props),
-					 `partner`=".$partner." 
+					 `partner`=".$partner." ".$icon_tx."
 				WHERE `sku_root`=".$sku_root.";
+				IF @img_set='new' THEN
+					UPDATE `gallery` SET  `primary` = \"0\" WHERE `gl_key`=".$sku_root." AND `primary`=\"1\";
+					INSERT  INTO `gallery` (
+						`sku_key`		,`gl_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,
+						`user`			,`size`			,`width`		,`height`				,`primary`
+					) VALUES (
+						@sku_key		,".$sku_root."	,".$name."		,\"product\"		,".$mimefull."			,".$md5.",
+						".$user."		,".$size."		,".$width."		,".$height."			,\"1\"
+					);
+				ELSEIF @img_set='null' THEN
+					UPDATE `gallery` SET  `primary`=\"0\" WHERE `gl_key`=".$sku_root." AND `primary`=\"1\";
+					UPDATE `product` SET `icon`=NULL WHERE `sku_root`=".$sku_root.";
+				ELSEIF @img_set='select' THEN
+					UPDATE `product` SET `icon`=@img_select WHERE `sku_root`=".$sku_root.";
+					UPDATE `gallery` SET  `primary`=\"0\" WHERE `gl_key`=".$sku_root." AND `primary`=\"1\";
+					UPDATE `gallery` SET  `primary`=\"1\" WHERE `gl_key`=@img_select;
+				END IF;
 				SET @result=1;
 			END IF;
-		";
+		END;";
 		$sql["ref"]=$this->ref("product","sku_key",$skuk);
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`";
 		$se=$this->metMnSql($sql,["result"]);
-		//print_r($sql);
+		//print_r($se);exit;
 		return $se;
 	}
 	private function editProductPage($error){
@@ -360,13 +480,16 @@ class product extends main{
 		$partner=(isset($_POST["partner"]))?htmlspecialchars($_POST["partner"]):"";
 		$s_type=(isset($_POST["s_type"]))?$_POST["s_type"]:"p";
 		$group = "defaultroot";
-		//echo $_POST["group_root"];
+		$icon_load=(isset($_POST["icon_load"]))?$_POST["icon_load"]:"";
+		$icon_type=(isset($_POST["icon_type"]))?$_POST["icon_type"]:"load";
+		$icon_select=(isset($_POST["icon_select"]))?$_POST["icon_select"]:"";
+		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
 		if(isset($_POST["group_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["group_root"])){
 			$group = $_POST["group_root"];
 		}
 		$sku_root=(isset($_POST["sku_root"]))?htmlspecialchars($_POST["sku_root"]):"";
 		$this->addDir("","แก้ไข สินค้า ".$name);
-		$this->pageHead(["title"=>"แก้ไขสินค้า DIYPOS","js"=>["product","Pd","form_selects","Fsl"],"run"=>["Fsl"],"css"=>["form_selects"]]);
+		$this->pageHead(["title"=>"แก้ไขสินค้า DIYPOS","js"=>["product","Pd","form_selects","Fsl","fileupload","Ful"],"run"=>["Fsl"],"css"=>["form_selects","fileupload"]]);
 			echo '<div class="content">
 				<div class="form">
 					<h1 class="c">แก้ไขสินค้า</h1>';
@@ -375,6 +498,10 @@ class product extends main{
 		}		
 		$partner_list_id=$this->key("key",7);
 		echo '			<form  name="edit_product" method="post">
+						<input type="hidden" id="icon_load_id" name="icon_load" value="'.$icon_load.'" />
+						<input type="hidden" id="icon_id" name="icon" value="" />
+						<input type="hidden" id="icon_type_id" name="icon_type" value="'.$icon_type.'" />
+						<input type="hidden" id="icon_select_id" name="icon_select" value="'.$icon_select.'" />
 						<input type="hidden" name="submit" value="clicksubmit" />
 						<input type="hidden" name="sku_root" value="'.$sku_root.'" />
 						<input type="hidden" name="url_refer" value="'.htmlspecialchars($url_refer).'" />
@@ -407,6 +534,13 @@ class product extends main{
 			echo '</div>';
 			echo '<p><label for="product_regis_vat">ภาษีมูลค่าเพิ่ม %</label></p>
 				<div><input id="product_regis_vat" type="text" value="'.$vat_p.'"  name="vat_p"  /></div>';
+			echo '<div>
+				<div id="div_fileuploadpre" class="fileuploadpre1"></div>
+				<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" class="fuif" name="picture" onchange="Ful.fileUploadShow(event,1,\'icon_id\',1024,160)" />
+				<label for="upload_pic" class="fubs">+เลือกรูปภาพ</label>
+			</div>	
+			<script type="text/javascript">Ful.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\',\'icon_load_id\',\''.$icon_type.'\')</script>';
+			$this->ful->listImg($sku_root,"write","upload");
 			echo '			<br />
 						<input type="submit" value="แก้ไขสินค้า" />
 					</form>
@@ -416,6 +550,8 @@ class product extends main{
 	}
 	private function regisProduct():void{
 		$error="";
+		$img=["result"=>false,"set"=>0];
+		$mime="";
 		if(isset($_POST["submitt"])&&$_POST["submitt"]=="clicksubmit"){
 			$_POST["partner"]=isset($_POST["partner_list"])?$_POST["partner_list"]:"";
 			$se=$this->checkSet("product",["post"=>["barcode","sku","name","price","cost","unit","group_root","partner","vat_p"]],"post");
@@ -426,13 +562,26 @@ class product extends main{
 			}else if($ckp != ""){
 				$error=$ckp;
 			}else{
-				 $qe=$this->regisProductInsert();
+				if(isset($_POST["icon"])&&$_POST["icon"]!=""){
+					$img=$this->img->imgCheck("icon");
+					if($img["result"]==false&&$se["result"]){
+						$se["result"]=false;
+						$se["message_error"]=$img["message_error"];
+					}
+					if($img["result"]){
+						$a=explode("/",$img["mime"]);
+						$mime=$a[1];
+						$img["set"]=1;
+					}
+				}
+				$key=$this->key("key",7);
+				 $qe=$this->regisProductInsert($key,$img,$mime);
 				if(!$qe["result"]){
 					$error=$qe["message_error"];
 				}else if($qe["data"]["result"][0]["result"]==0){
 					$error=$qe["data"]["result"][0]["message_error"];
 				}else if($qe["data"]["result"][0]["result"]==1){
-					 //print_r($qe);
+					$this->img->imgSave($img,$key,$this->max_squar);
 					header('Location:?a=product&ed='.$qe["data"]["result"][0]["sku_root"]);
 				}
 			}
@@ -457,8 +606,7 @@ class product extends main{
 		}
 		return $re;
 	}
-	private function regisProductInsert():array{
-		
+	private function regisProductInsert(string $key,array $img,string $mime=""):array{	
 		$name=$this->getStringSqlSet($_POST["name"]);
 		$sku=$this->getStringSqlSet($_POST["sku"]);
 		$barcode=$this->getStringSqlSet($_POST["barcode"]);
@@ -472,12 +620,36 @@ class product extends main{
 		$props = $this->getStringSqlSet($this->setPropR());
 		$pn=$this->setPartnerR($_POST["partner"]);
 		$partner = $this->getStringSqlSet($pn);
+		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
+		$mimefull="NULL";
+		$md5="NULL";
+		$user="NULL";
+		$size=0;
+		$width=0;
+		$height=0;
+		if($img["set"]==1){
+			$mimefull=$this->getStringSqlSet($img["mime"]);
+			$md5=$this->getStringSqlSet(md5($img["file"]));
+			$user=$this->getStringSqlSet($_SESSION["sku_root"]);
+			$size=(int) $img["size"];
+			$width=(int) $img["width"];
+			$height=(int) $img["height"];
+		}
+		$icon_tx="";
+		if($icon!=""){
+			$icon_tx=",`icon`=\"".$key."\"";
+		}else if($icon_load==""){
+			$icon_tx=",`icon`=NULL";
+		}
 		$sql=[];
 		$sql["set"]="SELECT @result:=0,
 			@message_error:='',
+			@sku_key:='".$key."',
+			@img_set:=".$img["set"].",
 			@sku_root:=".$sku_root.",
 			@group_root:=".$group_root.",
 			@props:=".$props.",
+			@icon:=".($icon!=""?"'".$key."'":"NULL").",
 			@count_name:=(SELECT COUNT(`id`)  FROM `product` WHERE `name`=".$name."),
 			@count_sku:=(SELECT COUNT(`id`)   FROM `product` WHERE `sku`=".$sku."),
 			@count_barcode:=(SELECT COUNT(`id`)   FROM `product` WHERE `barcode`=".$barcode."),
@@ -497,20 +669,29 @@ class product extends main{
 		";
 		$sql["run"]="
 			IF LENGTH(@message_error) = 0 THEN
-				INSERT INTO `product`  (`sku`,`sku_key`,`sku_root`,`barcode`,`name`,`price`,`cost`,`unit`,`group_key`,`group_root`,`props`,`s_type`,`partner`) 
-				VALUES (".$sku.",".$sku_root.",".$sku_root.",".$barcode.",".$name.",".$price.",".$cost.",".$unit.",@group_key,@group_root,@props,".$s_type.",".$partner."); 
+				INSERT INTO `product`  (`sku`,`sku_key`,`sku_root`,`barcode`,`name`,`price`,`cost`,`unit`,`group_key`,`group_root`,`props`,`s_type`,`partner`,`icon`) 
+				VALUES (".$sku.",".$sku_root.",".$sku_root.",".$barcode.",".$name.",".$price.",".$cost.",".$unit.",@group_key,@group_root,@props,".$s_type.",".$partner.",@sku_key); 
+				IF @img_set=1 THEN
+					INSERT  INTO `gallery` (
+						`sku_key`		,`gl_key`		,`name`		,`a_type`		,`mime_type`		,`md5`,
+						`user`			,`size`			,`width`		,`height`				,`primary`
+					) VALUES (
+						@sku_key		,".$sku_root."	,".$name."		,'product'		,".$mimefull."			,".$md5.",
+						".$user."		,".$size."		,".$width."		,".$height."			,'1'
+					);
+				END IF;
 				SET @result=1;
 			END IF;
 		";
 		$sql["ref"]=$this->ref("product","sku_key",$skuk);
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@sku_root AS `sku_root`";
 		$se=$this->metMnSql($sql,["result"]);
-		//print_r($sql);
+		//print_r($se;)exit;
 		return $se;
 	}
 	private function editProductSetCurent(string $sku_root):void{
 		$od=$this->editProductOldData($sku_root);
-		$fl=["sku","barcode","name","price","cost","unit","group_root","s_type","partner","vat_p"];
+		$fl=["sku","barcode","name","price","cost","unit","group_root","s_type","partner","vat_p","icon","icon_load","icon_type","icon_select"];
 		foreach($fl as $v){
 			if(isset($od[$v])){
 				$_POST[$v]=$od[$v];
@@ -533,12 +714,16 @@ class product extends main{
 		$sku_root=$this->getStringSqlSet($sku_root);
 		$sql=[];
 		$sql["result"]="SELECT `name`,`sku`,`barcode` ,`price`,`cost`,`unit`,IFNULL(`group_root`,\"defaultroot\") AS `group_root`,
-			IFNULL(`props`,\"[]\") AS `props` ,`s_type`,IFNULL(`partner`,\"[]\") AS `partner`,IFNULL(`vat_p`,0) AS `vat_p`
+			IFNULL(`props`,\"[]\") AS `props` ,`s_type`,IFNULL(`partner`,\"[]\") AS `partner`,IFNULL(`vat_p`,0) AS `vat_p`,IFNULL(`icon`,'') AS `icon`
 			FROM `product` 
 			WHERE `sku_root`=".$sku_root."";
 		$re=$this->metMnSql($sql,["result"]);
 		
 		if(isset($re["data"]["result"][0])){
+			if($re["data"]["result"][0]["icon"]!=""){
+				$re["data"]["result"][0]["icon_load"]=$this->img2Base64($this->gallery_dir."/".$re["data"]["result"][0]["icon"].".png");
+				unset($re["data"]["result"][0]["icon"]);
+			}
 			return $re["data"]["result"][0];
 		}
 		
@@ -555,6 +740,7 @@ class product extends main{
 		$vat_p=(isset($_POST["vat_p"]))?htmlspecialchars($_POST["vat_p"]):number_format($this->system->default->vat,2,'.',',');
 		$partner=(isset($_POST["partner"]))?htmlspecialchars($_POST["partner"]):"";
 		$s_type=(isset($_POST["s_type"]))?$_POST["s_type"]:"p";
+		$icon=(isset($_POST["icon"]))?$_POST["icon"]:"";
 		$group = "defaultroot";
 		if(isset($_POST["group_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["group_root"])){
 			$group = $_POST["group_root"];
@@ -576,7 +762,7 @@ class product extends main{
 			}
 		}
 		$this->addDir("?a=product&amp;b=regis","ลงทะเบียนสินค้า");
-		$this->pageHead(["title"=>"ลงทะเบียนสินค้า DIYPOS","js"=>["product","Pd","form_selects","Fsl"],"run"=>["Fsl"],"css"=>["form_selects"]]);
+		$this->pageHead(["title"=>"ลงทะเบียนสินค้า DIYPOS","js"=>["product","Pd","form_selects","Fsl","fileupload","Ful"],"run"=>["Fsl"],"css"=>["form_selects","fileupload"]]);
 			echo '<div class="content">
 				<div class="form">
 					<h1 class="c">ลงทะเบียนสินค้า</h1>';
@@ -585,6 +771,7 @@ class product extends main{
 		}	
 		$partner_list_id=$this->key("key",7);
 		echo '			<form  id="product_regisq" name="regis_product" method="post" action="">
+						<input type="hidden" id="icon_id" name="icon" value="'.$icon.'" />
 						<input type="hidden" name="submitt" value="clicksubmit" />
 						<input type="hidden" id="'.$partner_list_id.'" name="partner_list" value="'.$partner.'" />
 						<p><label for="product_regis_name">ชื่อสินค้า</label></p>
@@ -615,6 +802,14 @@ class product extends main{
 			echo '</div>';
 			echo '<p><label for="product_regis_vat">ภาษีมูลค่าเพิ่ม %</label></p>
 				<div><input id="product_regis_vat" type="text" value="'.$vat_p.'"  name="vat_p"  /></div>';
+			
+			echo '<div>
+					<div id="div_fileuploadpre" class="fileuploadpre1"></div>
+					<input id="upload_pic" type="file" accept="image/png,image/gif,image/jpeg,image/webp" class="fuif" name="picture" onchange="Ful.fileUploadShow(event,1,\'icon_id\',1024,160)" />
+					<label for="upload_pic"  class="fubs">+เลือกรูปภาพ</label>
+				</div>	
+				<script type="text/javascript">Ful.fileUploadShow(null,1,\'icon_id\',480,160,\'load\',\'div_fileuploadpre\')</script>';
+			
 			echo '			<br />
 						<input type="button" value="ลงทะเบียนสินค้า" onclick="document.getElementById(\'product_regis_barcode\').blur();Pd.regisSubmit()"  />
 					</form>
@@ -703,11 +898,11 @@ class product extends main{
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
 		$sea=$this->getAllProduct();
 		$se=$sea["row"];
-		echo '<form class="form100"  name="product" method="post">
+		echo '<form class="form100" name="product" method="post">
 			<input type="hidden" name="sku_root" value="" />
 			<table id="product"><tr><th>ที่</th>
 			<th>ป.</th>			
-			<th>รหัสภายใน</th>
+			<th>รูป</th>
 			<th>รหัสแท่ง</th>
 
 			<th>ชื่อ</th>
@@ -727,6 +922,7 @@ class product extends main{
 			$name=htmlspecialchars($se[$i]["name"]);
 			$barcode=$se[$i]["barcode"];
 			$sku=$se[$i]["sku"];
+			$icon=$this->sIcon($se[$i]["icon"],64);
 			if($this->txsearch!=""){
 				$ts=htmlspecialchars(str_replace("\\","",$this->txsearch));
 				if($this->fl=="name"){
@@ -751,12 +947,12 @@ class product extends main{
 			$namejs=str_replace("'","\'",$namejs);
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
 				<td class="pwlv">'.$this->s_type[$se[$i]["s_type"]]["icon"].'</td>
-				<td class="l">'.$sku.'</td>
+				<td class="img64">'.$icon.'</td>
 				<td class="l">'.$barcode.'</td>
 				
 				<td class="l">
 					<div><a href="?a=product&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a>'.$stat.'</div>
-					<div>'.$sku.','.$barcode.'</div>
+					<div>'.$this->s_type[$se[$i]["s_type"]]["icon"].' '.$sku.','.$barcode.'</div>
 					<div>';
 			$pn_arr=json_decode($se[$i]["partner"],true);	
 			if(is_array($pn_arr)){
@@ -781,6 +977,7 @@ class product extends main{
 						<a onclick="Pd.productStat(\''.$se[$i]["sku_root"].'\',\''.$namejs.'\')" title="สถานะ">📯</a>
 						<a onclick="Pd.label(\''.$se[$i]["sku_root"].'\',\''.$namejs.'\')" title="พิมพ์ป้ายแสดงราคา">🏷</a>
 						<a onclick="Pd.labelSticker(\''.$se[$i]["sku_root"].'\')" title="พิมพ์ป้ายสติ๊กเกอร์แปะสินค้า">▒</a>
+						<a onclick="G.viewGallery(\'product\',\''.$se[$i]["sku_root"].'\',\'view\')" title="คลังรูปภาพ">🖼</a>
 						<a onclick="Pd.productDelete(\''.$se[$i]["sku_root"].'\',\''.$namejs.'\')" title="ทิ้ง">🗑</a>
 					 '.$ed.'
 					</td>
@@ -827,8 +1024,8 @@ class product extends main{
 		$sql["count"]="SELECT @count:=COUNT(*) FROM product ".$this->pnct;
 		if($for=="sell"||$for=="label"||$for=="itmw"){
 			$sql["get"]="SELECT 
-					 `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
-					`product`.`name`, `product`.`price`, `product`.`cost`, `product`.`s_type`,
+					 `product`.`sku`, `product`.`sku_root`, `product`.`barcode`,
+					`product`.`name`, `product`.`price`, `product`.`cost`, `product`.`s_type`, IFNULL(`product`.`icon`,'') AS `icon`,
 					 `unit`.`name` AS `unit_name`,
 					 SUM(IF(bill_in_list.s_type='p',`bill_in_list`.`balance`,`bill_in_list`.`balance_wlv`)) AS balance
 				FROM `product` 
@@ -862,7 +1059,7 @@ class product extends main{
 			}
 			//print_r($sh);
 			$sql["get"]="SELECT 
-				`product`.`id`, `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
+				`product`.`id`, `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, IFNULL(`product`.`icon`,'') AS `icon`,
 				`product`.`name`, `product`.`price`, `product`.`cost`, `product`.`s_type`, GetListPartner_(IFNULL(`product`.`partner`,'[]')) AS `partner`,
 				`product`.`unit` AS `unit_sku_root`,product.pdstat, IFNULL(`product`.`group_root`,\"defaultroot\") AS `group_root`,`unit`.`name` AS `unit_name`,
 				`group`.`d1` AS `d1`,`group`.`d2` AS `d2`,`group`.`d3` AS `d3`,`group`.`d4` AS `d4`,

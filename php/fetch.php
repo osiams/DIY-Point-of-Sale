@@ -4,25 +4,27 @@ class fetch extends main{
 		parent::__construct();
 	}
 	public function run():void{
-		$a=["bills","sell","bill58","ret","it","product","prop","form_selects","tool","fileupload","gallery","factory","member","device","time","tran","account"];
+		$a=["bills","sell","bill58","ret","it","product","prop","form_selects","tool","fileupload","gallery","gallary","factory","member","device","time","tran","account","partner"];
 		if(isset($_POST["a"])&&in_array($_POST["a"],$a)){
 			require_once("php/".$_POST["a"].".php");
-			if($_POST["a"]=="sell"||$_POST["a"]=="ret"||$_POST["a"]=="product"||$_POST["a"]=="tool"||$_POST["a"]=="fileupload"
-				||$_POST["a"]=="gallery"||$_POST["a"]=="factory"||$_POST["a"]=="member"||$_POST["a"]=="device"||$_POST["a"]=="time"||$_POST["a"]=="tran"||$_POST["a"]=="account"){
+			if($_POST["a"]=="sell"||$_POST["a"]=="ret"||$_POST["a"]=="product"||$_POST["a"]=="tool"||$_POST["a"]=="fileupload"||$_POST["a"]=="partner"
+				||$_POST["a"]=="gallery"||$_POST["a"]=="factory"||$_POST["a"]=="member"
+				||$_POST["a"]=="device"||$_POST["a"]=="time"||$_POST["a"]=="tran"
+				||$_POST["a"]=="account"||$_POST["a"]=="gallary"){
 				eval("(new ".$_POST["a"]."())->fetch();");
 			}else if($_POST["a"]=="bill58"){
 				eval("(new ".$_POST["a"]."())->fetch();");
 			}else if($_POST["a"]=="prop"){
 				eval("(new ".$_POST["a"]."())->fetch('".$_POST["b"]."');");
 			}else if($_POST["a"]=="bills"){
-				$c=["bills_in","bill_sell_delete"];
+				$c=["bills_in","bill_sell_delete","bill_in_claim"];
 				if(isset($_POST["c"])&&in_array($_POST["c"],$c)){
 					require_once("php/".$_POST["c"].".php");
 					eval("(new ".$_POST["c"]."())->fetch();");
 				}
 			}else if($_POST["a"]=="it"){
 				$c=["lot"];
-				$b=["delete","select","mmm","mmmgetused"];
+				$b=["delete","select","mmm","mmmgetused","getitformove"];
 				if(isset($_POST["c"])&&in_array($_POST["c"],$c)){
 					require_once("php/it_view.php");
 					eval("(new it_view_lot())->fetch();");

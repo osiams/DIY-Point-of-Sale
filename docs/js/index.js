@@ -306,6 +306,11 @@ class main{
 						"nf":"technic_zoom-page.js",
 						"di":["use","technic"],
 						"as":null}
+					this.ob_page["technic_change-root-dir"]={
+						"nt":"เปลี่ยน root directory ของ XAMPP",
+						"nf":"technic_change-root-dir.js",
+						"di":["use","technic"],
+						"as":null}
 		this.ob_page["news_____________________"]={
 			"nt":"ข่าวสาร",
 			"nf":"news.js",

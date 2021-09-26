@@ -9,3 +9,14 @@
 }
 .table_view_all_partner  th:nth-child(2){width:48px;}
 .table_view_all_partner  td:nth-child(2){width:48px;}
+
+.block_claim_n_w{display:inline-block;background-color:red;padding:0px 10px;border-radius: 12px 12px 12px 12px;line-height:24px;color:white;cursor:pointer;}
+.block_claim_n_s{display:inline-block;background-color:yellow;padding:0px 10px;border-radius: 12px 12px 12px 12px;line-height:24px;cursor:pointer;}
+
+.table_details_claim{min-width:350px;}
+.table_details_claim input{width:calc(100% - 6px);max-width:70px;text-align:right;}
+.bg_yes_claim{background-color:LightGreen}
+.bg_no_claim{background-color:#eeeeee}
+
+.table_claim_list_product{}
+.table_claim_list_product td:nth-child(2) >p{color:gray;font-size:0.8em; text-indent: 30px;}

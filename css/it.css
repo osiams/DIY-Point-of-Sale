@@ -5,11 +5,11 @@ td{vertical-align: middle;}
 .it0{}
 .it0 tr > td:nth-child(3) > div{display:none}
 
-#it_view{}
+#it_view{max-width:800px}
 
-#it_view  tr > td:nth-child(5) > div:nth-child(2){display:none;font-size:12px;color:#555555;text-align:right;padding-right:10px;}
-#it_view  tr > td:nth-child(6) > div:nth-child(2){display:none;font-size:12px;color:#555555;text-align:right;padding-right:2px;}
-#it_view  tr > td:nth-child(8) > div:nth-child(2){display:none;font-size:12px;color:#555555;text-align:right;padding-right:2px;}
+#it_view  tr > td:nth-child(6) > div:nth-child(2){display:none;font-size:12px;color:#555555;text-align:right;padding-right:10px;}
+#it_view  tr > td:nth-child(7) > div:nth-child(2){display:none;font-size:12px;color:#555555;text-align:right;padding-right:2px;}
+#it_view  tr > td:nth-child(9) > div:nth-child(2){display:none;font-size:12px;color:#555555;text-align:right;padding-right:2px;}
 #it_view_lot{}
 #it_view_lot  tr > td:nth-child(2) > p{text-align:right;padding-right:5px;color:#555555;font-size:12px;}
 #it_view_lot tr > td:nth-child(2) {word-break: break-all}
@@ -45,15 +45,15 @@ td{vertical-align: middle;}
 .it0 tr > td:nth-child(2){display:none;}
 .it0 tr > td:nth-child(3) > div{display:block;font-size:12px;text-align:right;padding-right:2px;color:blue}
 #it_view tr > th:nth-child(2){display:none;}
-#it_view tr > th:nth-child(3){display:none;}
 #it_view tr > th:nth-child(4){display:none;}
-#it_view tr > th:nth-child(9){display:none;}
+#it_view tr > th:nth-child(5){display:none;}
+#it_view tr > th:nth-child(10){display:none;}
 #it_view tr > td:nth-child(2){display:none;}
-#it_view tr > td:nth-child(3){display:none;}
 #it_view tr > td:nth-child(4){display:none;}
-#it_view tr > td:nth-child(9){display:none;}
-#it_view tr > td:nth-child(5) > div:nth-child(2){display:block;}
-#it_view tr > td:nth-child(8) > div:nth-child(2){display:block;}
+#it_view tr > td:nth-child(5){display:none;}
+#it_view tr > td:nth-child(10){display:none;}
+#it_view tr > td:nth-child(6) > div:nth-child(2){display:block;}
+#it_view tr > td:nth-child(9) > div:nth-child(2){display:block;}
 
 #it_view_lot tr > th:nth-child(3){display:none;}
 #it_view_lot tr > td:nth-child(3){display:none;}
@@ -74,3 +74,6 @@ td{vertical-align: middle;}
 
 .it_note{padding:10px;text-align:left}
 .it_note > span{padding:2px 10px;}
+
+.it_move_success_option{width:calc(100% - 40px);padding:20px 20px 0px 20px;text-align:center}
+.it_move_success_option > input{width:calc(100% - 6px);}

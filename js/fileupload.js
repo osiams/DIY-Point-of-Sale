@@ -1,6 +1,12 @@
 "use strict"
 class fileupload extends main{
-	fileUploadShow(e,n,icon_id,max=1920,maxdisplay=116,type="",divuploadpre="",icon_load_id=null) {//-https://stackoverflow.com/questions/30902360/resize-image-before-sending-to-base64-without-using-img-element
+	constructor(){
+		super()
+		this.set_click=0;
+		this.icon_type_id="icon_type_id"
+	}
+	fileUploadShow(e,n,icon_id,max=1920,maxdisplay=116,type="",divuploadpre="",icon_load_id=null,icon_type="new") {//-https://stackoverflow.com/questions/30902360/resize-image-before-sending-to-base64-without-using-img-element
+		//--["new","load","select"]=type
 		let ic=null
 		let icon_ref=null
 		let icon_id_str=null
@@ -18,6 +24,10 @@ class fileupload extends main{
 		if(icon_load_id!=null){
 			ic=M.id(icon_load_id)
 		}
+		if(M.id(this.icon_type_id)!=undefined){
+			M.id(this.icon_type_id).value=icon_type
+		}
+		
 		let canvas_id=M.rid()
 		let img_id=M.rid()
 		let div_id=M.rid()
@@ -87,13 +97,14 @@ class fileupload extends main{
 		//document.getElementById(img_id).src=canvas.toDataURL()
 		//setTimeout(F.fileUploadPain,10,div_id,canvas_id)
 		
-	
 		//img.src = "https://i.ytimg.com/vi/HLt7Ze-JUPM/hqdefault.jpg?sqp=-oaymwEiCNIBEHZIWvKriqkDFQgBFQAAAAAYASUAAMhCPQCAokN4AQ==&rs=AOn4CLCT1cUDWu32RiYDo8r9qKFv03MENw"
 	}
-	fileUploadDel(did,div_id,icon_id,canvas_id,icon_id_=null){
-		//alert(icon_id_)
+	fileUploadDel(did,div_id,icon_id,canvas_id,icon_id_=null){	
 		if(M.id(icon_id)!=undefined){
 			M.id(icon_id).value=""
+			if(M.id(this.icon_type_id)!=undefined){
+				M.id(this.icon_type_id).value="null"
+			}
 		}else if(icon_id_!=null &&typeof(icon_id_)=="object" &&icon_id_.hasOwnProperty(icon_id)){
 			delete icon_id_[icon_id]
 		}	
@@ -336,5 +347,24 @@ class fileupload extends main{
 			return true
 		}
 		return false
+	}
+	selectImgPer1(did,gl_key){
+		G.set_click_img=1
+		let img=new Image();
+		img.src=this.gl_dir+"/"+gl_key+".png"
+        let canvas=this.ce("canvas",{});
+        img.onload=()=>{
+			canvas.width=img.width;
+			canvas.height=img.height;
+			let ctx=canvas.getContext("2d");
+			ctx.drawImage(img, 0, 0);
+			let base64=canvas.toDataURL("image/png");
+			//alert(this.id("icon_load_id").value.length)
+			//alert(base64.length)
+			this.id("icon_load_id").value=base64
+			this.id("icon_select_id").value=gl_key
+			this.rmc_all(this.id("div_fileuploadpre"))
+			this.fileUploadShow(null,1,"icon_id",480,160,"load","div_fileuploadpre","icon_load_id","select")
+		}
 	}
 }

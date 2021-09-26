@@ -48,7 +48,7 @@ class it extends main{
 			alert("✔️ สำเร็จ")
 			location.reload();
 		}else{
-			It.sortError(re,form,bt)
+			It.delError(re,form,bt)
 		}
 	}
 	delError(re,form,bt){
@@ -145,6 +145,73 @@ class it extends main{
 		alert("❌ เกิดข้อผิดพลาด "+re["message_error"])
 	}
 	move(dis,actionid,billinid,n,st){
+		let dt={"data":{"a":"it","b":"getitformove","dis":dis,"actionid":actionid,"billinid":billinid,"n":n,"st":st},"result":It.getItResult,"error":It.getItError}
+		this.setFec(dt)
+	}
+	getItResult(re,form,bt){
+		if(re["result"]){
+			It.move1(form,re["data"])
+		}else{
+			It.getItError(re,form,bt)
+		}
+	}
+	getItError(re,form,bt){
+		let rid = M.rid()
+		let msg=re["message_error"]
+		let dt={"msg":msg,"rid":rid,"callback":"M.dialogClose('"+rid+"')"}
+		M.dialogAlert(dt)
+	}
+	move1(form,data){
+		let dis=form.get("dis")
+		let actionid=form.get("actionid")
+		let billinid=form.get("billinid")
+		let n=form.get("n")
+		let st=form.get("st")
+		let stock=data
+		let ct=this.ce("div",{"class":"formg"})
+				let p=this.ce("p",{"style":"padding:10px 10px 0px 10px"})
+				this.end(p,[this.cn("โปรดเลือกคลังสินค้า ปลายทาง และจำนวนที่ต้องการย้ายไป")])
+				let d1=this.ce("div",{})
+				let f=this.ce("form",{"name":"itformove","class":"form100"})
+					let list=[]
+					let l=this.ce("label",{"id":"label_it_sel0_n__stock","onfocus":"M.formTransFocus(this);","for":"it_sel0_n__stock","class":"formg_label"})
+					this.end(l,[this.cn("คลังสินค้า")])					
+					let sel=this.ce("select",{"id":"it_sel0_n__stock","name":"_stock","onfocus":"M.formTransFocus(this)","onblur":"M.formTransBlur(this)"})
+					for(let i=0;i<stock.length;i++){
+						if(stock[i].sku_root!=st){
+							list[i]=this.ce("option",{"value":stock[i].sku})
+						}else{
+							list[i]=this.ce("option",{"value":stock[i].sku,"disabled":"disabled"})
+						}
+						this.end(list[i],[this.cn(stock[i].name)])
+						this.end(sel,[list[i]])
+					}
+					let l0=this.ce("label",{"id":"label_it_input0_n__stock","onfocus":"M.formTransFocus(this)","for":"it_input0_n__stock","class":"formg_label"})
+						this.end(l0,[this.cn("จำนวน")])
+					let i0=this.ce("input",{"type":"number","name":"_n","id":"it_input0_n__stock","onfocus":"M.formTransFocus(this)","onblur":"M.formTransBlur(this)"})
+					let l1=this.ce("label",{"id":"label_it_input1_n__stock","onfocus":"M.formTransFocus(this)","for":"it_input1_n__stock","class":"formg_label"})
+						this.end(l1,[this.cn("หมายเหตุ")])
+					let i1=this.ce("input",{"type":"text","name":"_note","id":"it_input1_n__stock","onfocus":"M.formTransFocus(this)","onblur":"M.formTransBlur(this)"})
+				this.end(f,[l,sel,l0,i0,l1,i1])
+				this.end(d1,[f])
+		this.end(ct,[p,d1])
+		let rid = this.rid()
+		let bts = [
+			{"value":"ยกเลิก","onclick":"M.dialogClose('"+rid+"')"},
+			{"value":"ตกลง","id":"pressbuttoninputok","onclick":"It.move2('"+rid+"','"+dis+"','"+actionid+"','"+billinid+"','"+n+"','"+st+"','itformove')"}
+		]
+		M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":"โปรดเลือก","width":"250"})
+		
+	}
+	move2(rid,dis,actionid,billinid,n,st,form){
+		let f=document.forms[form]
+		let _stock=f._stock.value
+		let move=_stock+"="+f._n.value
+		let _note=f._note.value
+		let dt={"data":{"a":"it","c":"lot","move":move,"billinid":billinid,"st":st,"note":_note,"rid":rid},"result":It.move2Result,"error":It.move2Error}
+		this.setFec(dt)
+	}
+/*	move(dis,actionid,billinid,n,st){
 		let did=this.id(actionid)
 		let note=did.parentNode.parentNode.cells[1].innerHTML
 		note=note.replace(/<a.{1,}">|<\/a>/g, "")
@@ -155,25 +222,50 @@ class it extends main{
 		}else{
 			alert("คุณยกเลิก")
 		}
-	}
-	moveResult(re,form,bt){
+	}*/
+	move2Result(re,form,bt){
 		if(re["result"]){
-			let dt={"data":{"a":"bill58","b":"print_move","sku":re["sku"]},"result":It.printMoveResult,"error":It.printMoveError}
-			M.setFec(dt);
-			alert("✔️ สำเร็จ เรียบร้อย");
-			location.reload();
+			It.move2ResultOption(re,form)
+			//let dt={"data":{"a":"bill58","b":"print_move","sku":re["sku"]},"result":It.printMoveResult,"error":It.printMoveError}
+			//M.setFec(dt);
+			//alert("✔️ สำเร็จ เรียบร้อย");
+			//location.reload();
 		}else{
-			It.moveError(re,form,bt)
+			It.move2Error(re,form,bt)
 		}
 	}
-	moveError(re,form,bt){
+	move2ResultOption(re,form){
+		let rid_=form.get("rid")
+		M.dialogClose(rid_)
+		let rid = M.rid()
+		let ct=this.ce("div",{})
+			let f=this.ce("form",{"class":"form100"})
+				let d1=this.ce("div",{"class":"it_move_success_option"})
+					let i1=this.ce("input",{"type":"button","value":"พิมพ์","onclick":"It.move2Print('"+re["sku"]+"','"+re["message_error"]+"')"})
+				this.end(d1,[i1])
+				let d2=this.ce("div",{"class":"it_move_success_option"})
+					let i2=this.ce("input",{"type":"button","value":"โหลดหน้านี้ใหม่","onclick":"location.reload()"})
+				this.end(d2,[i2])
+				let d3=this.ce("div",{"class":"it_move_success_option"})
+					let i3=this.ce("input",{"type":"button","value":"ดูใบย้ายสินค้า","onclick":"location.href='?a=bills&c=move&b=view&sku="+re["sku"]+"'"})
+				this.end(d3,[i3])	
+			this.end(f,[d1,d2,d3])
+		this.end(ct,[f])
+		let bts=[]
+		M.dialog({"rid":rid,"display":1,"ct":ct,"bts":bts,"title":"สำเร็จ","width":"250"})
+	}
+	move2Print(sku,message_error){
+		let dt={"data":{"a":"bill58","b":"print_move","sku":sku,"message_error":message_error},"result":It.printMoveResult,"error":It.printMoveError}
+		M.setFec(dt);
+	}
+	move2Error(re,form,bt){
 		alert("❌ เกิดข้อผิดพลาด "+re["message_error"])
 	}
 	printMoveResult(re,form,bt){ 
 		if(re["result"]){
-			location.href="?a=bills&c=move&b=view&sku="+re["sku"]
+
 		}else{
-			Rt.printError(re,form,bt)
+			It.printMoveError(re,form,bt)
 		}
 	}
 	printMoveError(re,form,bt){

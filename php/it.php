@@ -37,7 +37,7 @@ class it extends main{
 				if($se["result"]){
 					$re["result"]=true;
 				}else if($se["message_error"]!=""){
-					$re["message_erroe"]=$se["message_error"];
+					$re["message_error"]=$se["message_error"];
 				}
 			}
 		}else if($b=="select"){
@@ -65,7 +65,7 @@ class it extends main{
 			if(isset($_POST["pdroot"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["pdroot"])){
 				$se=$this->fetchmmmgetused($_POST["pdroot"]);
 				if(isset($se["data"]["result"][0])){
-					$re["data"]=json_encode($se["data"]["result"][0]);
+					$re["data"]=json_encode($se["data"]["result"][0],JSON_HEX_TAG);
 					$re["result"]=true;
 				}else{
 					$re["message_error"]=$se["message_error"];
@@ -73,10 +73,24 @@ class it extends main{
 			}else{
 				
 			}
+		}else if($b=="getitformove"){
+			$se=$this->fetch_getitformove();
+			if($se["result"]){
+				$re["result"]=true;
+				array_unshift($se["data"]["result"],["sku_root"=>"","name"=>""]);
+				$re["data"]=$se["data"]["result"];
+			}else{
+				$re["message_error"]=$se["message_error"];
+			}
 		}
-
 		header('Content-type: application/json');
 		echo json_encode($re);
+	}
+	private function fetch_getitformove():array{
+		$sql=[];
+		$sql["result"]="SELECT `sku`,`sku_root`,`name` FROM `it`";
+		$se=$this->metMnSql($sql,["result"]);
+		return $se;
 	}
 	private function fetchmmmgetused(string $pdroot):array{
 		$sql=[];
@@ -211,6 +225,9 @@ class it extends main{
 														product_sku_key  CHAR(25),
 														product_sku_root  CHAR(25),
 														lot_from CHAR(25),
+														lot_root CHAR(25),
+														pn_key CHAR(25),
+														pn_root CHAR(25),
 														cost1 FLOAT);
 				DECLARE r_billinlist1 ROW (
 														product_sku_key  CHAR(25),
@@ -253,11 +270,18 @@ class it extends main{
 						SET bill_n_=2;
 					END IF;
 						
-					SELECT  stkey,stroot,product_sku_key,product_sku_root,bill_in_sku,(sum/n) INTO r_billinlist.stkey,
-							r_billinlist.stroot,r_billinlist.product_sku_key,r_billinlist.product_sku_root,
-							r_billinlist.lot_from,r_billinlist.cost1
-						FROM bill_in_list
-						WHERE id=@billinlistid;
+					SELECT  
+						stkey							,stroot						,product_sku_key,
+						product_sku_root,
+						lot_root						,pn_key						,pn_root,
+						bill_in_sku					,(sum/n) 
+					INTO 
+						r_billinlist.stkey			,r_billinlist.stroot		,r_billinlist.product_sku_key,
+						r_billinlist.product_sku_root,
+						r_billinlist.lot_root		,r_billinlist.pn_key,r_billinlist.pn_root,
+						r_billinlist.lot_from,		r_billinlist.cost1
+					FROM bill_in_list
+					WHERE id=@billinlistid;
 					SET  lot_from_=r_billinlist.lot_from;
 					SET  sum_=r_billinlist.cost1;
 						
@@ -265,18 +289,27 @@ class it extends main{
 						FROM bill_in 
 						WHERE  sku=lot_from_;
 							
-					IF r_billin.in_type='r' || r_billin.in_type='c' THEN
-						SET lot_root_=FINDLOTROOT_(lot_from_,@skuroot);
-					ELSE 
-						SET lot_root_=r_billin.lot_root;
-					END IF;
+					#IF r_billin.in_type='r' || r_billin.in_type='c' THEN
+					#	SET lot_root_=FINDLOTROOT_(lot_from_,@skuroot);
+					#ELSE 
+					#	SET lot_root_=r_billin.lot_root;
+					#END IF;
+					
+					SET lot_root_=r_billinlist.lot_root;
 								
 					UPDATE bill_in_list SET balance=balance-@skuroot_n
 						WHERE id=@billinlistid;
 						
 
-					INSERT INTO bill_in(in_type,sku,lot_from,lot_root,n,sum,user)
-						VALUES('mm',mm_key,lot_from_,lot_root_,bill_n_,(sum_*@skuroot_n),@user);
+					INSERT INTO bill_in(
+						in_type	,sku	,lot_from,
+						lot_root,pn_key,pn_root,
+						n,sum,user)
+					VALUES(
+						'mm'	,mm_key,lot_from_,
+						lot_root_	,r_billinlist.pn_key	,r_billinlist.pn_root,
+						bill_n_,(sum_*@skuroot_n),@user
+					);
 					SET lastid=(SELECT LAST_INSERT_ID());
 					INSERT INTO mmm (bill_in_id,skukey,skuroot,skuroot_n)
 						VALUES(lastid,r_billinlist.product_sku_key,r_billinlist.product_sku_root,@skuroot_n);
@@ -291,9 +324,11 @@ class it extends main{
 						WHERE  product.sku_root=@skuroot1;
 					
 					INSERT INTO bill_in_list(stkey,stroot,bill_in_sku,product_sku_key,product_sku_root,
+							lot_root	,pn_key		,pn_root,
 							s_type,name,n,n_wlv,balance,sum,unit_sku_key,unit_sku_root)
 						VALUES(r_billinlist.stkey,r_billinlist.stroot,mm_key,
 											r_billinlist1.product_sku_key,r_billinlist1.product_sku_root,
+							r_billinlist.lot_root	,r_billinlist.pn_key	,r_billinlist.pn_root,
 												'p',@skuroot1_name,@skuroot1_n,1,@skuroot1_n,(sum_*@skuroot_n),
 												r_billinlist1.unit_sku_key,r_billinlist1.unit_sku_root
 						);
@@ -316,10 +351,14 @@ class it extends main{
 							ON(product.unit=unit.sku_root)
 							WHERE  product.sku_root=@skuroot2;
 						
-						INSERT INTO bill_in_list(stkey,stroot,bill_in_sku,product_sku_key,product_sku_root,
-								s_type,name,n,n_wlv,balance,sum,unit_sku_key,unit_sku_root)
+						INSERT INTO bill_in_list(
+								stkey		,stroot		,bill_in_sku		,product_sku_key	,product_sku_root,
+								lot_root	,pn_key		,pn_root,
+								s_type	,name		,n						,n_wlv					,balance,
+								sum		,unit_sku_key					,unit_sku_root)
 							VALUES(r_billinlist.stkey,r_billinlist.stroot,mm_key,
 												r_billinlist2.product_sku_key,r_billinlist2.product_sku_root,
+								r_billinlist.lot_root	,r_billinlist.pn_key	,r_billinlist.pn_root,
 													'p',@skuroot2_name,@skuroot2_n,1,@skuroot2_n,0,
 													r_billinlist2.unit_sku_key,r_billinlist2.unit_sku_root
 							);
@@ -348,7 +387,7 @@ class it extends main{
 		";
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@confirm AS confirm,@TEST AS `TEST`";	
 		$se=$this->metMnSql($sql,["result"]);
-		//print_r($se);
+		print_r($se);
 		if(isset($se["data"]["result"][0])){
 			if($se["data"]["result"][0]["result"]==1){
 				$re["result"]=true;
@@ -368,10 +407,10 @@ class it extends main{
 			$sql=[];
 			$sql["set"]="SELECT @result:=0,@message_error:='',@user:=".$user.",
 				@itkey:='',
-				@itroot:=".$sku_root.",@TEST:=''";
+				@itroot:=".$sku_root.",@TEST:='';";
 			$sql["check"]="
-				IF @itroot='proot'||@itroot='xroot'||@itroot='defaultroot'||@itroot='droot'||@itroot='eroot' THEN 
-					SET @message_error=CONCAT('เกิดขอผิดพลาด ไม่สามรถลบครังนี้ได้ เนื่องจากเป็นคลังสินค้าที่จำเป็นต้องมีในระบบ');
+				IF @itroot='proot'||@itroot='wroot'||@itroot='croot'||@itroot='xroot'||@itroot='defaultroot'||@itroot='droot'||@itroot='eroot'||@itroot='ceroot'  THEN 
+					SET @message_error=CONCAT(' ไม่สามรถลบครังนี้ได้ เนื่องจากเป็นคลังสินค้าที่จำเป็นต้องมีในระบบ');
 				END IF;			
 			";
 			$sql["del"]="BEGIN NOT ATOMIC
@@ -391,15 +430,19 @@ class it extends main{
 				DECLARE r ROW (id INT,
 												in_type CHAR(10),
 												sku VARCHAR(25),
-												lot_root VARCHAR(25),
+												lot CHAR(25),
+												lot_root CHAR(25),
+												pn_key CHAR(25),
+												pn_root CHAR(25),
 												n INT ,
 												sum FLOAT,
 												changto  CHAR(10),
 												stkey VARCHAR(25),
 												stroot VARCHAR(25),
-												product_sku_key VARCHAR(25),
-												product_sku_root VARCHAR(25),
-												name  VARCHAR(255),
+												product_sku_key CHAR(25),
+												product_sku_root CHAR(25),
+												name CHAR(255) CHARACTER SET utf8 ,
+												s_type CHAR(1),
 												balance INT ,
 												suml FLOAT,
 												sq INT ,
@@ -407,9 +450,12 @@ class it extends main{
 												unit_sku_root VARCHAR(25)
 											);
 				DECLARE cur1 CURSOR FOR 
-				SELECT  bill_in_list.id,bill_in.in_type,bill_in.sku,bill_in.lot_root, bill_in.n,bill_in.sum,bill_in.changto,
+				SELECT  bill_in_list.id	,bill_in.in_type	,bill_in.sku	,bill_in_list.lot,
+					bill_in_list.lot_root	,bill_in_list.pn_key		,bill_in_list.pn_root	, 
+					bill_in.n,bill_in.sum,bill_in.changto,
 					 bill_in_list.stkey,bill_in_list.stroot,bill_in_list.product_sku_key,bill_in_list.product_sku_root,
-					 bill_in_list.name,bill_in_list.balance,((bill_in_list.balance/bill_in_list.n)*bill_in_list.sum) AS `suml`,
+					 bill_in_list.name, bill_in_list.s_type,
+					 bill_in_list.balance,((bill_in_list.balance/bill_in_list.n)*bill_in_list.sum) AS `suml`,
 					 bill_in_list.sq,bill_in_list.unit_sku_key,bill_in_list.unit_sku_root
 					FROM bill_in_list
 					LEFT JOIN bill_in
@@ -419,7 +465,8 @@ class it extends main{
 				SET k=KEY_();
 				SET @itkey=(SELECT sku_key FROM  it WHERE sku_root=@itroot);
 				SET stkey=(SELECT sku_key FROM  it WHERE sku_root='defaultroot');
-				IF @message_error='' THEN
+				IF LENGTH(@message_error)=0 THEN
+					SET @o=4;
 					OPEN cur1;
 						read_loop: LOOP
 							FETCH cur1 INTO r;
@@ -435,8 +482,14 @@ class it extends main{
 							END IF;
 							UPDATE bill_in_list SET balance=0 WHERE id=r.id;
 							UPDATE bill_in SET user_edit=@user WHERE  sku=r.sku;
-							INSERT bill_in_list (stkey,stroot,bill_in_sku,product_sku_key,product_sku_root,name,n,balance,sum,sq,unit_sku_key,unit_sku_root,idkey)
-							VALUES(stkey,'defaultroot',k,r.product_sku_key,r.product_sku_root,r.name,r.balance,r.balance,r.suml,r.sq,r.unit_sku_key,r.unit_sku_root,r.id);
+							INSERT bill_in_list (
+								stkey		,stroot		,bill_in_sku	,product_sku_key	,product_sku_root,
+								lot			,lot_root	,pn_key		,pn_root,
+								name	,s_type		,n,balance,sum,sq,unit_sku_key,unit_sku_root,idkey)
+							VALUES(
+								stkey		,'defaultroot'	,k		,r.product_sku_key		,r.product_sku_root,
+								r.lot		,r.lot_root	,r.pn_key	,r.pn_root,
+								r.name	,r.s_type	,r.balance,r.balance,r.suml,r.sq,r.unit_sku_key,r.unit_sku_root,r.id);
 							SET lastid=(SELECT LAST_INSERT_ID());
 							IF r__=0 THEN 
 								SET r__=lastid;
@@ -444,17 +497,24 @@ class it extends main{
 								SET __r=lastid;
 							END IF;
 						END LOOP;
+						SET @wwwwww=8;
 						IF n_list>0 THEN
 							IF __r=0 THEN 
 								SET __r=r__;
 							END IF;
-							INSERT INTO bill_in (in_type,sku,lot_from,lot_root,n,sum,user,stkey_,stroot_,date_reg,r_,_r)
-							VALUES('x',k,NULL,NULL,n_list,sum,@user,@itkey,@itroot,date_reg_now,r__,__r);
+							INSERT INTO bill_in (
+								in_type		,sku		,lot_from,
+								lot_root		,pn_key		,pn_root,
+								n,sum,user,stkey_,stroot_,date_reg,r_,_r)
+							VALUES(
+								'x'	,k	,NULL,
+								r.lot_root	,r.pn_key	,r.pn_root,
+								n_list,sum,@user,@itkey,@itroot,date_reg_now,r__,__r);
 						END IF;
 						SET @result=1;
 					CLOSE cur1;
+					DELETE FROM `it` WHERE `sku_root`=@itroot;
 				END IF;	
-				DELETE FROM `it` WHERE `sku_root`=@itroot;
 			END;	";
 			$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@TEST AS `TEST`";	
 			$se=$this->metMnSql($sql,["result"]);
@@ -684,16 +744,21 @@ class it extends main{
 			<th>ต้นทน<br />รวม</th>
 			<th>กระทำ</th>
 			</tr>';
-		$default_sku="";
+		$default_st_name="";
+		for($i=0;$i<count($se);$i++){
+			if($se[$i]["sku_root"]=="defaultroot"){
+				$default_sku=$se[$i]["sku"];
+				break;
+			}			
+		}
+		
 		for($i=0;$i<count($se);$i++){
 			$ed='';
 			if($se[$i]["sku_root"]==$edd){
 				$ed='<span title="โอเค เรียบร้อย"> 👌 </span>';
 			}
 			$cm=($i%2!=0)?" class=\"i2\"":"";
-			if($se[$i]["sku_root"]=="defaultroot"){
-				$default_sku=$se[$i]["sku"];
-			}
+
 			echo '<tr row'.$cm.'><td>'.$se[$i]["id"].'</td>
 				<td class="l">'.$se[$i]["sku"].'</td>
 				<td class="l"><a href="?a=it&amp;b=view&amp;sku_root='.$se[$i]["sku_root"].'">'.htmlspecialchars($se[$i]["name"]).'</a>
@@ -705,7 +770,7 @@ class it extends main{
 				<td class="r">'.number_format($se[$i]["costs"],2,'.',',').'</td>
 				<td class="action">
 					<a onclick="It.edit(\''.$se[$i]["sku_root"].'\')" title="แก้ไข">📝</a>';
-			$o=["proot","xroot","defaultroot","eroot","droot"];
+			$o=["proot","croot","wroot","xroot","defaultroot","eroot","droot"];
 			if(!in_array($se[$i]["sku_root"],$o)){
 				$st_name=htmlspecialchars($se[$i]["name"]);
 				$st_name=str_replace("\\","\\\\",$st_name);
@@ -731,7 +796,7 @@ class it extends main{
 			ON (it.sku_root=bill_in_list.stroot AND IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)>0)
 			WHERE  1=1
 			GROUP BY it.sku_root
-			ORDER BY `costs` DESC
+			ORDER BY `costs` DESC ,`id` ASC
 		";
 		$se=$this->metMnSql($sql,["get"]);
 		//print_r($se);

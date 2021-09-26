@@ -216,7 +216,7 @@ class sell extends main{
 				IF n_price_null>0 THEN
 					SET @message_error=CONCAT(@message_error,'มีสินค้า ',n_price_null,' รายการ  ที่ยังไม่ได้ตั้งราคาขาย หรือ ราคาขาย <= 0.00\n');
 				END IF;
-				IF @sums_client < @sums  THEN
+				IF ROUND(@sums_client,2) < ROUND(@sums,2)  THEN
 					SET @message_error=CONCAT(@message_error,'ราคารวม ฝั่ง เซร์ฟเวอร์ ได้  ',@sums,' แต่ราคารวมที่ส่งมา ได้ ',@sums_client,'\n');
 				END IF;
 				IF @credit > @sums THEN
@@ -255,6 +255,9 @@ class sell extends main{
 				DECLARE stn FLOAT DEFAULT 0.0000;			
 				DECLARE stbalance FLOAT DEFAULT 0.0000;	
 				DECLARE stsum FLOAT DEFAULT 0;	
+				DECLARE stlotroot CHAR(25) DEFAULT '';
+				DECLARE stpnroot CHAR(25) DEFAULT '';
+				DECLARE stpnkey CHAR(25) DEFAULT '';
 				DECLARE `mod` FLOAT DEFAULT 0;
 				DECLARE `n_wlv_mod` FLOAT DEFAULT 0;
 				DECLARE `cuts_mod` INT DEFAULT 0;
@@ -267,6 +270,7 @@ class sell extends main{
 				DECLARE date_reg TIMESTAMP DEFAULT NOW();
 				DECLARE addsku CHAR(25) CHARACTER SET ascii DEFAULT '';
 				SET @TEST='';
+				SET @sums=ROUND(@sums,2);
 				IF @over=0 AND @message_error = '' THEN 
 					SET @bill_sell_save=1;
 					SET pdl=@pd_length;
@@ -297,7 +301,7 @@ class sell extends main{
 							SET pdn_wlv=JSON_VALUE(@jspd	,		CONCAT('$.'	,		@pdroot_n_or_wlv		,'.n_wlv')			);
 							SET cuts=(pdn-cut);
 							CALL GetIdFirstSQ_(pdroot,@sq_frist);
-							SELECT id,bill_in_sku,IF(s_type='p',n,n_wlv),IF(s_type='p',balance,balance_wlv),sum  INTO stid,stsku,stn,stbalance,stsum
+							SELECT id,bill_in_sku,IF(s_type='p',n,n_wlv),IF(s_type='p',balance,balance_wlv),sum,lot_root,pn_root,pn_key  INTO stid,stsku,stn,stbalance,stsum,stlotroot,stpnroot,stpnkey
 								FROM bill_in_list 
 								WHERE id=@sq_frist;
 							SELECT unit.sku_key,unit.sku_root INTO unitkey,unitroot
@@ -324,8 +328,8 @@ class sell extends main{
 								IF cuts*pdn_wlv<=stbalance THEN
 									SET @TEST=CONCAT(@TEST,'-','44444444444444',cuts*pdn_wlv);
 									SET pdcoat=pdcoat+(stsum/stn)*cuts*pdn_wlv;
-									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,r,`sq`,unit_sku_key,unit_sku_root)
-									VALUE(@sku,stid,stsku,pdkey,pdroot,pdn,pdn_wlv,cuts,0,0,`sq`,unitkey,unitroot);
+									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root,lot_root,pn_root,pn_key, n,n_wlv,c,u ,r,`sq`,unit_sku_key,unit_sku_root)
+									VALUE(@sku,stid,stsku,pdkey,pdroot,stlotroot,stpnroot,stpnkey,pdn,pdn_wlv,cuts,0,0,`sq`,unitkey,unitroot);
 									UPDATE bill_in_list 
 										SET balance=(IF(s_type='p',balance-cuts*pdn_wlv,NULL)) ,
 											balance_wlv=(IF(s_type!='p',balance_wlv-(cuts*pdn_wlv),NULL)) 
@@ -354,10 +358,10 @@ class sell extends main{
 									SET pdcoat=pdcoat+(stsum/stn)*stbalance;
 									SET @cut_able=FLOOR(stbalance/pdn_wlv);
 									SET @mod=ABS(@cut_able*pdn_wlv-stbalance);
-									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,r,`sq`,unit_sku_key,unit_sku_root)
-									VALUE(@sku,stid,stsku,pdkey,pdroot,pdn,pdn_wlv,@cut_able,(cuts-@cut_able),0,`sq`,unitkey,unitroot);
-									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root, n,n_wlv,c,u ,r,`sq`,unit_sku_key,unit_sku_root)
-									VALUE(@sku,stid,stsku,pdkey,pdroot,1,@mod,1,0,0,`sq`,unitkey,unitroot);
+									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root,lot_root,pn_root,pn_key, n,n_wlv,c,u ,r,`sq`,unit_sku_key,unit_sku_root)
+									VALUE(@sku,stid,stsku,pdkey,pdroot,stlotroot,stpnroot,stpnkey,pdn,pdn_wlv,@cut_able,(cuts-@cut_able),0,`sq`,unitkey,unitroot);
+									INSERT INTO bill_sell_list (sku,bill_in_list_id,lot,product_sku_key,product_sku_root,lot_root,pn_root,pn_key, n,n_wlv,c,u ,r,`sq`,unit_sku_key,unit_sku_root)
+									VALUE(@sku,stid,stsku,pdkey,pdroot,stlotroot,stpnroot,stpnkey,1,@mod,1,0,0,`sq`,unitkey,unitroot);
 									IF pdn_wlv=1 THEN
 										UPDATE bill_in_list 
 											SET balance=(IF(s_type='p',0,NULL)) ,
@@ -555,7 +559,7 @@ class sell extends main{
 		$sql["get"]="
 			SELECT 
 				 `product`.`sku`, `product`.`sku_root`, `product`.`barcode`, 
-				`product`.`name`, `product`.`price`, `product`.`cost`, 
+				`product`.`name`, `product`.`price`, `product`.`cost`, IFNULL(`product`.`icon`,'') AS `icon`,
 				 `unit`.`name` AS `unit_name`,`product`.`s_type`,@bc_type AS `bc_type`
 			FROM `product` 
 			LEFT JOIN (`unit`) 

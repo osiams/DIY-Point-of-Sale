@@ -19,7 +19,8 @@ class image{
 			"file"=>"",
 			"squar"=>[32,64,128,256,512,1024],
 			"message_error"=>"",
-			"result"=>false
+			"result"=>false,
+			"select"=>""
 		);
 		$a=explode(";",$_POST[$icon_name]);
 		$b=[];
@@ -63,9 +64,7 @@ class image{
 				imagesavealpha($original, true);
 				imagepng($original, $target_file,9);
 			}else if($dt["type"]==3){
-				
 				$original = imagecreatefromjpeg($dt["tmp_name"]);
-				
 			}else if($dt["type"]==1){
 				$original = imagecreatefromgif($dt["tmp_name"]);
 			}	

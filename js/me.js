@@ -73,18 +73,9 @@ class me extends main {
 		this.dialog({"rid":rid,"display":1,"pn":pn,"bts":bts,"ct":ct0,"title":"นำเงินเข้าลิ้นชัก","width":"250","ofc":1})
 		this.id(min).focus()
 	}
-	formTransFocus(){
-		let a=event.target
-		if(a.tagName=="INPUT"&&a.parentNode.parentNode.parentNode.className=="formg"){
-			M.id("label_"+a.id).className="formg_label_focus"			
-		}
-	}
-	formTransBlur(){
-		let a=event.target
-		if(a.value.length==0){
-			M.id("label_"+a.id).className="formg_label"
-		}
-	}
+
+
+
 	formTransSend(type,min,ref,note){
 		let min_=this.id(min).value
 		let note_=this.id(note).value

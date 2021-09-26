@@ -15,6 +15,8 @@ class billsin extends main{
 		let group=did.options[index].getAttribute("data-group")
 		if(group=="partner"){
 			location.href="?a=bills&b=fill&c=in&pn_partner=partner&sku_root="+did.value
+		}else if(group=="claim"){
+			location.href="?a=bills&b=fill&c=in&in_type=cl&pn_partner=claim&sku_root="+did.value
 		}
 		
 	}
@@ -84,6 +86,7 @@ class billsin extends main{
 	setDisplayTV(){
 		let bill_type=document.forms.billsin.bill_type.value
 		let product_list=document.forms.billsin.product_list.value
+		M.l(product_list)
 		let tv0=this.id("billin_tv0")
 		let tv1=this.id("billin_tv1")
 		let tv2=this.id("billin_tv2")
@@ -541,6 +544,58 @@ class billsin extends main{
 			}*/
 		}
 	}
+	billsinClaimSumit(editable=true){
+		let f=document.forms.billsin
+		let t=M.id("billsin")
+		let ls=Bi.at
+		let dt=[]
+		let n_list=0;
+		let error=false
+		for(let i=1;i<=ls;i++){
+			let row=t.rows[i]
+			let sku_root=row.cells[0].id
+			let od=row.cells[0].innerHTML
+			let name=row.cells[1].childNodes[0].value.trim()
+			let n=row.cells[2].childNodes[0].childNodes[0].value
+			let sum=row.cells[4].childNodes[0].value
+			let act=row.cells[5].childNodes[0].value
+			let n_old=row.cells[2].childNodes[0].childNodes[0].getAttribute("data-old")
+			if(n==0&&(n_old==""||n_old==null)){
+				alert("รายการที่ "+od+" จำนวน ต้องมากกว่า 0")
+				error=true
+				break
+			}
+			let vat_p=this.pd[sku_root]["vat_p"]
+			dt[n_list]={"name":name,"sku_root":sku_root,"n":n,"sum":sum,"vat_p":vat_p,"act":act}
+			n_list+=1
+		}
+		if( n_list==0&&!editable){//alert(n_list+"*"+editable)
+			alert("ไม่มีสินค้านำเข้า คุณยังไม่ได้เลือก")
+		}else if(!error){
+			let note=null
+			let edible=editable?"claimedit":"claimfill"
+			let gl_list_value=""
+			if(f.gallery_list!=undefined){
+				gl_list_value=f.gallery_list.value
+			}
+			let dt2={"data":{"a":"bills","submith":"clicksubmit","c":"bill_in_claim","product":JSON.stringify(dt),
+				"bill_no":f.bill_no.value,"pn":f.pn.value,
+				"bill_date":f.bill_date.value,"bill_type":f.bill_type.value,"note":f.note.value,
+				"b":edible,"sku":f.sku.value,gallery_list:gl_list_value},
+				"result":Bi.billsinSaveResult,"error":Bi.billsinSaveError}	
+			let patt = /^([1-9])[0-9]{3}-(0|1)[0-9]-(0|1|2|3)[0-9]$/g;
+			let date_result = patt.test(f.bill_date.value);
+			if(f.bill_no.value.trim().length==0){
+				alert("เลขที่ใบเสร็จ คุณว่าง")
+			}else if(!date_result){
+				alert("วันที่ในใบเสร็จ ไม่ถูกต้อง หรือ ว่าง")
+			}else if(f.bill_type.value!="c"&&f.bill_type.value!="v1"&&f.bill_type.value!="v0"){
+				alert("ค่ารูปแบบใบเสร็จไม่ถูกต้อง")
+			}else{
+				this.setFec(dt2)
+			}
+		}
+	}
 	getPay1(){
 		let re=0
 		let f=document.forms.billsin
@@ -613,7 +668,7 @@ class billsin extends main{
 			data[i]=this.pd[prop]
 			i+=1
 		}
-		this.insertData(data,true,"bullin")
+		this.insertData(data,true,"billin")
 		this.setDisplayTV()
 	}
 	setEmptyTable(display_id){

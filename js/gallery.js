@@ -6,6 +6,8 @@ class gallery{
 		this.gallery_old={}
 		this.gallery={}
 		this.search={}
+		
+		this.icon={};
 	}
 	run(){
 
@@ -616,5 +618,11 @@ class gallery{
 	addImgGalleryError(form,display_id,dialog_id,rid){//alert(dialog_id)
 		Ful.dialogClose(rid,0)
 		//Ful.dialogClose(dialog_id,1)
+	}
+	//////////////////////gallary////////////////////////////////////
+	gallarySave(table,col,value,url_to,url_key,){
+		let uploadtype="add"
+		let count_img=Object.keys('Gl.icon').length
+		Ful.fileUploadImgs(uploadtype,table,col,value,'Gl.icon',url_to,'ed',null,'Bi.billinUploafFileError(\''+value+'\')')
 	}
 }

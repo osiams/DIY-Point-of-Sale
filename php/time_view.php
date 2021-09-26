@@ -143,7 +143,7 @@ class time_view extends main{
 				}
 			}
 		}
-		//print_r($se);
+		print_r($se);
 		return $re;
 	}
 	private function setRMore(int $id):void{

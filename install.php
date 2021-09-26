@@ -258,7 +258,7 @@ class install extends main{
 				}	
 				if(isset($tbs[$k]["default"])){
 						if(array_key_exists($w , $tbs[$k]["default"])){
-							if($f[$w]["type"]=="TIMESTAMP"){
+							if($f[$w]["type"]=="TIMESTAMP"||$f[$w]["type"]=="INT"){
 								$fi.=" NULL DEFAULT  ".$tbs[$k]["default"][$w];
 							}else{
 								$fi.=" NULL DEFAULT '".$tbs[$k]["default"][$w]."'";
@@ -826,6 +826,27 @@ class install extends main{
 			AFTER UPDATE ON `device_pos`  FOR EACH ROW 
 			UPDATE `device_drawers` SET `device_drawers`.`money_balance`=NEW.`money_balance` 
 			WHERE `device_drawers`.`id`= NEW.`drawers_id`;
+		";
+		$sql["set_SPNCN"]="DROP PROCEDURE IF EXISTS `SPNCN_`;";
+		$sql["set_SPNCN_"]="CREATE DEFINER=`root`@`localhost` 
+			PROCEDURE `SPNCN_`(
+				IN `pn_root_` CHAR(25))
+			NO SQL COMMENT 'บันทึกจำนวนสินค้าเคลม'
+			BEGIN
+				DECLARE claim_n_w_ INT;
+				DECLARE claim_n_s_ INT;
+				SELECT COUNT(*) INTO claim_n_w_ FROM `bill_in_list`
+				WHERE `claim_stat`='w' AND `stroot`='croot' AND `pn_root`=`pn_root_`;
+				SELECT COUNT(*) INTO claim_n_s_ FROM `bill_claim_list`
+				LEFT JOIN `bill_in_list`
+				ON(`bill_claim_list`.`bill_in_list_id`=`bill_in_list`.`id`)
+				WHERE `bill_claim_list`.`claim_stat`='s' 
+					AND `bill_in_list`.`stroot`='croot' 
+					AND `bill_in_list`.`pn_root`=`pn_root_`;
+				UPDATE `partner` SET `claim_n_w`=claim_n_w_,
+					`claim_n_s`=claim_n_s_
+				WHERE `sku_root`=`pn_root_`;
+			END;
 		";
 		$se=$this->metMnSql($sql,[]);
 		return $se;

@@ -135,7 +135,6 @@ class ret extends main{
 			DECLARE addsku CHAR(25) CHARACTER SET ascii DEFAULT @sku;
 			DECLARE r ROW (id INT,
 													lot VARCHAR(25),
-													lot_root VARCHAR(25),
 													product_sku_key VARCHAR(25),
 													product_sku_root VARCHAR(25),
 													n INT ,
@@ -144,6 +143,9 @@ class ret extends main{
 													unit_sku_key VARCHAR(25),
 													unit_sku_root VARCHAR(25),
 													s_type CHAR(1),
+													lot_root VARCHAR(25),
+													pn_key VARCHAR(25),
+													pn_root VARCHAR(25),
 													cost FLOAT,
 													name  VARCHAR(255)  CHARACTER SET utf8,
 													price FLOAT
@@ -160,9 +162,11 @@ class ret extends main{
 				`date_reg` TIMESTAMP
 			);														
 			DECLARE cur1 CURSOR FOR 
-			SELECT  `bill_sell_list`.`id`,IFNULL(bill_sell_list.lot,''),bill_in.lot_root, bill_sell_list.product_sku_key , bill_sell_list.product_sku_root	, 
+			SELECT  `bill_sell_list`.`id`,IFNULL(bill_sell_list.lot,''), bill_sell_list.product_sku_key , bill_sell_list.product_sku_root	, 
 				bill_sell_list.n,bill_sell_list.n_wlv,bill_sell_list.r,
-				 bill_sell_list.unit_sku_key ,bill_sell_list.unit_sku_root,`bill_in_list`.`s_type`,(bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv)) AS cost,
+				 bill_sell_list.unit_sku_key ,bill_sell_list.unit_sku_root,`bill_in_list`.`s_type`,
+				 `bill_sell_list`.`lot_root`,`bill_sell_list`.`pn_key`,`bill_sell_list`.`pn_root`,
+				 (bill_in_list.sum/IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv)) AS cost,
 				product_ref.name,product_ref.price
 				FROM bill_sell_list 
 				LEFT JOIN bill_in
@@ -203,12 +207,12 @@ class ret extends main{
 								AND  `bill_sell_list`.`sku`=addsku 
 								AND  (`bill_sell_list`.`lot`=lot OR (bill_sell_list.lot IS NULL AND  LENGTH(lot)=0));
 							INSERT  INTO `bill_in_list`  (`stkey`,`stroot`,`lot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,
-								`s_type`,`name`,
+								`s_type`	,`lot_root`		,`pn_key`	,`pn_root`		,`name`,
 								`n`												,`balance`,
 								`n_wlv`										,`balance_wlv`,
 								`sum`,`unit_sku_key`,`unit_sku_root`,`note`) 
 							VALUES(@stkey,'proot',IF(LENGTH(r.lot)>0,r.lot,NULL),	k	,r.product_sku_key	,r.product_sku_root	,
-								r.s_type,r.name	,
+								r.s_type		,r.lot_root		,r.pn_key		,r.pn_root	,r.name	,
 								n_r											,IF(r.s_type='p',n_r,NULL),
 								IF(r.s_type!='p',r.n_wlv,1)			,IF(r.s_type!='p',n_r*r.n_wlv,NULL),
 								(r.cost*n_r*r.n_wlv) ,r.unit_sku_key	,r.unit_sku_root,IF(LENGTH(nt)>0,nt,NULL));
@@ -295,7 +299,7 @@ class ret extends main{
 		$sql["result"]="SELECT @result AS `result`,@message_error AS `message_error`,@sku_ret AS `sku`,@TEST AS `TEST`";
 		$se=$this->metMnSql($sql,["result"]);
 		//echo "ggggggggggg";
-		print_r($se);exit;
+		//print_r($se);exit;
 		if($se["result"]==1&&$se["message_error"]==""){
 			$re["result"]=true;
 			$re["sku"]=$se["data"]["result"][0]["sku"];

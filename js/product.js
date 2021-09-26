@@ -25,7 +25,7 @@ class product extends main{
 		alert("❌ เกิดข้อผิดพลาด "+re["message_error"])
 	}
 	productDelete(sku_root,name){
-		let y=confirm("คุณต้องการลบ \n\""+name+"\"\nรายชื่อ และจำนวนจะหายไปจากระบบ ทั้งหมด\n แต่ประวัติการขาย ยังอยู่ ")
+		let y=confirm("คุณต้องการลบ \n\""+name+"\"\nรายชื่อ และจำนวนจะหายไปจากระบบ ทั้งหมด\n แต่ประวัติการขาย และรูปภาพสินค้า ยังคงอยู่ ยังอยู่ ")
 		if(y){
 			let f=document.forms.product
 			f.action="?a=product&b=delete"

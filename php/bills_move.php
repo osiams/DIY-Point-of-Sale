@@ -211,7 +211,7 @@ class bills_move extends bills{
 			WHERE bill_in_list.id>=bill_in.r_  AND bill_in_list.id<=bill_in._r AND bill_in_list.bill_in_sku=".$sku." 
 		";
 		$se=$this->metMnSql($sql,["head","list"]);
-		//print_r($se);
+		print_r($se);
 		if($se["result"]){
 			$re["head"]=$se["data"]["head"];
 			$re["list"]=$se["data"]["list"];
@@ -263,7 +263,7 @@ class bills_move extends bills{
 		}
 		echo '</table></form>';
 			$count=(isset($sea["count"]))?$sea["count"]:0;
-			$this->page($count,$this->per,$this->page,"?a=bills&amp;c=ret&amp;page=");
+			$this->page($count,$this->per,$this->page,"?a=bills&amp;c=move&amp;page=");
 	}
 	private function getAllBillsMove():array{
 		$re=[];

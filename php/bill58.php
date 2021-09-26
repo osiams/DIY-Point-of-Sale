@@ -73,6 +73,11 @@ class bill58 extends main{
 			}else if($_GET["b"]=="viewmove"&&isset($_GET["sku"])
 				&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku"])){
 				$this->viewMove($_GET["sku"]);
+			}else if($_GET["b"]=="viewclaim"&&isset($_GET["sku"])
+				&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku"])){
+				require_once("php/class/barcode.php");
+				$this->bc=new barcode($this->font_file2);
+				$this->viewClaim($_GET["sku"]);
 			}else if($_GET["b"]=="viewmmm"&&isset($_GET["sku"])
 				&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku"])){
 				require_once("php/class/barcode.php");
@@ -168,6 +173,11 @@ class bill58 extends main{
 		}else if(isset($_POST["b"])&&$_POST["b"]=="print_ret"
 			&&(isset($_POST["sku"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["sku"]))){
 			$this->retPrint($_POST["sku"]);
+		}else if(isset($_POST["b"])&&$_POST["b"]=="print_claim"
+			&&(isset($_POST["sku"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["sku"]))){
+			require_once("php/class/barcode.php");
+			$this->bc=new barcode($this->font_file);
+			$this->claimPrint($_POST["sku"]);
 		}else if(isset($_POST["b"])&&$_POST["b"]=="print_pay"
 			&&(isset($_POST["sku"])&&preg_match("/^[0-9]{1,25}$/",$_POST["sku"]))){
 			$this->payPrint($_POST["sku"]);
@@ -1294,6 +1304,138 @@ class bill58 extends main{
 		//print_r($se);
 		if($se["result"]&&isset($se["data"]["head"][0])){
 			$re["head"]=$se["data"]["head"][0];
+			$re["list"]=$se["data"]["list"];
+		}
+		return $re;
+	}
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	private function viewClaim(string $sku){
+		$tm0=$this->claimSetTm0($sku);
+		$im=$this->createImg($tm0,"view");
+		header('Content-Type: image/png');
+		imagepng($im);
+		imagedestroy($im);
+	}
+	protected function claimSetTm0(string $sku):array{
+		$re=[];
+		$se=$this->getClaimBillData($sku);
+		$zx=1.5;
+		//print_r($se);
+		if(count($se["list"])>0&&count($se["head"])>0){
+			$l=explode("\n",$this->receipt->receipt58->sale->head);
+			for($i=0;$i<count($l);$i++){
+				$re["shop_".$i]=[["t"=>$l[$i],"lcr"=>"l"]];
+			}
+			$re["usertime"]=[
+				["t"=>" พ:".$se["head"][0]["user_sku"]." " ,"lcr"=>"l"],
+				["t"=>substr($se["head"][0]["date_reg"],0,-3)." " ,"lcr"=>"r"]
+			];
+			$send_to="เลขที่ ".$se["head"][0]["sku"]." ถึง ".$se["head"][0]["pn_name"];
+			$sendto=$this->bc->cutWord2(0,$this->font_size,$this->font_file,$send_to,384*$zx);
+			for($j=0;$j<count($sendto);$j++){
+				$re["sendto_".$j]=[["t"=>$sendto[$j] ,"lcr"=>"l"]];
+			}
+			//$re["rt"]=[["t"=>"เลขที่ ".$se["head"][0]["sku"]." " ,"lcr"=>"c"]];
+			$re["recv"]=[["t"=>"ใบเคลมสินค้า","lcr"=>"c"]];
+			$re["mnh_list"]=[["t"=>"--------------------------------------------------------------------------------","lcr"=>"l"]];
+			$n_list=0;
+			$sum=0;
+			for($i=0;$i<count($se["list"]);$i++){
+				$n_list+=1;
+				$pd_name=$this->bc->cutWord2(0,$this->font_size,$this->font_file,$se["list"][$i]["pd_name"],384*$zx);
+				for($j=0;$j<count($pd_name);$j++){
+					$re["mlist_".$i."_".$j]=[
+					["t"=>$pd_name[$j],"lcr"=>"l"]
+
+				];
+				}
+				/*$re["mlist_".$i]=[
+					["t"=>$se["list"][$i]["pd_name"],"lcr"=>"l"]
+
+				];*/
+				$re["mnlist_".$i]=[
+					["t"=>$se["list"][$i]["pd_barcode"],"lcr"=>"l"],
+					["t"=>$se["list"][$i]["sum_n"]."".($se["list"][$i]["s_type"]!="p"?"".number_format(($se["list"][$i]["sum_n_wlv"]*1),3,".",","):"")." ".$se["list"][$i]["unit_name"]."","lcr"=>"r"]
+				];
+				$re["mn_list_".$i]=[
+					["t"=>"--------------------------------------------------------------------------------","lcr"=>"l"]
+				];
+			}
+			$re["total"]=[
+				["t"=>"รวม ".$n_list." รายการ","lcr"=>"c"]
+			];
+			for($i=0;$i<$this->printer->feed;$i++){
+				$re["line_feed_".$i]=[["t"=>" ","lcr"=>"l"]];
+			}
+		}
+		//print_r($re);
+		return $re;
+	}
+	protected function claimPrint(string $sku){
+		$re=["result"=>false,"message_error"=>"","sku"=>$sku];
+		try {
+			if($this->checkNP("exists")){
+				if($this->checkNP("writable")){
+					$printer = new Printer($this->fnConect());	
+					$this->printLogo($printer);
+					$foo = new GdEscposImage();
+					$tm0=$this->claimSetTm0($sku);
+					$imr=$this->createImg($tm0);
+					$foo -> readImageFromGdResource($imr);
+					$this->pulse($printer);
+					$printer->bitImageColumnFormat($foo);
+					$this->printCut($printer);
+					$printer -> close();
+					$re["result"]=true;
+				}else{
+					throw new Exception("ไมสามารถเขียนไฟล์ได้ \n".$this->usb." \nโปรดตรวจสอบ\nการตั้งค่าผู้ใช้ในกลุ่มเครื่องพิมพ์");
+				}
+			}else{
+				throw new Exception("ไม่พบที่อยู่ปลายทาง \n".$this->usb." \nโปรดตรวจสอบการเชื่อมต่ออุปกรณ์ \nหรือการตั้งค่าที่อยู่ของเครื่องพิมพ์");
+			}
+		}catch (Exception $e) {
+			$re["message_error"]=$e->getMessage();
+		}
+		header('Content-type: application/json');
+		echo json_encode($re);
+	}
+	private function getClaimBillData(string $sku):array{
+		$re=["list"=>[],"head"=>[]];
+		$sku=$this->getStringSqlSet($sku);
+		$sql=[];
+		$sql["head"]="SELECT 
+					`bill_claim`.`date_reg`,`bill_claim`.`sku` AS `sku`,
+					`partner_ref`.`name` AS `pn_name`,
+					`user_ref`.`sku` AS `user_sku`
+			FROM `bill_claim`
+			LEFT JOIN `partner_ref`
+			ON(`bill_claim`.`pn_key`=`partner_ref`.`sku_key`)
+			LEFT JOIN `user_ref`
+			ON(`bill_claim`.`user`=`user_ref`.`sku_key`)
+			WHERE bill_claim.sku=".$sku." 
+		";
+		$sql["list"]="
+			SELECT  
+				`product_ref`.`sku_root`,
+				`product_ref`.`name` AS `pd_name`	,`product_ref`.`barcode`	AS `pd_barcode`,
+				IFNULL(`bill_in_list`.`s_type`,'') AS `s_type`,
+				SUM(`bill_claim_list`.`n`) AS `sum_n`,
+				SUM(`bill_claim_list`.`n_wlv`) AS `sum_n_wlv`,
+				`unit_ref`.`name` AS `unit_name`
+			FROM `bill_claim_list`
+			LEFT JOIN `bill_in_list`
+			ON(`bill_claim_list`.`bill_in_list_id`=`bill_in_list`.`id`)
+			LEFT JOIN `product_ref`
+			ON(`bill_in_list`.`product_sku_key`=`product_ref`.`sku_key`)
+			LEFT JOIN `unit_ref`
+			ON(`bill_in_list`.`unit_sku_key`=`unit_ref`.`sku_key`)
+			WHERE `bill_claim_list`.`bill_claim_id`=".$sku." AND (`bill_claim_list`.`claim_stat`='s' OR `bill_claim_list`.`claim_stat`='r')
+			GROUP BY `bill_in_list`.`product_sku_root` ;
+		";
+		$se=$this->metMnSql($sql,["head","list"]);
+		//print_r($se);
+		if($se["result"]){
+			$re["head"]=$se["data"]["head"];
 			$re["list"]=$se["data"]["list"];
 		}
 		return $re;

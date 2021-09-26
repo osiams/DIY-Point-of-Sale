@@ -18,9 +18,9 @@
 		"status":1,
 		"name":"เครื่องพิมพ์ WIFI",
 		"width":58,
-		"address":"192.168.1.99:9100",
-		"cut":1,
-		"pulse":1,
+		"address":"192.168.1.97:9100",
+		"cut":0,
+		"pulse":0,
 		"feed":0,	
 		"_ucda":"",
 		"_ucdp":0

@@ -4,14 +4,18 @@ class bills_in extends bills{
 		parent::__construct();
 		$this->per=10;
 		$this->page=1;
-		$this->form_py=null;
+		$this->form_py=null;	
 	}
 	public function run(){
+		$this->loadClass("php/class/bill_in.php");
+		$this->Bi=new bill_in_class();
 		$this->page=$this->setPageR();
 		$q=["edit","fill","view","delete"];
-		$this->addDir("?a=bills&amp;c=in","ใบนำเข้าสินค้า");
+		$this->Bi->setInType();
+		$this->addDir($this->Bi->ita[$this->Bi->in_type]["qurey"],$this->Bi->ita[$this->Bi->in_type]["text"]);
 		if(isset($_GET["b"])&&in_array($_GET["b"],$q)){
 			//$this->getSelect();
+
 			$t=$_GET["b"];
 			if($t=="fill"||$t=="edit"){
 				$file = "php/form_selects.php";
@@ -22,12 +26,21 @@ class bills_in extends bills{
 				}
 			}
 			if($t=="fill"){
-				$q=["po","partner"];
+				$q=["po","partner","claim"];
 				if(isset($_GET["pn_partner"])&&in_array($_GET["pn_partner"],$q)){
 					if($_GET["pn_partner"]=="partner"
 						&&isset($_GET["sku_root"])
 						&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku_root"])){
 						$this->billsinPage("partner",$_GET["sku_root"]);
+					}else if($_GET["pn_partner"]=="claim"
+						&&isset($_GET["sku_root"])
+						&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku_root"])){
+						$file = "php/bill_in_claim.php";
+						require($file);		
+						$d=new bill_in_claim();
+						$d->dir=$this->dir;
+						$d->bill_claim_sku=$_GET["sku_root"];
+						$d->run();
 					}else{
 						$this->billsinPage();
 					}
@@ -46,6 +59,8 @@ class bills_in extends bills{
 		}
 	}
 	public function fetch(){
+		$this->loadClass($this->bill_in_class);
+		$this->Bi=new bill_in_class();
 		if(isset($_POST["b"])&&$_POST["b"]=="fill"){
 			$this->fetchBillsinFill();
 		}else if(isset($_POST["b"])&&$_POST["b"]=="edit"){
@@ -84,6 +99,7 @@ class bills_in extends bills{
 	private function fetchBillsinUpdate():array{
 		$note=$this->getStringSqlSet($_POST["note"]);
 		$sku=$this->getStringSqlSet($_POST["sku"]);
+		$pn=$this->getStringSqlSet($_POST["pn"]);
 		$user=$this->getStringSqlSet($_SESSION["sku_root"]);
 		$bill_no=$this->getStringSqlSet($_POST["bill_no"]);
 		$bill_type=$this->getStringSqlSet($_POST["bill_type"]);
@@ -125,7 +141,8 @@ class bills_in extends bills{
 			@note:=".$note.",
 			@n:=".$n.",
 			@sum:=".$sum.",
-			@sum:=".$sum.",
+			@pn_root:=".$pn.",
+			@pn_key:='',
 			@TEST:='',
 			@ischange:=0,
 			@ischange_lot:='',
@@ -187,10 +204,17 @@ class bills_in extends bills{
 								AND IF(bill_in_list.s_type='p',bill_in_list.n,bill_in_list.n_wlv)=IF(bill_in_list.s_type='p',bill_in_list.balance,bill_in_list.balance_wlv)
 								LIMIT 1 ;
 						ELSEIF JSON_VALUE(@jspd,CONCAT('$[',i,'].act'))='4' THEN
-							INSERT  INTO `bill_in_list`  (`stkey`,`stroot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,`name`,`n`,balance,`sum`,`unit_sku_key`,`unit_sku_root`) 
+							SET @pn_key=(SELECT sku_key FROM  partner WHERE sku_root=@pn_root);
+							INSERT  INTO `bill_in_list`  (
+								`stkey`,`stroot`,`bill_in_sku`,`product_sku_key`,`product_sku_root`,`name`,`s_type`,
+								`lot_root`				,`pn_root`				,`pn_key`,
+								`n`	,balance	,`n_wlv`,`balance_wlv`,
+								`sum`,
+								`unit_sku_key`,`unit_sku_root`) 
 							SELECT  @stkey,'proot',@sku,`product`.`sku_key`,`product`.`sku_root`,
 							JSON_VALUE(@jspd,CONCAT('$[',i,'].name')),
 							`product`.`s_type`,
+							@sku,@pn_root,@pn_key,
 							IF(`product`.`s_type`='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
 							IF(`product`.`s_type`='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
 							IF(`product`.`s_type`!='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
@@ -325,11 +349,12 @@ class bills_in extends bills{
 				FOR i IN 0..(@pd_length-1) DO
 					INSERT  INTO `bill_in_list`  (
 						`stkey`				,`stroot`		,`bill_in_sku`			,`product_sku_key`		,`product_sku_root`,
-						`name`				,`s_type`		,`n`						,balance						,`n_wlv`,
+						`name`				,`s_type`		,`lot_root`				,`pn_root`				,`pn_key`						,`n`						,balance						,`n_wlv`,
 						`balance_wlv`	,`sum`			,`unit_sku_key`		,`unit_sku_root`) 
 					SELECT @stkey, 'proot',@sku,`product`.`sku_key`,`product`.`sku_root`,
 						JSON_VALUE(@jspd,CONCAT('$[',i,'].name')),
 						`product`.`s_type`,
+						@sku,@pn_root,@pn_key,
 						IF(`product`.`s_type`='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
 						IF(`product`.`s_type`='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
 						IF(`product`.`s_type`!='p',JSON_VALUE(@jspd,CONCAT('$[',i,'].n')),NULL),
@@ -455,7 +480,8 @@ class bills_in extends bills{
 		if(!$se["result"]){
 			$error=$se["message_error"];
 		}else{
-			$dt=$this->getDataView1($_POST["sku"]);
+			$te=$this->getDataView1($_POST["sku"]);
+			$dt=$te["pd"];
 			//echo $_POST["sku"];
 			//print_r($dt);
 				if(count($dt)>0){
@@ -484,48 +510,6 @@ class bills_in extends bills{
 				}
 		}
 	}
-	private function writeJsDataEdit(array $dt,bool $editable=true,string $partner=null,string $id=null,string $product_list_id=null):void{
-		$tid=($id!=null)?"\"".$id."\"":"null";
-		$pid=($product_list_id!=null)?"\"".$product_list_id."\"":"null";
-		$br="\n";
-		$edb=($editable)?"true":"false";
-		echo '<script type="text/javascript">Bi.insertData([';
-		for($i=0;$i<count($dt);$i++){
-			$name=$this->jsD((string) $dt[$i]["name"]);
-			$unit=$this->jsD((string) $dt[$i]["unit_name"]);
-			echo  $br.'{"name":"'.$name.'","n":"'.intval($dt[$i]["n"]).'","balance":"'.intval($dt[$i]["balance"]).'","sum":"'.number_format($dt[$i]["sum"],2,".","").'","bcsku":"'.$dt[$i]["barcode"].' , '.$dt[$i]["product_sku"].'","sku_root":"'.$dt[$i]["sku_root"].'","unit":"'.$unit.'","s_type":"'.$dt[$i]["s_type"].'","price":"'.$dt[$i]["price"].'","cost":"'.$dt[$i]["cost"].'","vat_p":"'.number_format($dt[$i]["vat_p"],2,".","").'"},';
-		}
-		echo '],'.$edb.','.$tid.','.$pid.');';
-		if($partner!=null){
-			echo 'Bi.partner="'.$partner.'";';
-		}
-		echo 'Fsl.selectPartnerListValue("product","'.$id.'","'.$product_list_id.'");';
-		echo '</script>';
-	}
-	private function writeJsDataEditPrompt(array $dt,bool $editable=true,string $partner=null,string $id=null,string $product_list_id=null):void{
-		$tid=($id!=null)?"\"".$id."\"":"null";
-		$pid=($product_list_id!=null)?"\"".$product_list_id."\"":"null";
-		$br="\n";
-		$edb=($editable)?"true":"false";
-		echo '<script type="text/javascript">Bi.insertDataPrompt([';
-		for($i=0;$i<count($dt);$i++){
-			$name=$this->jsD((string) $dt[$i]["name"]);
-			$unit=$this->jsD((string) $dt[$i]["unit_name"]);
-			echo  $br.'{"name":"'.$name.'","n":"'.intval($dt[$i]["n"]).'","balance":"'.intval($dt[$i]["balance"]).'","sum":"'.number_format($dt[$i]["sum"],2,".","").'","bcsku":"'.$dt[$i]["barcode"].' , '.$dt[$i]["product_sku"].'","sku_root":"'.$dt[$i]["sku_root"].'","unit":"'.$unit.'","s_type":"'.$dt[$i]["s_type"].'","price":"'.$dt[$i]["price"].'","cost":"'.$dt[$i]["cost"].'","vat_p":"'.number_format($dt[$i]["vat_p"],2,".","").'"},';
-		}
-		echo '],'.$edb.','.$tid.','.$pid.');';
-		if($partner!=null){
-			echo 'Bi.partner="'.$partner.'";';
-		}
-		echo 'Fsl.selectPartnerListValue("product","'.$id.'","'.$product_list_id.'");';
-		echo '</script>';
-	}
-	private function jsD(string  $t):string{
-		$t=str_replace('\\','\\\\',$t);
-		$t=str_replace('"','\"',$t);
-		$t=str_replace("\n","",$t);
-		return $t;
-	}
 	private function writeContentInBillsinEdit(string $sku,array $dt,bool $editable=true):void{
 		//print_r($dt);
 		$gallery=$this->propToFromValue($dt[0]["icon_arr"]);
@@ -550,7 +534,7 @@ class bills_in extends bills{
 			<input type="hidden"  name="pn" value="'.$dt[0]["partner_sku_root"].'" />
 			<div class="billinhead">
 				<div>
-					<p><span>ใบสั่งซื้อ/คู่ค้า</span></p>
+					<p><span>ใบสั่งซื้อ/คู่ค้า/เคลมสินค้าเข้า</span></p>
 					<input name="pn_name" type="text" value="'.htmlspecialchars($dt[0]["partner_name"]).'" readonly/>
 				</div>
 				<div>
@@ -624,7 +608,7 @@ class bills_in extends bills{
 		$id=$this->key("key",7);
 		$this->form_pd=new form_selects("product","สินค้า","billsin",$id,$product_list_id);	
 		$this->form_pd->writeForm("billsin");	
-		$this->writeJsDataEdit($dt,$editable,$dt[0]["partner_sku_root"],$id,$product_list_id);
+		$this->Bi->writeJsDataEdit($dt,$editable,$dt[0]["partner_sku_root"],$id,$product_list_id);
 		
 		$sku_root=$dt[0]["partner_sku_root"];
 		$pn=$this->getPartnerAll();
@@ -635,7 +619,7 @@ class bills_in extends bills{
 				$pd[$i]["balance"]=0;
 				$pd[$i]["sum"]=0;
 			}
-			$this->writeJsDataEditPrompt($pd,true,$sku_root,$id,$product_list_id);
+			$this->Bi->writeJsDataEditPrompt($pd,true,$sku_root,$id,$product_list_id);
 		}
 		$gal_id=$this->key("key",7);
 		$this->gall=new gallery("bill_in","sku",$dt[0]["sku"],"billsin",$gal_id,$gallery_list_id,$gallery_gl_list_id,"Bi.icon");	
@@ -643,48 +627,12 @@ class bills_in extends bills{
 		echo '
 		<input type="button" onclick="Bi.billsinSumit(true)" value="แก้ไข นำเข้าสินค้า" /></form>';
 	}
-	private function billsinCheck(string $type="insert"):array{
-		$re=["result"=>false,"message_error"=>""];
-		$se=$this->checkSet("bill_in",["post"=>["bill_no","bill_type"]],"post");
-		if(!isset($_POST["product"])){
-			$re["message_error"]="ไม่มีสินค้าที่เลือก";
-		}else if(empty(trim($_POST["bill_no"]))){
-			$re["message_error"]="เลขที่ใบเสร็จต้องไม่ว่าง";
-		}else if(gettype(json_decode($_POST["product"],true))!="array"){
-			$re["message_error"]="สินค้าที่เลือกหรือข้อมูลที่ส่งมาไม่อยู่ในรูปแบบ";
-		}else if(strlen($_POST["note"])>$this->fills["note"]["length_value"]-3){
-			$re["message_error"]="หมายเหตุ ยาวเกินไป";
-		}else if(isset($_POST["pn"])&&!preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_POST["pn"])){
-			$re["message_error"]="ใบนำเข้าหรือ คู่ค้าไม่ถูกต้อง";
-		}else if(isset($_POST["bill_date"])&&!preg_match("/^([1-9])[0-9]{3}-(0|1)[0-9]-(0|1|2|3)[0-9]$/",$_POST["bill_date"])){
-			$re["message_error"]="วันที่ ไม่อยู่ในรูปแบบ  yyy-mm-dd";
-		}/*else if(
-			!isset($_POST["payu"])
-			||
-			(
-				isset($_POST["payu"]) 
-				&& 
-				!is_object(json_decode ($_POST["payu"]))
-			)
-		){
-			$re["message_error"]="รูปแบบการชำระที่ส่งมาไม่ถูกต้อง";
-		}*/else if(!$se["result"]){
-			$re["message_error"]=$se["message_error"];
-		}else if(!isset($_POST["sku"])&&$type=="edit"){
-			$re["message_error"]="ไม่พบใบนำเข้าที่ส่งมา";
-		}else if(isset($_POST["sku"])&&strlen(trim($_POST["sku"]))==0&&$type=="edit"){
-			$re["message_error"]="รหัสชี่ใบนำเข้าว่าง";
-		}else{
-			$re["result"]=true;
-		}
-		return $re;
-	}
 	private function billsinPage(string $group="",string $sku_root=""){
 		$this->addDir("?a=bills&amp;b=fill&amp;c=in","นำเข้าสินค้า ");
-		$this->pageHead(["title"=>"นำเข้า สินค้า DIYPOS","js"=>["billsin","Bi","form_selects","Fsl","fileupload","Ful"],"css"=>["billsin","form_selects","fileupload"],"run"=>["Fsl"]]);
+		$this->pageHead(["title"=>htmlspecialchars($this->Bi->ita[$this->Bi->in_type]["text"])." DIYPOS","js"=>["billsin","Bi","form_selects","Fsl","fileupload","Ful"],"css"=>["billsin","form_selects","fileupload"],"run"=>["Fsl"]]);
 			echo '<div class="content">
 				<div class="form">
-					<h1 class="c">นำเข้าสินค้า</h1>';
+					<h1 class="c"> สร้าง '.htmlspecialchars($this->Bi->ita[$this->Bi->in_type]["text"]).'</h1>';
 			$this->writeContentInBillsin($group,$sku_root);
 			echo '<br /><p class="c">
 				
@@ -694,6 +642,7 @@ class bills_in extends bills{
 	}
 	private function writeContentInBillsin(string $group="",string $sku_root=""):void{
 		$pn=$this->getPartnerAll();	
+		$cp=$this->getClaimAll();	
 		$payu=(isset($_POST["payu"]))?htmlspecialchars($_POST["payu"]):",defaultroot,";
 		$product=(isset($_POST["product"]))?htmlspecialchars($_POST["product"]):"";
 		$payu_list_id=$this->key("key",7);
@@ -707,7 +656,7 @@ class bills_in extends bills{
 			<input type="hidden" name="po_partner" value="'.$po_partner.'" />
 			<div class="billinhead">
 				<div>
-					<p><span>ใบสั่งซื้อ/คู่ค้า</span></p>
+					<p><span>ใบสั่งซื้อ/คู่ค้า/เคลมสินค้าเข้า</span></p>
 					<select name="pn" onchange="Bi.loadProduct(this)">
 						<optgroup label="ใบสั่งซื้อ">
 						</optgroup>
@@ -716,9 +665,18 @@ class bills_in extends bills{
 							echo '<option data-group="partner" value=""></option>';
 							for($i=0;$i<count($pn);$i++){
 								$st=($pn[$i]["sku_root"]==$sku_root)?" selected":"";
-								echo '<option data-group="partner" value="'.$pn[$i]["sku_root"].'"'.$st.'>'.htmlspecialchars($pn[$i]["name"]).'</option>';
+								echo '
+								<option data-group="partner" value="'.$pn[$i]["sku_root"].'"'.$st.'>'.htmlspecialchars($pn[$i]["name"]).'</option>';
 							}
 		echo '		</optgroup>
+						<optgroup label="ใบเคลมสินค้า">';
+							for($i=0;$i<count($cp);$i++){
+								$st=($cp[$i]["bill_sku"]==$sku_root)?" selected":"";
+								$lg=mb_strlen($cp[$i]["pn_name"])>20?"...":"";
+								echo '
+								<option data-group="claim" value="'.$cp[$i]["bill_sku"].'"'.$st.'>#'.htmlspecialchars($cp[$i]["bill_sku"]).' / '.mb_substr($cp[$i]["pn_name"],0,20).''.$lg.'</option>';
+							}
+		echo '		</optgroup>				
 					</select>
 				</div>
 				<div>
@@ -806,21 +764,21 @@ class bills_in extends bills{
 				$pd[$i]["balance"]=0;
 				$pd[$i]["sum"]=0;
 			}
-			$this->writeJsDataEdit($pd,true,$sku_root,$id,$product_list_id);
+			$this->Bi->writeJsDataEdit($pd,false,$sku_root,$id,$product_list_id);
 		}
 	}
 	private function pageBillsIn():void{
-		$this->pageHead(["title"=>"ใบนำเข้าสินค้า DIYPOS","js"=>["billsin","Bi"],"css"=>["billsin"]]);
+		$this->pageHead(["title"=>htmlspecialchars($this->Bi->ita[$this->Bi->in_type]["text"]),"js"=>["billsin","Bi"],"css"=>["billsin"]]);
 		echo '<div class="content">
 				<div class="form">
-					<h1 class="c">ใบนำเข้าสินค้า</h1>';
+					<h1 class="c">'.htmlspecialchars($this->Bi->ita[$this->Bi->in_type]["text"]).'</h1>';
 			$this->writeContentBillsIn();
 			echo '</div></div>';
 		$this->pageFoot();
 	}
 	private function writeContentBillsIn():void{
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
-		$sea=$this->getAllBillsIn();
+		$sea=$this->getAllBillsIn($this->Bi->in_type);
 		$se=$sea["row"];
 		echo '<form class="form100" name="billsin" method="post">
 			<input type="hidden" name="sku" value="" />
@@ -850,12 +808,16 @@ class bills_in extends bills{
 				$tx=$this->billNote("b",''.$se[$i]["note"],'');
 			}
 			$sn=mb_substr(trim($se[$i]["partner_name"]),0,15);
+			$in_type="ซื้อเข้า";
+			if($se[$i]["in_type"]=="cl"){
+				$in_type="เคลมเข้า";
+			}
 			echo '<tr'.$cm.'><td>'.$se[$i]["id"].'</td>
 				<td class="l"><div class="img48"><img src="img/gallery/64x64_'.$se[$i]["partner_icon"].'"  alt="'.$sn.'"  onerror="this.src=\'img/pos/64x64_null.png\'" /></div></td>
 				<td class="l">
 					<div>
 						<a href="?a=partner&b=details&sku_root='.$se[$i]["pn_root"].'">'.htmlspecialchars($se[$i]["partner_name"]).'</a>
-						<span><a href="?a=bills&amp;b=view&amp;c=in&amp;sku='.$se[$i]["sku"].'">🧾 '.$se[$i]["bill_no"].'</a></span>
+						<span> '.$in_type.' <a href="?a=bills&amp;b=view&amp;c=in&amp;in_type='.$this->Bi->in_type.'&amp;sku='.$se[$i]["sku"].'">🧾 '.$se[$i]["bill_no"].'</a></span>
 					</div>
 					<div>'.$se[$i]["user_name"].' '.substr($se[$i]["date_reg"],0,-3).'</div>
 				</td>
@@ -874,7 +836,7 @@ class bills_in extends bills{
 		</form>';
 		$count=(isset($sea["count"]))?$sea["count"]:0;
 		$this->page($count,$this->per,$this->page,"?a=bills&amp;c=in&amp;page=");
-		echo '<br /><input type="button" value="นำเข้า สินค้า" onclick="location.href=\'?a=bills&b=fill&c=in\'" />';
+		echo '<br /><input type="button" value="สร้าง '.htmlspecialchars($this->Bi->ita[$this->Bi->in_type]["text"]).'" onclick="location.href=\'?a=bills&b=fill&c=in&in_type='.$this->Bi->in_type.'\'" />';
 	}
 	private function getPartnerAll():array{
 		$re=[];
@@ -888,12 +850,31 @@ class bills_in extends bills{
 		}
 		return $re;
 	}
-	private function getAllBillsIn():array{
+	private function getClaimAll():array{
 		$re=[];
 		$sql=[];
-		$sql["count"]="SELECT @count:=COUNT(*) FROM bill_in WHERE bill_in.in_type='b' ";
+		$sql["get"]="
+			SELECT `bill_claim`.`sku` AS `bill_sku`,
+				`partner`.`name` AS `pn_name`
+			FROM `bill_claim` 
+			LEFT JOIN `partner`
+			ON(`bill_claim`.`pn_root`=`partner`.`sku_root`)
+			WHERE `bill_claim`.`claim_stat`='s' 
+			ORDER BY `partner`.`sku` 
+		";
+		$se=$this->metMnSql($sql,["get"]);
+		if($se["result"]){
+			$re=$se["data"]["get"];
+		}
+		return $re;
+	}
+	private function getAllBillsIn(string $in_type="b"):array{
+		$re=[];
+		$sql=[];
+		$sql["count"]="SELECT @count:=COUNT(*) FROM bill_in WHERE bill_in.in_type='".$in_type."' ";
 		$sql["get"]="SELECT  `bill_in`.`id`  AS  `id`,`bill_in`.`in_type`  AS  `in_type`,`bill_in`.`sku`  AS  `sku`,IFNULL(`bill_in`.`bill`,bill_in.id)  AS  `bill`,
 				`bill_in`.`bill_no`  AS  `bill_no`,`bill_in`.`pn_root`  AS  `pn_root`,IFNULL(`bill_in`.`note`,'')  AS  `note`, 
+				`bill_in`.`in_type`  AS  `in_type`,
 				SUM(`bill_in`.`n`) AS `n`, SUM(`bill_in`.`sum`) AS `sum`, `bill_in`.`date_reg` AS `date_reg`,
 				CONCAT(`user_ref`.`name`,' ', `user_ref`.`lastname`) AS `user_name`,
 				`partner_ref`.`name` AS `partner_name`,`partner_ref`.`icon` AS `partner_icon`
@@ -902,7 +883,7 @@ class bills_in extends bills{
 			ON( `bill_in`.`user`=`user_ref`.`sku_key`)
 			LEFT JOIN `partner_ref`
 			ON (`bill_in`.`pn_key`=`partner_ref`.`sku_key`)
-			WHERE bill_in.in_type='b' 
+			WHERE bill_in.in_type='".$in_type."'
 			GROUP BY bill_in.date_reg
 			ORDER BY `bill_in`.`id` DESC LIMIT ".(($this->page-1)*$this->per).",".$this->per."";
 		$sql["result"]="SELECT @count AS count";	
@@ -929,8 +910,10 @@ class bills_in extends bills{
 			$this->billsinPage();
 		}
 	}
-	private function viewPageDefault(string $error,string $sku=null):void{	
-		$dt=$this->getDataView1($sku);
+	private function viewPageDefault(string $error,string $sku=null):void{
+		$se=$this->getDataView1($sku);
+		$dt=$se["pd"];
+		$it=$se["it"];
 		if(count($dt)>0){
 			$tx="";
 			$c="in";
@@ -946,6 +929,9 @@ class bills_in extends bills{
 			}else if($dt[0]["in_type"]=="b"){
 				$tx=$this->billNote("b",''.$dt[0]["note"],'');
 				$c="in";
+			}else if($dt[0]["in_type"]=="cl"){
+				$tx=$this->billNote("cl",''.$dt[0]["note"],'');
+				$c="claim";
 			}
 			$txdir=htmlspecialchars($dt[0]["partner_name"]." 🧾".$dt[0]["bill_no"]);
 			if(count($dt)>0){
@@ -964,7 +950,7 @@ class bills_in extends bills{
 					$tx='<a href="?a=bills&amp;b=view&amp;c='.$c.'&amp;sku='.$key.'">'.$tx.'</a>';
 					$aut='<div class="warning">นำเข้าอัตโนมัติ จาก '.$tx.'</div>';
 				}
-				$this->writeContentVeiew($dt,$aut);
+				$this->writeContentVeiew($dt,$it,$aut);
 			}else{
 				echo '<div class="error">ไม่พบข้อมูล</div>';
 			}
@@ -976,61 +962,74 @@ class bills_in extends bills{
 			$this->pageFoot();
 		}
 	}
-	private function writeContentVeiew(array $dt,string $aut=""):void{
-		//print_r($dt);
+	private function writeContentVeiew(array $dt,array $it,string $aut=""):void{
+		//print_r($it);
 		$edd=(isset($_GET["ed"]))?$_GET["ed"]:"";
 		$icon_arr=json_decode($dt[0]["icon_arr"]);
+		$in_type=$it["proot"];
+		$st="คลังสินค้าพร้อมขาย";
+		if($dt[0]["in_type"]=="cl"){
+			$in_type=$it["ceroot"];
+		}
 		echo '<div style="max-width:800px;">
 			'.$aut.'
 			<table class="page r">
 				<tr>
 					<td class="c">
-						<h2>ใบนำเข้าสินค้า</h2>
+						<h2>ใบนำเข้าสินค้า<br /><span class="size0_8">('.$in_type.')</span></h2>
 						<div class="billinview">
 							<div>
 								<div><img src="img/gallery/64x64_'.$dt[0]["partner_icon"].'" onerror="this.src=\'img/pos/64x64_null.png\'" /></div>
 								<div><a href="?a=partner&amp;b=details&amp;sku_root='.$dt[0]["partner_sku_root"].'">'.$dt[0]["partner_name"].'</a><br />🧾'.$dt[0]["bill_no"].'</div>
 							</div>
-							<div class="r">บันทึกโดย : '.$dt[0]["user_name"].' วันที่ '.$dt[0]["date_reg"].'
+							<div class="r">';
+		if($dt[0]["bill_po_sku"]!=""){
+			echo '					ใบเคลมอ้างอิง : <a href="?a=partner&amp;b=details&amp;sku_root='.$dt[0]["partner_sku_root"].'&amp;bb=partner_details_claimsend&amp;viewbill=000000014">'.$dt[0]["bill_po_sku"].'</a><br />';
+		}
+		echo '						บันทึกโดย : '.$dt[0]["user_name"].' วันที่ '.$dt[0]["date_reg"].'
 								<br />⏳ผ่านมาแล้ว '.$this->ago(time()-strtotime($dt[0]["date_reg"])).'
 							</div>
 						</div>
 					</td>
 				</tr>';
 		echo '<tr><td>
-			<table  id="billinlist" class="l"><tr>
+			<table  id="billinlist" class="l">
+			<caption>ในคลังสินค้า <u>'.htmlspecialchars($in_type).'</u></caption>
+			<tr>
 				<th>ที่</th>
 				<th>ป.</th>
 				<th>รหัสแท่ง</th><th>สินค้า</th><th>จำนวน</th>
-				<th>คงเเหลือ<sup class="q" onclick="M.tooltups(this,\'นับเฉพาะ ในคลังสินค้าพร้อมขาย หมายเหตุ 100/105 >>100 = จำนวนในงวดนี้ , 105 = รวมจำนวนทั้งหมด (รวมงวดอื่นด้วย)\')">?</sup></th>
+				<th>คงเเหลือ<sup class="q" onclick="M.tooltups(this,\'นับเฉพาะ ในคลังสินค้า ['.htmlspecialchars($in_type).'] หมายเหตุ 100/105 >>100 = จำนวนในงวดนี้ , 105 = รวมจำนวนทั้งหมด (รวมงวดอื่นด้วย)\')">?</sup></th>
 				<th>หน่วย</th>
 			<th>ราคา / หน่วย</th><th>ราคารวม</th>
 			</tr>';
 		$tl=0;
-		for($i=0;$i<count($dt);$i++){
-			$pu=($dt[$i]["sum"]/$dt[$i]["n"]);
-			$putx=number_format($pu, 2, '.', ',');
-			$tl+=$dt[$i]["sum"];
-			$sumtx=number_format($dt[$i]["sum"], 2, '.', ',');
-			$cl=(($i%2)!=0)?" class=\"i2\"":"";
-			$bl=(($i%2)!=0)?"i2":"";
-			if($dt[$i]["product_sku_root"]==$edd){
-				$cl=' class="ed"';
+		if(count($dt)>0&&$dt[0]["sum"]>0){
+			for($i=0;$i<count($dt);$i++){
+				$pu=($dt[$i]["sum"]/$dt[$i]["n"]);
+				$putx=number_format($pu, 2, '.', ',');
+				$tl+=$dt[$i]["sum"];
+				$sumtx=number_format($dt[$i]["sum"], 2, '.', ',');
+				$cl=(($i%2)!=0)?" class=\"i2\"":"";
+				$bl=(($i%2)!=0)?"i2":"";
+				if($dt[$i]["product_sku_root"]==$edd){
+					$cl=' class="ed"';
+				}
+				echo '<tr'.$cl.'><td>'.($i+1).'</td>
+				<td class="pwlv">'.$this->s_type[$dt[$i]["s_type"]]["icon"].'</td>
+				<td class="l">'.$dt[$i]["barcode"].'</td>
+				<td><div><a href="?a=product&amp;b=details&amp;sku_root='.$dt[$i]["sku_root"].'">'.htmlspecialchars($dt[$i]["name"]).'</a></div>
+					<div>'.$dt[$i]["barcode"].'</div>
+				</td>
+				<td class="r"><div>'.($dt[$i]["n"]*1).'</div>
+					<div>'.$dt[$i]["unit_name"].'</div>
+				</td>
+				<td class="r billinbalance'.$bl.'">'.($dt[$i]["balance"]*1).'/<a href="?a=it&amp;b=view&amp;sku_root=proot&amp;c=lot&amp;pd='.$dt[$i]["product_sku_root"].'">'.($dt[$i]["sum_balance"]*1).'</a></td>
+				<td>'.$dt[$i]["unit_name"].'</td>
+				<td class="r">'.$putx.'</td>
+				<td class="r">'.$sumtx.'</td>
+				</tr>';
 			}
-			echo '<tr'.$cl.'><td>'.($i+1).'</td>
-			<td class="pwlv">'.$this->s_type[$dt[$i]["s_type"]]["icon"].'</td>
-			<td class="l">'.$dt[$i]["barcode"].'</td>
-			<td><div><a href="?a=product&amp;b=details&amp;sku_root='.$dt[$i]["sku_root"].'">'.htmlspecialchars($dt[$i]["name"]).'</a></div>
-				<div>'.$dt[$i]["barcode"].'</div>
-			</td>
-			<td class="r"><div>'.($dt[$i]["n"]*1).'</div>
-				<div>'.$dt[$i]["unit_name"].'</div>
-			</td>
-			<td class="r billinbalance'.$bl.'">'.($dt[$i]["balance"]*1).'/<a href="?a=it&amp;b=view&amp;sku_root=proot&amp;c=lot&amp;pd='.$dt[$i]["product_sku_root"].'">'.($dt[$i]["sum_balance"]*1).'</a></td>
-			<td>'.$dt[$i]["unit_name"].'</td>
-			<td class="r">'.$putx.'</td>
-			<td class="r">'.$sumtx.'</td>
-			</tr>';
 		}
 		$tltx=number_format($tl, 2, '.', ',');
 		echo '</table>
@@ -1052,13 +1051,22 @@ class bills_in extends bills{
 		$re=[];
 		$sql=[];
 		$sql["set"]="SELECT @date_reg:=(SELECT date_reg FROM bill_in WHERE sku=".$sku." ),
+			@it:=(SELECT `in_type` FROM `bill_in` WHERE `sku`=".$sku."),
+			@it_view:='proot',
 			@bill:=(SELECT IFNULL(bill,'') FROM bill_in WHERE sku=".$sku.")
+		";
+		$sql["st"]="
+			SELECT `sku_root`,`name` FROM `it` WHERE `sku_root` IN('proot','ceroot') ;
 		";
 		$sql["get"]="BEGIN NOT ATOMIC 
 			DECLARE r ROW (r__ INT,__r INT);
 			SELECT r_,_r INTO r.r__,r.__r FROM bill_in WHERE sku=@sku LIMIT 1;
+			IF @it = 'cl' THEN
+				SET @it_view='ceroot';
+			END IF;
 			SELECT  `bill_in`.`id`  AS  `id`,`bill_in`.`bill_no`  AS  `bill_no`,`bill_in`.`in_type`  AS  `in_type`,`bill_in`.`sku`  AS  `sku`,IFNULL(`bill_in`.`note`,'')  AS  `note`, 
 				`bill_in`.`bill`  AS  `bill`,`bill_in`.`n` AS `n_list`, `bill_in`.`sum` AS `sum`,`bill_in`.`bill_type`  AS  `bill_type`,
+				`bill_in`.`bill_po_sku`,
 				`bill_in`.`pn_root`  AS  `partner_sku_root`,IFNULL(`bill_in`.`note`,'')  AS  `note`,
 				IFNULL(`bill_in`.`icon_arr`,'[]') AS `icon_arr`,IFNULL(`bill_in`.`icon_gl`,'[]') AS `icon_gl`,  
 				`bill_in`.`bill_date` AS `bill_date`, `bill_in`.`date_reg` AS `date_reg`,
@@ -1073,9 +1081,9 @@ class bills_in extends bills{
 				product.price,product.cost
 			FROM `bill_in` 
 			LEFT JOIN bill_in_list 
-			ON(bill_in_list.id>=bill_in.r_ AND bill_in_list.id<=bill_in._r  AND bill_in.sku=bill_in_list.bill_in_sku AND bill_in_list.stroot='proot' )		
+			ON(bill_in_list.id>=bill_in.r_ AND bill_in_list.id<=bill_in._r  AND bill_in.sku=bill_in_list.bill_in_sku AND bill_in_list.stroot=@it_view)		
 			LEFT JOIN bill_in_list AS bill_in_list2
-			ON(IF(bill_in_list2.s_type='p',bill_in_list2.balance,bill_in_list2.balance_wlv)>0 AND bill_in_list.product_sku_root=bill_in_list2.product_sku_root  AND bill_in_list2.stroot='proot')			
+			ON(IF(bill_in_list2.s_type='p',bill_in_list2.balance,bill_in_list2.balance_wlv)>0 AND bill_in_list.product_sku_root=bill_in_list2.product_sku_root  AND bill_in_list2.stroot=@it_view)			
 			LEFT JOIN `user_ref`
 			ON( `bill_in`.`user`=`user_ref`.`sku_key`)
 			LEFT JOIN partner_ref
@@ -1086,13 +1094,20 @@ class bills_in extends bills{
 			ON(bill_in_list.product_sku_key=product_ref.sku_key)
 			LEFT JOIN product
 			ON(bill_in_list.product_sku_root=product.sku_root)
-			WHERE bill_in.in_type='b' AND bill_in.sku=".$sku."
+			WHERE  bill_in.sku=".$sku."
 			GROUP BY bill_in_list.product_sku_root
 			ORDER BY `bill_in_list`.`id` ASC ;
 		END;";
-		$se=$this->metMnSql($sql,["get"]);
+		$se=$this->metMnSql($sql,["st","get"]);
 		if($se["result"]){
-			$re=$se["data"]["get"];
+			$re=[
+				"pd"=>$se["data"]["get"],
+				"it"=>[]
+			];
+			for($i=0;$i<count($se["data"]["st"]);$i++){
+				$re["it"][$se["data"]["st"][$i]["sku_root"]]=$se["data"]["st"][$i]["name"];
+			}
+			
 		}
 		//print_r($se);
 		return $re;
@@ -1102,8 +1117,11 @@ class bills_in extends bills{
 		$re=["get"=>[]];
 		$sql=[];
 		$sql["product"]="SELECT 
-				`product`.`name`		,`product`.`sku` AS `product_sku`	,`product`.`barcode` AS `barcode`		,`product`.`cost`,
-				`product`.`price`		,`product`.`sku_root`						,IFNULL(`product`.`s_type`,'') AS `s_type`,IFNULL(`product`.`vat_p`,0) AS `vat_p`,
+				`product`.`name`		,`product`.`sku` AS `product_sku`	,`product`.`barcode` AS `barcode`,
+				`product`.`cost`,
+				`product`.`price`		,`product`.`sku_root`,
+				IFNULL(`product`.`s_type`,'') AS `s_type`,
+				IFNULL(`product`.`vat_p`,0) AS `vat_p`,
 				`unit`.`name` AS `unit_name`
 			FROM `product`
 			LEFT JOIN `unit`
@@ -1111,6 +1129,7 @@ class bills_in extends bills{
 			WHERE JSON_SEARCH(`partner`, 'one', ".$sku_root.") IS NOT NULL;
 		";
 		$se=$this->metMnSql($sql,["product"]);
+		//print_r($se);
 		if($se["result"]){
 			$re=$se["data"]["product"];
 		}

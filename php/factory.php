@@ -125,13 +125,19 @@ class factory extends main{
 				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (1,'default','defaultroot','defaultroot','_ไม่ระบุ','ไม่ระบุ') 
 				ON DUPLICATE KEY UPDATE `sku`='default',`sku_key`='defaultroot',`sku_root`='defaultroot',`name`='_ไม่ระบุ',`note`='ไม่ระบุ';
 				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (2,'p','proot','proot','พร้อมขาย','พร้อมขาย') 
-				ON DUPLICATE KEY UPDATE `sku`='p',`sku_key`='proot',`sku_root`='proot',`name`='พร้อมขาย',`note`='พร้อมขาย';
-				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (3,'x','xroot','xroot','ไม่พร้อมขาย','ไม่พร้อมขาย') 
+				ON DUPLICATE KEY UPDATE `sku`='p',`sku_key`='proot',`sku_root`='proot',`name`='พร้อมขาย',`note`='พร้อมขาย';	
+				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (3,'w','wroot','wroot','รอขาย','รอขาย') 
+				ON DUPLICATE KEY UPDATE `sku`='w',`sku_key`='wroot',`sku_root`='wroot',`name`='รอขาย',`note`='รอขาย';
+				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (4,'x','xroot','xroot','ไม่พร้อมขาย','ไม่พร้อมขาย') 
 				ON DUPLICATE KEY UPDATE `sku`='x',`sku_key`='xroot',`sku_root`='xroot',`name`='ไม่พร้อมขาย',`note`='ไม่พร้อมขาย';
-				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (4,'d','droot','droot','เสีย ชำรุด','เสีย ชำรุด') 
+				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (5,'d','droot','droot','เสีย ชำรุด','เสีย ชำรุด') 
 				ON DUPLICATE KEY UPDATE `sku`='d',`sku_key`='droot',`sku_root`='droot',`name`='เสีย ชำรุด',`note`='เสีย ชำรุด';
-				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (5,'e','eroot','eroot','หมดอายุ','หมดอายุ') 
+				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (6,'e','eroot','eroot','หมดอายุ','หมดอายุ') 
 				ON DUPLICATE KEY UPDATE `sku`='e',`sku_key`='eroot',`sku_root`='eroot',`name`='หมดอายุ',`note`='หมดอายุ ตกรุ่น เก่า';
+				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (7,'c','croot','croot','สินค้าส่งเคลม','สินค้าส่งเคลม') 
+				ON DUPLICATE KEY UPDATE `sku`='c',`sku_key`='croot',`sku_root`='croot',`name`='สินค้าเครม',`note`='สินค้าส่งเคลม';
+				INSERT INTO `it` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`note`) VALUES (8,'ce','ceroot','ceroot','สินค้าเคลมแล้ว','สินค้าเคลมแล้ว') 
+				ON DUPLICATE KEY UPDATE `sku`='ce',`sku_key`='ceroot',`sku_root`='ceroot',`name`='สินค้าเครมแล้ว',`note`='สินค้าเคลมแล้ว';
 			END;";
 			$sql["default_prop"]="BEGIN NOT ATOMIC 
 				INSERT INTO `prop` (`id`,`sku`,`sku_key`,`sku_root`,`name`,`data_type`) VALUES (1,'width-mm','width-mmroot','width-mmroot','กว้าง (มม.)','n') 
@@ -163,6 +169,9 @@ class factory extends main{
 			$sql["ref_it3"]=$this->ref("it","sku_key","xroot");
 			$sql["ref_it4"]=$this->ref("it","sku_key","droot");
 			$sql["ref_it5"]=$this->ref("it","sku_key","eroot");
+			$sql["ref_it6"]=$this->ref("it","sku_key","eroot");
+			$sql["ref_it7"]=$this->ref("it","sku_key","eroot");
+			$sql["ref_it8"]=$this->ref("it","sku_key","eroot");
 			$sql["ref_prop1"]=$this->ref("prop","sku_key","width-mmroot");
 			$sql["ref_prop2"]=$this->ref("prop","sku_key","height-mmroot");
 			$sql["ref_prop3"]=$this->ref("prop","sku_key","colorroot");

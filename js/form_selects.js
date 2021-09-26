@@ -25,6 +25,7 @@ class form_selects{
 				//this.partner[display_id]=Object.assign({}, this.partner_old[display_id]);
 			}
 		}
+		//alert("99999999999999999"+partner_list_id)
 		dialog_id=(dialog_id==null)?this.main.rid():dialog_id
 		let partner_list=document.forms[form_name][partner_list_id].value
 		
@@ -141,7 +142,7 @@ class form_selects{
 						}
 						let s=null
 						if(diab==0){
-							s=this.main.ce("div",{"data-rid_close":rid,"onclick":"Fsl.select1Partner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"',"+ofc+")"})
+							s=this.main.ce("div",{"data-rid_close":rid,"onclick":"Fsl.select1Partner(this,'"+a+"','"+callback+"','"+display_id+"','"+partner_list_id+"',"+ofc+")","title":"เลือก 1 รายการนี้เท่านั้น"})
 							this.main.end(s,[this.main.cn("⬆")])
 						}else{
 							s=this.main.ce("div",{})

@@ -81,8 +81,8 @@ class payu extends main{
 			<div>
 				<select name="money_type">	
 					<option value="ca"'.($money_type == "ca"?" selected":"").' disabled>'.$this->money_type["ca"]["icon"].' '.$this->money_type["ca"]["name"].'</option>				
-					<option value="tr"'.($money_type == "tr"?" selected":"").'>'.$this->money_type["tr"]["icon"].' '.$this->money_type["tr"]["name"].'</option>
-					<option value="ck"'.($money_type == "ck"?"selected":"").'>'.$this->money_type["ck"]["icon"].' '.$this->money_type["ck"]["name"].'</option>
+					<option value="tr"'.($money_type == "tr"?" selected":"").''.($money_type == "cd"||$money_type == "ca"?" disabled":"").'>'.$this->money_type["tr"]["icon"].' '.$this->money_type["tr"]["name"].'</option>
+					<option value="ck"'.($money_type == "ck"?"selected":"").''.($money_type == "cd"||$money_type == "ca"?" disabled":"").'>'.$this->money_type["ck"]["icon"].' '.$this->money_type["ck"]["name"].'</option>
 					<option value="cd"'.($money_type == "cd"?"selected":"").' disabled>'.$this->money_type["cd"]["icon"].' '.$this->money_type["cd"]["name"].'</option>
 				</select>
 			</div>
@@ -112,9 +112,22 @@ class payu extends main{
 			$se=$this->checkSet("partner",["post"=>["name","sku","money_type","note"]],"post");
 			if(isset($_POST["money_type"])){
 				if($se["message_error"]==""){
-					if($_POST["money_type"]!="tr"&&$_POST["money_type"]!="ck"){
-						$se["message_error"]="เลือกประเภทเงินโอน หรือ เช็ก เท่านั้น";
-						$se["result"]=false;
+					if(isset($_POST["sku_root"])){
+						if($this->isSku($_POST["sku_root"])){
+							if($_POST["sku_root"]!="creditroot"&&$_POST["sku_root"]!="defaultroot"){
+								if($_POST["money_type"]!="tr"&&$_POST["money_type"]!="ck"){
+									$se["message_error"]="เลือกประเภทเงินโอน หรือ เช็ก เท่านั้น";
+									$se["result"]=false;
+								}
+							}else if($_POST["sku_root"]=="creditroot"){
+									$_POST["money_type"]="cd";
+							}else if($_POST["sku_root"]=="defaultroot"){
+									$_POST["money_type"]="ca";
+							}else{
+								$se["message_error"]="เลือกประเภทเงิน มีข้อผิดพลาด";
+								$se["result"]=false;
+							}
+						}
 					}
 				}
 			}

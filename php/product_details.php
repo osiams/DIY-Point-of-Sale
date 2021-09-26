@@ -3,10 +3,14 @@ class product_details extends product{
 	public function __construct(){
 		parent::__construct();
 		$this->sku_root="";
+		$this->ful=null;
 	}
 	public function run(){
 		
 		if(isset($_GET["sku_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku_root"])){
+			$file = "php/fileupload.php";
+			require($file);	
+			$this->ful=new fileupload($this->gallery_dir);
 			$this->loadGroupAndProp();
 			$this->sku_root=$_GET["sku_root"];
 			$dt=$this->getData($_GET["sku_root"]);
@@ -15,7 +19,7 @@ class product_details extends product{
 				$pd_name=htmlspecialchars($dt["product"][0]["name"]);
 			}
 			$this->addDir("?a=product&amp;b=details&amp;sku_root=".$_GET["sku_root"],"รายละเอียดสินค้า ".$pd_name);
-			$this->pageHead(["title"=>"รายละเอียดสินค้า DIYPOS","css"=>["product_details"]]);
+			$this->pageHead(["title"=>"รายละเอียดสินค้า DIYPOS","css"=>["product_details","fileupload"]]);
 			if(count($dt["product"])>0){
 				$this->details($dt["product"][0]);
 				$this->detailsProp($dt["product"][0]["group_root"],json_decode($dt["product"][0]["props"],true));
@@ -117,8 +121,12 @@ class product_details extends product{
 		echo '</table></main>';
 	}
 	private function details(array $dt):void{
-		echo '<main><table class="productdetails"><caption>สินค้า</caption>
-			<tr><th>ค่า</th><th>รายละเอียด</th></tr>
+		echo '<main><table class="productdetails"><caption>สินค้า</caption>';
+		echo '<tr><td colspan="2">';
+		echo '<div class="c">'.$this->sIcon($dt["icon"],256).'</div>';;
+		$this->ful->listImg($dt["sku_root"]);
+		echo '</td></tr>';
+		echo '	<tr><th>ค่า</th><th>รายละเอียด</th></tr>
 			<tr><td>ที่</td><td>'.$dt["id"].'</td></tr>
 			<tr class="i2"><td>ชื่อ</td><td>'.$dt["name"].'</td></tr>
 			<tr><td>รหัสภายใน</td><td>'.$dt["sku"].'</td></tr>
@@ -172,7 +180,8 @@ class product_details extends product{
 		";
 		$sql["product"]="SELECT product.id AS id,product.sku AS sku,product.sku_key AS sku_key,product.sku_root AS sku_root,
 				product.barcode AS barcode,product.name AS name,
-				product.cost AS cost,product.price AS price,IFNULL(product.vat_p,0) AS vat_p,product.unit AS unit,product.pdstat,product.statnote,product.date_reg AS date_reg,
+				product.cost AS cost,product.price AS price,IFNULL(product.vat_p,0) AS vat_p,product.unit AS unit,product.pdstat,product.statnote,
+				IFNULL(product.icon,'') AS icon,product.date_reg AS date_reg,
 				IFNULL(`product`.`group_root`,\"defaultroot\") AS `group_root`,IFNULL(`product`.`props`,\"[]\") AS props,
 				GetListPartner_(IFNULL(`partner`,'[]')) AS `partner`,
 				unit.name AS unit_name,

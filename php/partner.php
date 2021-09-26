@@ -37,13 +37,24 @@ class partner extends main{
 			}else if($t=="details"){
 				if(isset($_GET["sku_root"])&&preg_match("/^[0-9a-zA-Z-+\.&\/]{1,25}$/",$_GET["sku_root"])){
 					require("php/partner_details.php");
-					(new partner_details($_GET["sku_root"]))->run();
+					$d=new partner_details();
+					$d->sku_root=$_GET["sku_root"];				
+					$d->run();
 				}else{
 					$this->pagePartner();
 				}
 			}
 		}else{
 			$this->pagePartner();
+		}
+	}
+	public function fetch(){;
+		if(isset($_POST["bb"])&&($_POST["bb"]=="partner_details_claim"||$_POST["bb"]=="partner_details_claimsend_viewbill")){
+			require_once("php/".$_POST["bb"].".php");
+			eval("(new ".$_POST["bb"]."())->fetch();");
+		}else{
+			header('Content-type: application/json');
+			print_r("{}");
 		}
 	}
 	private function deletePartner():void{
@@ -592,6 +603,10 @@ class partner extends main{
 		$this->writeContentPartner();		
 		echo '<br /><p class="c"><input type="button" value="เพิ่มคู่ค้า" onclick="location.href=\'?a='.$this->a.'&amp;b=regis\'" /></p>';
 		echo '</div></div>';
+		echo '<div class="c">
+			<div class="block_claim_n_w">n</div> = มีสินค้าที่ต้องส่งเคลม ,
+			<div class="block_claim_n_s">n</div> = สินค้าส่งเคลมแล้วรอรับ
+		</div>';
 		$this->pageFoot();
 	}
 	private function defaultSearch():string{
@@ -696,10 +711,21 @@ class partner extends main{
 				
 			}
 			$sn=strlen(trim($se[$i]["sku"]))>0?substr(trim($se[$i]["sku"]),0,15):(mb_substr(trim($se[$i]["name"]),0,15));
+			$block_n_w="";
+			$block_n_s="";
+			if($se[$i]["claim_n_w"]>0){
+				$block_n_w='<div class="block_claim_n_w" onclick="location.href=\'?a=partner&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'&amp;bb=partner_details_claim\'">'.$se[$i]["claim_n_w"].'</div>';
+			}
+			if($se[$i]["claim_n_s"]>0){
+				$block_n_s='<div class="block_claim_n_s" onclick="location.href=\'?a=partner&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'&amp;bb=partner_details_claimsend\'">'.$se[$i]["claim_n_s"].'</div>';
+			}
 			echo '<tr'.$cm.'><td class="r">'.($se[$i]["id"]).'</td>
 				<td class="l"><div class="img48"><img  class="viewimage" src="img/gallery/64x64_'.$se[$i]["icon"].'"   onerror="this.src=\'img/pos/64x64_null.png\'" alt="'.$sn.'" onclick="G.view(this)"  title="เปิดดูภาพ" /></div></td>
 				<td class="l">'.$sku.'</td>
-				<td class="l"><a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a></td>
+				<td class="l">
+					<a href="?a='.$this->a.'&amp;b=details&amp;sku_root='.$se[$i]["sku_root"].'">'.$name.'</a>
+					<div class="r">'.$block_n_w.''.$block_n_s.'</div>
+				</td>
 				<td class="action">
 					<a onclick="Pn.edit(\''.$se[$i]["sku_root"].'\')" title="แก้ไข">📝</a>
 					<a onclick="Pn.delete(\''.$se[$i]["sku_root"].'\',\''.htmlspecialchars($se[$i]["name"]).'\')" title="ทิ้ง">🗑</a>
@@ -726,7 +752,8 @@ class partner extends main{
 				$limit_page=$this->per+1;
 		}
 		$sql["count"]="SELECT COUNT(*) AS `count`  FROM `partner`";
-		$sql["get"]="SELECT `id`,`name`,`brand_name`,`icon`,`sku`,`sku_root` 
+		$sql["get"]="SELECT `id`,`name`,`brand_name`,`icon`,`sku`,`sku_root`,
+				`claim_n_w`,`claim_n_s`
 			FROM `partner` 
 			".$this->sh." 
 			ORDER BY `id` DESC LIMIT ".$limit_page."";
@@ -737,3 +764,8 @@ class partner extends main{
 		return $re;
 	}
 }
+/*
+UPDATE bill_in_list SET  claim_stat='w' WHERE claim_stat='s';
+DELETE FROM bill_claim WHERE 1=1;
+DELETE FROM bill_claim_list WHERE 1=1;*/
+?>

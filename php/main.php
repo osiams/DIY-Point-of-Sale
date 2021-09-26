@@ -9,6 +9,7 @@ class main{
 		$this->system=null;
 		$this->user_ceo=isset($_SESSION["userceo"])?$_SESSION["userceo"]:-1;
 		$this->gallery_dir=dirname(__DIR__)."/img/gallery";
+		$this->gallery_url="img/gallery";
 		$this->main_ip=$this->userIPv4();
 		$this->re=[
 			"connect"=>false,
@@ -45,12 +46,26 @@ class main{
 			],
 			"bill_in_list"=>[
 				"name"=>"bill_in_list",
-				"column"=>["id","stkey","stroot","bill_in_sku","lot","product_sku_key","product_sku_root","name","s_type",
-				"n","balance","n_wlv","balance_wlv","sum","sq","unit_sku_key","unit_sku_root","note","idkey"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP"],
+				"column"=>["id","stkey","stroot","bill_in_sku","lot","product_sku_key","product_sku_root","name","s_type","lot_root","pn_root","pn_key",
+				"n","balance","n_wlv","balance_wlv","sum","sq","unit_sku_key","unit_sku_root","claim_stat","note","idkey"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","claim_stat"=>"n"],
 				"primary"=>"id",
-				"index"=>["lot","stkey","stroot","bill_in_sku","product_sku_key","product_sku_root","balance"]
+				"index"=>["lot","stkey","stroot","bill_in_sku","product_sku_key","product_sku_root","balance","lot_root","pn_root","pn_key","claim_stat"]
 			],
+			"bill_claim"=>[
+				"name"=>"bill_claim",
+				"column"=>["id","time_id","sku","claim_stat","n","cost","pn_key","pn_root","user","note","date_exp","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","exp_date"=>"NULL","cost"=>0],	
+				"primary"=>"id",
+				"unique"=>["sku"],
+				"index"=>["time_id","claim_stat","pn_root","user","date_reg"]
+			],		
+			"bill_claim_list"=>[
+				"name"=>"bill_claim_list",
+				"column"=>["id","bill_claim_id","bill_in_list_id","claim_stat","n","n_wlv"],
+				"primary"=>"id",
+				"index"=>["bill_claim_id","bill_in_list_id"]
+			],	
 			"bill_sell"=>[
 				"name"=>"bill_sell",
 				"column"=>["id","time_id","sku","n","cost","costr","price","pricer","user","user_edit","member_sku_key","member_sku_root","stat","stath","note","w","r_","_r",
@@ -62,12 +77,12 @@ class main{
 			],
 			"bill_sell_list"=>[
 				"name"=>"bill_sell_list",
-				"column"=>["id","sku","bill_in_list_id","lot","product_sku_key","product_sku_root",
+				"column"=>["id","sku","bill_in_list_id","lot","product_sku_key","product_sku_root","lot_root","pn_root","pn_key",
 					"n","n_wlv","c","u","r","h","sq","unit_sku_key","unit_sku_root","note","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","r"=>0,"h"=>0,"n_wlv"=>1,"sq"=>1],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],	
 				"primary"=>"id",
-				"index"=>["sku","bill_in_list_id","lot","product_sku_key","product_sku_root","n_wlv"]
+				"index"=>["sku","bill_in_list_id","lot","product_sku_key","product_sku_root","lot_root","pn_root","pn_key","n_wlv"]
 			],
 			"bill_rca"=>[
 				"name"=>"bill_rca",
@@ -119,7 +134,9 @@ class main{
 			],
 			"gallery"=>[
 				"name"=>"gallery",
-				"column"=>["id","sku_key","gl_key","name","a_type","mime_type","md5","user","size","width","height","date_reg"],
+				"column"=>["id","sku_key","gl_key","name","a_type","mime_type","md5","user","size","width","height",
+				"sq","primary","gl_stat","date_reg"],
+				"default"=>["sq"=>"NULL","primary"=>0,"gl_stat"=>1],
 				"primary"=>"sku_key",
 				"index"=>["gl_key","a_type","mime_type","size","width","height"]
 			],
@@ -194,8 +211,8 @@ class main{
 			"product"=>[
 				"name"=>"product",
 				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type","partner",
-					"vat","vat_p","unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pdstat"=>"c","s_type"=>"p"],
+					"vat","vat_p","unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","icon","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","pdstat"=>"c","s_type"=>"p","icon"=>"NULL"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
 				"not_null"=>["name","sku_root"],
 				"primary"=>"sku_root",
@@ -205,7 +222,7 @@ class main{
 			"product_ref"=>[
 				"name"=>"product_ref",
 				"column"=>["id","sku","barcode","sku_key","sku_root","name","cost","price","group_key","group_root","props","s_type","partner",
-					"vat","vat_p","unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","modi_date","date_reg"],
+					"vat","vat_p","unit","skuroot1","skuroot1_n","skuroot2","skuroot2_n","pdstat","disc","statnote","icon","modi_date","date_reg"],
 				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
 				"not_null"=>["name","sku_root"],
 				"primary"=>"sku_key",
@@ -218,8 +235,8 @@ class main{
 					"no","alley","road","distric","country",
 					"province","post_no",
 					"tel","fax","tax","web","tp_type",
-					"od_type","note","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+					"od_type","note","claim_n_w","claim_n_s","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","claim_n_w"=>0,"claim_n_s"=>0],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
 				"unsigned"=>["day_nv"],
 				"primary"=>"sku_root",
@@ -234,8 +251,8 @@ class main{
 				"no","alley","road","distric","country",
 				"province","post_no",
 				"tel","fax","tax","web","tp_type",
-				"od_type","note","modi_date","date_reg"],
-				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL"],
+				"od_type","note","claim_n_w","claim_n_s","modi_date","date_reg"],
+				"default"=>["date_reg"=>"CURRENT_TIMESTAMP","modi_date"=>"NULL","claim_n_w"=>0,"claim_n_s"=>0],
 				"unsigned"=>["day_nv"],
 				"on"=>["modi_date"=>"ON UPDATE CURRENT_TIMESTAMP"],
 				"primary"=>"sku_key",
@@ -398,13 +415,14 @@ class main{
 			]
 		];
 		$this->fills=[
-			"a_type"=>["name"=>"สำหรับแอป","type"=>"ENUM","length_value"=>["partner","bill_in","payu","member","device_pos","device_drawers"]],
+			"a_type"=>["name"=>"สำหรับแอป","type"=>"ENUM","length_value"=>["partner","bill_in","payu","member","device_pos","device_drawers","product"]],
 			"amount"=>["name"=>"จำนวน","type"=>"INT","length_value"=>10],
 			"alley"=>["name"=>"ซอย","type"=>"CHAR","length_value"=>80,"charset"=>"thai"],
 			"barcode"=>["name"=>"รหัสแท่ง","type"=>"CHAR","length_value"=>80],
 			"balance"=>["name"=>"คงเหลือ","type"=>"INT","length_value"=>10],
 			"balance_wlv"=>["name"=>"คงเหลือชั่งตวงวัด","type"=>"FLOAT","length_value"=>[10,4]],
 			"bill"=>["name"=>"ใบ","type"=>"CHAR","length_value"=>25],
+			"bill_claim_id"=>["name"=>"ที่ใบส่งเคลม","type"=>"INT","length_value"=>10],
 			"bill_date"=>["name"=>"วันที่ในใบเสร็จ","type"=>"TIMESTAMP",],
 			"bill_in_id"=>["name"=>"ที่นำเขา","type"=>"INT","length_value"=>10],
 			"bill_in_list_id"=>["name"=>"ที่นำเขา","type"=>"INT","length_value"=>10],
@@ -418,6 +436,10 @@ class main{
 			"brand_name"=>["name"=>"ชื่อการค้า","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			//--0=เงินม1=สินค้าตัวเดิม
 			"changto"=>["name"=>"เปลี่ยนเป็น","type"=>"ENUM","length_value"=>["0","1"]],
+			//--n=สินค้าปกติ,w=สินค้ายังอยู่ในร้านรอส่งเคลม,s=สินค้าส่งเคลมไปแล้ว,r=ได้รับสินค้าเคลมเข้าร้านแล้ว
+			"claim_stat"=>["name"=>"สถานะเคลม","type"=>"ENUM","length_value"=>["n","w","s","r"]],
+			"claim_n_w"=>["name"=>"จำนวนรายการที่ต้องส่งเคลม","type"=>"INT","length_value"=>10],
+			"claim_n_s"=>["name"=>"จำนวนรายการที่ส่งเคลมแล้วรอผล","type"=>"INT","length_value"=>10],
 			//"barcode1"=>["name"=>"รหัสแท่งย่อยสุด1","type"=>"CHAR","length_value"=>80],
 			//"barcode2"=>["name"=>"รหัสแท่งย่อยสุด2","type"=>"CHAR","length_value"=>80],
 			//"barcode1_n"=>["name"=>"จำนวนที่แบ่ง1","type"=>"INT","length_value"=>10],
@@ -435,12 +457,14 @@ class main{
 			"data_type"=>["name"=>"ชนิดข้อมูล","type"=>"ENUM","length_value"=>["s","n","b","u"]],
 			"disc"=>["name"=>"รายละเอียด","type"=>"VARCHAR","length_value"=>1000,"charset"=>"thai"],
 			"date_reg"=>["name"=>"วันที่สร้าง","type"=>"TIMESTAMP"],
+			"date_mfg"=>["name"=>"วันผลิต","type"=>"TIMESTAMP"],
 			"date_exp"=>["name"=>"วันทสิ้นสุด","type"=>"TIMESTAMP"],
 			"drawers_id"=>["name"=>"ลิ้นชักที่","type"=>"INT","length_value"=>10],
 			"email"=>["name"=>"อีเมล","type"=>"CHAR","length_value"=>30],
 			"fax"=>["name"=>"แฟ็กซ์","type"=>"CHAR","length_value"=>15],
 			"float"=>["name"=>"จำนวน","type"=>"FLOAT","length_value"=>[10,4]],
 			"gl_key"=>["name"=>"รหัสห้องภาพ","type"=>"CHAR","length_value"=>25],
+			"gl_stat"=>["name"=>"สถานะภาพ","type"=>"ENUM","length_value"=>["0","1"]],
 			"group_key"=>["name"=>"กลุ่มอ้างอิง","type"=>"CHAR","length_value"=>25],
 			"group_root"=>["name"=>"กลุ่มราก","type"=>"CHAR","length_value"=>25],
 			"h"=>["name"=>"เปลี่ยน","type"=>"INT","length_value"=>10],
@@ -451,8 +475,8 @@ class main{
 			"id"=>["name"=>"ที่","type"=>"INT","length_value"=>10],
 			"idc"=>["name"=>"เลขที่บัตรประชาชน์","type"=>"CHAR","length_value"=>15],
 			"idkey"=>["name"=>"ที่อ้างอิง","type"=>"INT","length_value"=>10],
-			//--"buy","cancel","return",move,x,delete
-			"in_type"=>["name"=>"ประเภทการเข้า","type"=>"ENUM","length_value"=>["b","c","r","m","x","d","mm"]],
+			//--"buy","cancel","return",move,x,delete,claim
+			"in_type"=>["name"=>"ประเภทการเข้า","type"=>"ENUM","length_value"=>["b","c","r","m","x","d","cl","mm"]],
 			"ip"=>["name"=>"เลข IP","type"=>"CHAR","length_value"=>25],
 			"lastname"=>["name"=>"นามสกุล","type"=>"CHAR","length_value"=>255,"charset"=>"thai"],
 			"lot"=>["name"=>"งวด","type"=>"CHAR","length_value"=>25],
@@ -485,6 +509,7 @@ class main{
 			//"partner1"=>["name"=>"คู่ค้า1","type"=>"CHAR","length_value"=>255],
 			//"partner2"=>["name"=>"คู่ค้า2","type"=>"CHAR","length_value"=>255],
 			//"partner3"=>["name"=>"คู่ค้า3","type"=>"CHAR","length_value"=>255],
+			"primary"=>["name"=>"อันหลัก","type"=>"ENUM","length_value"=>["0","1"]],
 			"pay"=>["name"=>"ชำระ","type"=>"FLOAT","length_value"=>[15,2]],
 			"payu_json"=>["name"=>"รูปแบบการชำระ","type"=>"VARCHAR","length_value"=>1024],
 			"payu_ref_json"=>["name"=>"รูปแบบการชำระอ้างอิง","type"=>"VARCHAR","length_value"=>1024],
@@ -725,7 +750,7 @@ class main{
 					<head>
 					<title>'.$title.'</title>
 					<meta charset="utf-8">
-					<meta name="viewport" content="width=device-width, initial-scale=1.0,user-scalable=yes">
+					<meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=yes">
 					<meta name="description" content="'.$title.'">
 					<link rel="manifest" href="'.(isset($data["manifest"])?$data["manifest"]:"set/manifest.json").'">
 <link rel="apple-touch-icon" href="img/pwa/diypos_128.png">   
@@ -808,6 +833,10 @@ class main{
 			<div class="menu_more_auto">
 				<div>';
 		for($i=0;$i<count($data["menu"]);$i++){
+			if(isset($data["menu"][$i]["topic"])){
+				echo '<div class="c bold">'.$data["menu"][$i]["name"].'</div>';
+				continue;
+			}
 			$a=($data["menu"][$i]["b"]==$data["active"])?" class=\"menu_more_active\"":"";
 			$b=($a!="")?"👀 ":"";
 			echo '<div'.$a.'>';
@@ -1287,6 +1316,14 @@ class main{
 		$b=array_keys($a);
 		$c=json_encode($b);
 		return $c;
+	}
+	protected function loadClass(string $file):void{
+		require($file);	
+	}
+	protected function sIcon(string $gl_key,int $size):string{
+		$t="";
+		$t.='<img src="img/gallery/'.$size.'x'.$size.'_'.$gl_key.'.png"  alt="credit" class="viewimage"  onclick="G.view(this)"  title="เปิดดูภาพ" onerror="this.src=\'img/pos/64x64_null.png\'" />';
+		return $t;
 	}
 }
 ?>
