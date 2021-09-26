@@ -1,0 +1,14 @@
+.gallary {display:inline-block;padding:5px 0px;margin:0px auto;min-height:0px;width:calc(100% - 2px);text-align:left;}
+.gallary > div{display:inline-block;font-size:0px;background-image:url('../img/pos/64x64_null.png');margin:5px;border:2px dashed gray;cursor:pointer}
+.gallary > div> div{display:inline-block;width:128px;height:128px;background-repeat: no-repeat; background-position: center center;background-size: contain}
+.gallary > div > div >div{background-color:rgba(255,255,255,1);display:block;float:right;width:20px;height:20px;border-radius: 0px 0px 0px 0px;border:1px solid white;line-height:20px;font-size:20px;text-align:center;cursor:pointer}
+
+.gallary_p_use{font-weight:bold;text-decoration: underline;}
+
+.gallary_view_set{}
+.gallary_view_set .div_img{display:grid;align-content:center;justify-content:center;width:64px;height:64px;margin:0 auto;font-size:0px;cursor:pointer}
+
+.gallary_set{display:grid;grid-template-columns:auto auto;padding:0px 0px;margin:10px;background-color:#eeeeee;grid-gap:1px 0px;}
+.gallary_set > div {background-color:white;padding:5px;}
+
+.gallary_logor{}
