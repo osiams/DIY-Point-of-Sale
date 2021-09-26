@@ -1,0 +1,11 @@
+#cv_display{display:grid;grid-template-rows:auto auto 100px;background-color:Silver;padding:0px;
+	overflow:hidden;position:absolute;bottom:0px;right:0px;z-index:2;width:0%;height:0%;user-select: none;
+	transition-duration:0.3s;background-size: contain;background-repeat: no-repeat; background-position: center center;}
+#cv_display > div:nth-child(1){display:flex;font-size:3em;align-items: start;text-shadow: 2px 2px 0px #ffffff;color:blue;padding:5px;}
+#cv_display > div:nth-child(2){font-size:0em;}
+#cv_display > div:nth-child(3){display:flex;font-size:5em;line-height:70px;align-items: center;justify-content:center;text-shadow: 2px 2px 0px yellow;color:red;padding:5px;}
+
+
+
+
+
