@@ -7,7 +7,7 @@ class cv extends main{
 		this.cvblock = null
 		this.area_close_xy = 50
 		this.is_md = false
-		this.is_app_open = false
+		this.is_app_open=false
 		this.dp = 10/1
 		this.k={"NumpadMultiply":"*","NumpadAdd":"+","Minus":"-","NumpadSubtract":"-","NumpadDecimal":".",
 			"Digit0":"0","Digit1":"1","Digit2":"2","Digit3":"3","Digit4":"4",
